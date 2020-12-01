@@ -36,6 +36,7 @@ while    { return DBOUT(WHILE); }
 else     { return DBOUT(ELSE); }
 from     { return DBOUT(FROM); }
 for      { return DBOUT(FOR); }
+var      { return DBOUT(VAR); }
 as       { return DBOUT(AS); }
 do       { return DBOUT(DO); }
 if       { return DBOUT(IF); }

@@ -16,7 +16,7 @@ void undo_bracket();
 	char* id;
 }
 
-%token AS BREAK CONTINUE DO ELSE FOR FROM FUNCTION IF IMPORT SEP STRING WHILE
+%token AS BREAK CONTINUE DO ELSE FOR FROM FUNCTION IF IMPORT SEP STRING VAR WHILE
 %token <value> NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -42,9 +42,20 @@ statement:
 %empty
 | ID ':' { add_symbol($1); }
 | FUNCTION ID '(' oid_list ')' { undo_bracket(); } '{' block '}' { add_symbol($2); }
+| VAR initializers { emit(); }
 | flow_statement { emit(); }
 | import_statement { emit(); }
 | simple_statement { emit(); }
+;
+
+initializers:
+initializer { emit(); }
+| initializers ',' initializer { emit(); }
+;
+
+initializer:
+ID { emit(); }
+| ID '=' expr { emit(); }
 ;
 
 flow_statement:
