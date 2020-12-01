@@ -29,7 +29,7 @@ void undo_bracket();
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
 %left '.' '['
-%type <value> dexpr expr expr_list fexpr id_list kv_list oid_list pexpr
+%type <value> dexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
 
 %%
 
@@ -119,10 +119,8 @@ NUMBER                   { $$ = $1;           }
 | '-' expr %prec NEG     { $$ = -$2;          }
 | '~' expr %prec NEG     { $$ = ~$2;          }
 | '!' expr %prec NEG     { $$ = !$2;          }
-| '[' ']'                { emit();            }
-| '{' '}'                { emit();            } /* TODO:  set or object? */
-| '[' expr_list ']'      { $$ = $2;           }
-| '{' expr_list '}'      { $$ = $2;           }
+| '[' oexpr_list ']'     { $$ = $2;           }
+| '{' oexpr_list '}'     { $$ = $2;           } /* TODO:  set or object if empty? */
 | '{' kv_list '}'        { $$ = $2;           }
 | dexpr                  { $$ = $1;           }
 | fexpr                  { $$ = $1;           }
@@ -136,13 +134,18 @@ expr '.' ID { emit();             }
 ;
 
 fexpr:
-ID '(' expr ')' { $$ = $3; }
-| fexpr '(' expr ')' { $$ = $1; }
-| pexpr '(' expr ')' { $$ = $3; }
+ID '(' oexpr_list ')' { $$ = $3; }
+| fexpr '(' oexpr_list ')' { $$ = $1; }
+| pexpr '(' oexpr_list ')' { $$ = $3; }
 ;
 
 pexpr:
 '(' expr ')' { $$ = $2; }
+;
+
+oexpr_list:
+%empty { emit(); }
+| expr_list
 ;
 
 expr_list:
