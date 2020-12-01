@@ -1,4 +1,5 @@
 %{
+#include <cassert>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
@@ -68,7 +69,12 @@ int yywrap() {
 	return 1;
 }
 
-void undo_bracket() {
+void undo_bracket(int expected_bracket_depth) {
+	// The detection of an open curly brace immediately succeeds an invocation of this function.  For those constructs that require a
+	// token look-ahead, the bracket depth will be one.  Otherwise, it will be zero.
+	printf("bracket_depth is %d\n", bracket_depth);
+	assert((expected_bracket_depth & ~1) == 0);
+	assert(bracket_depth == expected_bracket_depth);
 	--bracket_depth;
 }
 

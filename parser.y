@@ -5,7 +5,7 @@
 
 int yylex();
 void yyerror(char const* message);
-void undo_bracket();
+void undo_bracket(int expected_bracket_depth);
 
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)
@@ -41,7 +41,7 @@ statement { emit(); }
 statement:
 %empty
 | ID ':' { add_symbol($1); }
-| FUNCTION ID '(' oid_list ')' { undo_bracket(); } '{' block '}' { add_symbol($2); }
+| FUNCTION ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
 | flow_statement { emit(); }
 | import_statement { emit(); }
@@ -61,15 +61,15 @@ ID { emit(); }
 flow_statement:
 BREAK { emit(); }
 | CONTINUE { emit(); }
-| DO { undo_bracket(); } '{' block '}' WHILE expr { emit(); }
-| FOR simple_statement SEP expr SEP simple_statement { undo_bracket(); } '{' block '}' { emit(); }
+| DO { undo_bracket(0); } '{' block '}' WHILE expr { emit(); }
+| FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
 | if_statement { emit(); }
-| if_statement ELSE { undo_bracket(); } '{' block '}' { emit(); }
-| WHILE expr { undo_bracket(); } '{' block '}' { emit(); }
+| if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
+| WHILE expr { undo_bracket(1); } '{' block '}' { emit(); }
 ;
 
 if_statement:
-IF expr { undo_bracket(); } '{' block '}' { emit(); }
+IF expr { undo_bracket(1); } '{' block '}' { emit(); }
 ;
 
 import_statement:
