@@ -1,9 +1,4 @@
-*.exe*
-*.idb
-*.ilk
-*.obj
 *.output
-*.pdb
 *.suo
 *.sw[op]
 *.user
