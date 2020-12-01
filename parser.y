@@ -34,26 +34,17 @@ void undo_bracket();
 %%
 
 block:
-statements { emit(); }
-| statements separators { emit(); }
-;
-
-statements:
 statement { emit(); }
-| statements separators statement { emit(); }
+| block SEP statement { emit(); }
 ;
 
 statement:
-ID ':' { add_symbol($1); }
+%empty
+| ID ':' { add_symbol($1); }
 | FUNCTION ID '(' oid_list ')' { undo_bracket(); } '{' block '}' { add_symbol($2); }
 | flow_statement { emit(); }
 | import_statement { emit(); }
 | simple_statement { emit(); }
-;
-
-separators:
-SEP
-| separators SEP
 ;
 
 flow_statement:
