@@ -1,0 +1,16 @@
+*.exe*
+*.idb
+*.ilk
+*.obj
+*.output
+*.pdb
+*.suo
+*.sw[op]
+*.user
+.vs/
+x64/
+
+# Ignore generated files.
+parser.cc
+parser.h
+scanner.cc
