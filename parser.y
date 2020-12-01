@@ -28,6 +28,7 @@ void undo_bracket(int expected_bracket_depth);
 %left ASR LSR SHL
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
+%right SS
 %left '.' '['
 %type <value> dexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
 
@@ -115,6 +116,7 @@ NUMBER                   { $$ = $1;           }
 | expr '*' expr          { $$ = $1 * $3;      }
 | expr '/' expr          { $$ = $1 / $3;      }
 | expr '%' expr          { $$ = $1 % $3;      }
+| expr SS expr           { $$ = $1 * $3;      } /* TODO */
 | expr '[' expr ']'      { emit();            }
 | '-' expr %prec NEG     { $$ = -$2;          }
 | '~' expr %prec NEG     { $$ = ~$2;          }

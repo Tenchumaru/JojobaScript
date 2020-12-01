@@ -51,6 +51,7 @@ if       { return DBOUT(IF); }
 ">="     return DBOUT(GE);
 "&&"     return DBOUT(AND);
 "||"     return DBOUT(OR);
+"**"     return DBOUT(SS);
 \n       { ++yylineno; if(bracket_depth == 0) return DBOUT(SEP); }
 ";"      return DBOUT(SEP);
 "{"      |
