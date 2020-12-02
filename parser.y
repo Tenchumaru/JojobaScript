@@ -16,7 +16,7 @@ void undo_bracket(int expected_bracket_depth);
 	char* id;
 }
 
-%token AS BREAK CONTINUE DO ELSE FOR FROM FUNCTION IF IMPORT SEP STRING VAR WHILE
+%token AS BREAK CONTINUE DEC DO ELSE FOR FROM FUNCTION IF IMPORT INC SEP STRING VAR WHILE
 %token <value> NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -91,7 +91,14 @@ ID { emit(); }
 
 simple_statement:
 dexpr '=' expr { emit($3); }
+| di dexpr { emit($2); }
+| dexpr di { emit($1); }
 | fexpr { emit($1); }
+;
+
+di:
+DEC
+| INC
 ;
 
 expr:

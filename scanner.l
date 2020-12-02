@@ -45,6 +45,8 @@ if       { return DBOUT(IF); }
 ">>>"    return DBOUT(ASR);
 "<<"     return DBOUT(SHL);
 ">>"     return DBOUT(LSR);
+"--"     return DBOUT(DEC);
+"++"     return DBOUT(INC);
 "=="     return DBOUT(EQ);
 "!="     return DBOUT(NE);
 "<="     return DBOUT(LE);
