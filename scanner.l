@@ -43,6 +43,17 @@ do       { return DBOUT(DO); }
 if       { return DBOUT(IF); }
 {id}     { yylval.id = _strdup(yytext); return DBOUT(ID); }
 ">>>"    return DBOUT(ASR);
+"&="     return DBOUT(AA);
+">>>="   return DBOUT(ARA);
+"/="     return DBOUT(DA);
+"-="     return DBOUT(MIA);
+"%="     return DBOUT(MOA);
+"|="     return DBOUT(OA);
+"+="     return DBOUT(PA);
+"<<="    return DBOUT(SLA);
+">>="    return DBOUT(SRA);
+"*="     return DBOUT(TA);
+"^="     return DBOUT(XA);
 "<<"     return DBOUT(SHL);
 ">>"     return DBOUT(LSR);
 "--"     return DBOUT(DEC);

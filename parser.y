@@ -17,6 +17,7 @@ void undo_bracket(int expected_bracket_depth);
 }
 
 %token AS BREAK CONTINUE DEC DO ELSE FOR FROM FUNCTION IF IMPORT INC SEP STRING VAR WHILE
+%token AA ARA DA MIA MOA OA PA SLA SRA TA XA
 %token <value> NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -90,10 +91,25 @@ ID { emit(); }
 ;
 
 simple_statement:
-dexpr '=' expr { emit($3); }
+dexpr assignment expr { emit($3); }
 | di dexpr { emit($2); }
 | dexpr di { emit($1); }
 | fexpr { emit($1); }
+;
+
+assignment:
+'='
+| AA
+| ARA
+| DA
+| MIA
+| MOA
+| OA
+| PA
+| SLA
+| SRA
+| TA
+| XA
 ;
 
 di:
