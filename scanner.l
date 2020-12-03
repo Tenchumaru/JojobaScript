@@ -31,9 +31,12 @@ str     \"[^"]\"
 {str}    { yylval.id = _strdup(yytext); return DBOUT(STRING); }
 continue { return DBOUT(CONTINUE); }
 function { return DBOUT(FUNCTION); }
+default  { return DBOUT(DEFAULT); }
 import   { return DBOUT(IMPORT); }
+switch   { return DBOUT(SWITCH); }
 break    { return DBOUT(BREAK); }
 while    { return DBOUT(WHILE); }
+case     { return DBOUT(CASE); }
 else     { return DBOUT(ELSE); }
 from     { return DBOUT(FROM); }
 for      { return DBOUT(FOR); }
