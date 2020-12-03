@@ -179,7 +179,7 @@ expr
 ;
 
 kv_list:
-ID ':' expr { $$ = $3; }
+expr ':' expr { $$ = $3; }
 | kv_list ',' ID ':' expr { $$ = $5; }
 ;
 
