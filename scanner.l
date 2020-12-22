@@ -1,17 +1,12 @@
 %{
-#include <cassert> // assert
-#include <cstdio> // printf
 #include <cstdlib> // strtoul
 #include <cstring> // _strdup
+#include "Debug.h"
 #include "parser.h"
 #include "scanner.h"
-#ifdef _DEBUG
-# define RETURN_(v) return (printf(" '%s':%d ", yytext, (v)), (v))
-# define RETURN_ASSIGNMENT(v) return (printf(" '%s':%d ", yytext, (v)), yylval.value = (v), ASSIGNMENT)
-#else
-# define RETURN_(v) return (v)
-# define RETURN_ASSIGNMENT(v) return (yylval.value = (v), ASSIGNMENT)
-#endif
+#define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
+#define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
+#define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.value = v__; return ASSIGNMENT; } while(false)
 #pragma warning(push)
 #pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
 %}
