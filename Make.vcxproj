@@ -40,15 +40,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <NMakeBuildCommandLine>nmake /nologo Configuration=$(Configuration)</NMakeBuildCommandLine>
-    <NMakeOutput>JojobaScript.exe</NMakeOutput>
     <NMakeCleanCommandLine>nmake /nologo clean Configuration=$(Configuration)</NMakeCleanCommandLine>
-    <NMakePreprocessorDefinitions>_DEBUG;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>nmake /nologo Configuration=$(Configuration)</NMakeBuildCommandLine>
-    <NMakeOutput>JojobaScript.exe</NMakeOutput>
     <NMakeCleanCommandLine>nmake /nologo clean Configuration=$(Configuration)</NMakeCleanCommandLine>
-    <NMakePreprocessorDefinitions>NDEBUG;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
@@ -56,13 +54,6 @@
     <None Include="Makefile" />
     <None Include="parser.y" />
     <None Include="scanner.l" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="parser.cc" />
-    <ClCompile Include="scanner.cc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

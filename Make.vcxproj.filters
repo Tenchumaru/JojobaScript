@@ -5,26 +5,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{ac13f2ec-3501-4631-90bf-5161087f546a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
     <None Include="parser.y" />
     <None Include="scanner.l" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="parser.cc">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scanner.cc">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="parser.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
