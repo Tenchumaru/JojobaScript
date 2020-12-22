@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "parser.h"
+#include "scanner.h"
 #ifdef _DEBUG
 # define DBOUT(v) (printf(" '%s':%d ", yytext, (v)), (v))
 #else

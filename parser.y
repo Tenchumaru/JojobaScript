@@ -2,8 +2,8 @@
 #include <cstdio>
 #include <cstring>
 #include "JojobaScript.h"
+#include "scanner.h"
 
-int yylex();
 void yyerror(char const* message);
 void undo_bracket(int expected_bracket_depth);
 
