@@ -16,7 +16,7 @@ void undo_bracket(int expected_bracket_depth);
 	char* id;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN SEP STRING SWITCH VAR WHILE YIELD
+%token AS ASYNC AWAIT BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN SEP STRING SWITCH VAR WHILE YIELD
 %token AA ARA DA MIA MOA OA PA SLA SRA TA XA
 %token <value> NUMBER
 %token <id> ID
@@ -30,6 +30,7 @@ void undo_bracket(int expected_bracket_depth);
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
 %right SS
+%nonassoc AWAIT
 %left '.' '['
 %type <value> dexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
 
@@ -43,11 +44,16 @@ statement { emit(); }
 statement:
 %empty
 | ID ':' { add_symbol($1); }
-| FUNCTION ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
+| function ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
 | flow_statement { emit(); }
 | import_statement { emit(); }
 | simple_statement { emit(); }
+;
+
+function:
+ASYNC FUNCTION { emit(); }
+| FUNCTION { emit(); }
 ;
 
 initializers:
@@ -164,6 +170,7 @@ NUMBER                   { $$ = $1;           }
 | dexpr                  { $$ = $1;           }
 | fexpr                  { $$ = $1;           }
 | pexpr                  { $$ = $1;           }
+| AWAIT expr             { $$ = $2;           }
 | expr '@' '(' id_list ')' expr { $$ = $1; }
 ;
 
