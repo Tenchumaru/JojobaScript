@@ -42,7 +42,7 @@ statement { emit(); }
 ;
 
 statement:
-%empty
+%empty { emit(); }
 | ID ':' { add_symbol($1); }
 | function ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
@@ -84,13 +84,13 @@ IF expr { undo_bracket(1); } '{' block '}' { emit(); }
 ;
 
 cases:
-separators
+separators { emit(); }
 | cases CASE expr ':' block { emit(); }
 | cases DEFAULT ':' block { emit(); }
 ;
 
 separators:
-%empty
+%empty { emit(); }
 | separators SEP { emit(); }
 ;
 
@@ -118,23 +118,23 @@ dexpr assignment expr { emit($3); }
 ;
 
 assignment:
-'='
-| AA
-| ARA
-| DA
-| MIA
-| MOA
-| OA
-| PA
-| SLA
-| SRA
-| TA
-| XA
+'=' { emit(); }
+| AA { emit(); }
+| ARA { emit(); }
+| DA { emit(); }
+| MIA { emit(); }
+| MOA { emit(); }
+| OA { emit(); }
+| PA { emit(); }
+| SLA { emit(); }
+| SRA { emit(); }
+| TA { emit(); }
+| XA { emit(); }
 ;
 
 di:
-DEC
-| INC
+DEC { emit(); }
+| INC { emit(); }
 ;
 
 expr:
@@ -191,11 +191,11 @@ pexpr:
 
 oexpr_list:
 %empty { emit(); }
-| expr_list
+| expr_list { $$ = $1; }
 ;
 
 expr_list:
-expr
+expr { $$ = $1; }
 | expr_list ',' expr { $$ = $3; }
 ;
 
