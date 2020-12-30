@@ -16,7 +16,7 @@ void undo_bracket(int expected_bracket_depth);
 	char* id;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC SEP STRING SWITCH VAR WHILE
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN SEP STRING SWITCH VAR WHILE YIELD
 %token AA ARA DA MIA MOA OA PA SLA SRA TA XA
 %token <value> NUMBER
 %token <id> ID
@@ -67,8 +67,10 @@ BREAK { emit(); }
 | FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
 | if_statement { emit(); }
 | if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
+| RETURN expr { emit(); }
 | SWITCH expr { undo_bracket(1); } '{' cases '}' { emit(); }
 | WHILE expr { undo_bracket(1); } '{' block '}' { emit(); }
+| YIELD expr { emit(); }
 ;
 
 if_statement:
