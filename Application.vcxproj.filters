@@ -23,5 +23,6 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="JojobaScript.h" />
+    <ClInclude Include="scanner.h" />
   </ItemGroup>
 </Project>
