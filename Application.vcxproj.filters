@@ -25,4 +25,9 @@
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="scanner.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="parser.output">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
