@@ -1,8 +1,8 @@
 %{
-#include <cassert>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
+#include <cassert> // assert
+#include <cstdio> // printf
+#include <cstdlib> // strtoul
+#include <cstring> // _strdup
 #include "parser.h"
 #include "scanner.h"
 #ifdef _DEBUG
