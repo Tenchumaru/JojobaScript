@@ -6,9 +6,9 @@
 #include "parser.h"
 #include "scanner.h"
 #ifdef _DEBUG
-# define DBOUT(v) (printf(" '%s':%d ", yytext, (v)), (v))
+# define RETURN_(v) return (printf(" '%s':%d ", yytext, (v)), (v))
 #else
-# define DBOUT(v) (v)
+# define RETURN_(v) return (v)
 #endif
 #pragma warning(push)
 #pragma warning(disable: 4127 4267 4996)
@@ -27,59 +27,59 @@ str     \"[^"]\"
 
 {ws}     |
 {rem}    ;
-{hex}    { yylval.value = strtoul(yytext + 1, nullptr, 16); return DBOUT(NUMBER); }
-{num}    { yylval.value = strtoul(yytext, nullptr, 10); return DBOUT(NUMBER); }
-{str}    { yylval.id = _strdup(yytext); return DBOUT(STRING); }
-continue { return DBOUT(CONTINUE); }
-function { return DBOUT(FUNCTION); }
-default  { return DBOUT(DEFAULT); }
-import   { return DBOUT(IMPORT); }
-return   { return DBOUT(RETURN); }
-switch   { return DBOUT(SWITCH); }
-break    { return DBOUT(BREAK); }
-while    { return DBOUT(WHILE); }
-yield    { return DBOUT(YIELD); }
-case     { return DBOUT(CASE); }
-else     { return DBOUT(ELSE); }
-from     { return DBOUT(FROM); }
-for      { return DBOUT(FOR); }
-var      { return DBOUT(VAR); }
-as       { return DBOUT(AS); }
-do       { return DBOUT(DO); }
-if       { return DBOUT(IF); }
-{id}     { yylval.id = _strdup(yytext); return DBOUT(ID); }
-">>>"    return DBOUT(ASR);
-"&="     return DBOUT(AA);
-">>>="   return DBOUT(ARA);
-"/="     return DBOUT(DA);
-"-="     return DBOUT(MIA);
-"%="     return DBOUT(MOA);
-"|="     return DBOUT(OA);
-"+="     return DBOUT(PA);
-"<<="    return DBOUT(SLA);
-">>="    return DBOUT(SRA);
-"*="     return DBOUT(TA);
-"^="     return DBOUT(XA);
-"<<"     return DBOUT(SHL);
-">>"     return DBOUT(LSR);
-"--"     return DBOUT(DEC);
-"++"     return DBOUT(INC);
-"=="     return DBOUT(EQ);
-"!="     return DBOUT(NE);
-"<="     return DBOUT(LE);
-">="     return DBOUT(GE);
-"&&"     return DBOUT(AND);
-"||"     return DBOUT(OR);
-"**"     return DBOUT(SS);
-\n       { ++yylineno; if(bracket_depth == 0) return DBOUT(SEP); }
-";"      return DBOUT(SEP);
+{hex}    { yylval.value = strtoul(yytext + 1, nullptr, 16); RETURN_(NUMBER); }
+{num}    { yylval.value = strtoul(yytext, nullptr, 10); RETURN_(NUMBER); }
+{str}    { yylval.id = _strdup(yytext); RETURN_(STRING); }
+continue { RETURN_(CONTINUE); }
+function { RETURN_(FUNCTION); }
+default  { RETURN_(DEFAULT); }
+import   { RETURN_(IMPORT); }
+return   { RETURN_(RETURN); }
+switch   { RETURN_(SWITCH); }
+break    { RETURN_(BREAK); }
+while    { RETURN_(WHILE); }
+yield    { RETURN_(YIELD); }
+case     { RETURN_(CASE); }
+else     { RETURN_(ELSE); }
+from     { RETURN_(FROM); }
+for      { RETURN_(FOR); }
+var      { RETURN_(VAR); }
+as       { RETURN_(AS); }
+do       { RETURN_(DO); }
+if       { RETURN_(IF); }
+{id}     { yylval.id = _strdup(yytext); RETURN_(ID); }
+">>>"    RETURN_(ASR);
+"&="     RETURN_(AA);
+">>>="   RETURN_(ARA);
+"/="     RETURN_(DA);
+"-="     RETURN_(MIA);
+"%="     RETURN_(MOA);
+"|="     RETURN_(OA);
+"+="     RETURN_(PA);
+"<<="    RETURN_(SLA);
+">>="    RETURN_(SRA);
+"*="     RETURN_(TA);
+"^="     RETURN_(XA);
+"<<"     RETURN_(SHL);
+">>"     RETURN_(LSR);
+"--"     RETURN_(DEC);
+"++"     RETURN_(INC);
+"=="     RETURN_(EQ);
+"!="     RETURN_(NE);
+"<="     RETURN_(LE);
+">="     RETURN_(GE);
+"&&"     RETURN_(AND);
+"||"     RETURN_(OR);
+"**"     RETURN_(SS);
+\n       { ++yylineno; if(bracket_depth == 0) RETURN_(SEP); }
+";"      RETURN_(SEP);
 "{"      |
 "("      |
-"["      { ++bracket_depth; return DBOUT(yytext[0]); }
-"}"      { if(bracket_depth > 0) --bracket_depth; return DBOUT(yytext[0]); }
+"["      { ++bracket_depth; RETURN_(yytext[0]); }
+"}"      { if(bracket_depth > 0) --bracket_depth; RETURN_(yytext[0]); }
 ")"      |
-"]"      { --bracket_depth; return DBOUT(yytext[0]); }
-.        return DBOUT(yytext[0]);
+"]"      { --bracket_depth; RETURN_(yytext[0]); }
+.        RETURN_(yytext[0]);
 
 %%
 
