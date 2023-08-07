@@ -4,9 +4,6 @@
 #include "JojobaScript.h"
 #include "scanner.h"
 
-void yyerror(char const* message);
-void undo_bracket(int expected_bracket_depth);
-
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)
 %}
