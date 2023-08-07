@@ -1,4 +1,5 @@
 %{
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include "JojobaScript.h"
@@ -156,7 +157,7 @@ NUMBER                   { $$ = $1;           }
 | expr '*' expr          { $$ = $1 * $3;      }
 | expr '/' expr          { $$ = $1 / $3;      }
 | expr '%' expr          { $$ = $1 % $3;      }
-| expr SS expr           { $$ = $1 * $3;      } /* TODO */
+| expr SS expr           { $$ = pow($1, $3);  }
 | expr '[' expr ']'      { emit();            }
 | '-' expr %prec NEG     { $$ = -$2;          }
 | '~' expr %prec NEG     { $$ = ~$2;          }
