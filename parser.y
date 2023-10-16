@@ -15,8 +15,7 @@
 }
 
 %token AS ASYNC BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN SEP STRING SWITCH VAR WHILE YIELD
-%token AA ARA DA MIA MOA OA PA SLA SRA TA XA
-%token <value> NUMBER
+%token <value> ASSIGNMENT NUMBER
 %token <id> ID
 %nonassoc '?' ':'
 %left AND OR
@@ -110,25 +109,10 @@ ID { emit(); }
 ;
 
 simple_statement:
-dexpr assignment expr { emit($3); }
+dexpr ASSIGNMENT expr { emit($3); }
 | di dexpr { emit($2); }
 | dexpr di { emit($1); }
 | fexpr { emit($1); }
-;
-
-assignment:
-'=' { emit(); }
-| AA { emit(); }
-| ARA { emit(); }
-| DA { emit(); }
-| MIA { emit(); }
-| MOA { emit(); }
-| OA { emit(); }
-| PA { emit(); }
-| SLA { emit(); }
-| SRA { emit(); }
-| TA { emit(); }
-| XA { emit(); }
 ;
 
 di:

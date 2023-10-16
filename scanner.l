@@ -7,6 +7,7 @@
 #include "scanner.h"
 #ifdef _DEBUG
 # define RETURN_(v) return (printf(" '%s':%d ", yytext, (v)), (v))
+# define RETURN_ASSIGNMENT(v) return (printf(" '%s':%d ", yytext, (v)), yylval.value = (v), ASSIGNMENT)
 #else
 # define RETURN_(v) return (v)
 #endif
@@ -51,17 +52,17 @@ do       { RETURN_(DO); }
 if       { RETURN_(IF); }
 {id}     { yylval.id = _strdup(yytext); RETURN_(ID); }
 ">>>"    RETURN_(ASR);
-"&="     RETURN_(AA);
-">>>="   RETURN_(ARA);
-"/="     RETURN_(DA);
-"-="     RETURN_(MIA);
-"%="     RETURN_(MOA);
-"|="     RETURN_(OA);
-"+="     RETURN_(PA);
-"<<="    RETURN_(SLA);
-">>="    RETURN_(SRA);
-"*="     RETURN_(TA);
-"^="     RETURN_(XA);
+"&="     RETURN_ASSIGNMENT(AA);
+">>>="   RETURN_ASSIGNMENT(ARA);
+"/="     RETURN_ASSIGNMENT(DA);
+"-="     RETURN_ASSIGNMENT(MIA);
+"%="     RETURN_ASSIGNMENT(MOA);
+"|="     RETURN_ASSIGNMENT(OA);
+"+="     RETURN_ASSIGNMENT(PA);
+"<<="    RETURN_ASSIGNMENT(SLA);
+">>="    RETURN_ASSIGNMENT(SRA);
+"*="     RETURN_ASSIGNMENT(TA);
+"^="     RETURN_ASSIGNMENT(XA);
 "<<"     RETURN_(SHL);
 ">>"     RETURN_(LSR);
 "--"     RETURN_(DEC);
@@ -74,6 +75,7 @@ if       { RETURN_(IF); }
 "||"     RETURN_(OR);
 "**"     RETURN_(SS);
 \n       { ++yylineno; if(bracket_depth == 0) RETURN_(SEP); }
+"="      RETURN_ASSIGNMENT(0);
 ";"      RETURN_(SEP);
 "{"      |
 "("      |
