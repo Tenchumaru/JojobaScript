@@ -68,6 +68,8 @@ BREAK { emit(); }
 | CONTINUE { emit(); }
 | DO { undo_bracket(0); } '{' block '}' WHILE expr { emit(); }
 | FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| FOR SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| FOR simple_statement SEP SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
 | FOR id_list ':' simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
 | if_statement { emit(); }
 | if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
