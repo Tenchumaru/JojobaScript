@@ -43,8 +43,22 @@ statement:
 | ID ':' { add_symbol($1); }
 | function ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
-| flow_statement { emit(); }
-| import_statement { emit(); }
+| BREAK { emit(); }
+| CONTINUE { emit(); }
+| DO { undo_bracket(0); } '{' block '}' WHILE expr { emit(); }
+| FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| FOR SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| FOR simple_statement SEP SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| FOR id_list ':' simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| if_statement { emit(); }
+| if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
+| RETURN expr { emit(); }
+| SWITCH expr { undo_bracket(1); } '{' cases '}' { emit(); }
+| WHILE expr { undo_bracket(1); } '{' block '}' { emit(); }
+| YIELD expr { emit(); }
+| FROM STRING IMPORT imports { emit(); }
+| IMPORT STRING { emit(); }
+| IMPORT STRING AS ID { emit(); }
 | simple_statement { emit(); }
 ;
 
@@ -63,22 +77,6 @@ ID { emit(); }
 | ID '=' expr { emit(); }
 ;
 
-flow_statement:
-BREAK { emit(); }
-| CONTINUE { emit(); }
-| DO { undo_bracket(0); } '{' block '}' WHILE expr { emit(); }
-| FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR simple_statement SEP SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR id_list ':' simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| if_statement { emit(); }
-| if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
-| RETURN expr { emit(); }
-| SWITCH expr { undo_bracket(1); } '{' cases '}' { emit(); }
-| WHILE expr { undo_bracket(1); } '{' block '}' { emit(); }
-| YIELD expr { emit(); }
-;
-
 if_statement:
 IF expr { undo_bracket(1); } '{' block '}' { emit(); }
 ;
@@ -92,12 +90,6 @@ separators { emit(); }
 separators:
 %empty { emit(); }
 | separators SEP { emit(); }
-;
-
-import_statement:
-FROM STRING IMPORT imports { emit(); }
-IMPORT STRING { emit(); }
-IMPORT STRING AS ID { emit(); }
 ;
 
 imports:
