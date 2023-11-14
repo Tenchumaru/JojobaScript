@@ -167,7 +167,7 @@ dexpr '.' ID   { emit();             }
 ;
 
 fexpr:
-ID '(' oexpr_list ')' { $$ = $3; }
+dexpr '(' oexpr_list ')' { $$ = $3; }
 | fexpr '(' oexpr_list ')' { $$ = $1; }
 | pexpr '(' oexpr_list ')' { $$ = $3; }
 ;
