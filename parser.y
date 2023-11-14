@@ -29,7 +29,7 @@
 %right SS
 %nonassoc AWAIT
 %left '.' '['
-%type <value> dexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
+%type <value> dexpr dfpexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
 
 %%
 
@@ -123,7 +123,7 @@ DEC { emit(); }
 ;
 
 expr:
-NUMBER                   { $$ = $1;           }
+dfpexpr
 | expr '?' expr ':' expr { $$ = $1 ? $3 : $5; }
 | expr AND expr          { $$ = $1 && $3;     }
 | expr OR expr           { $$ = $1 || $3;     }
@@ -145,31 +145,31 @@ NUMBER                   { $$ = $1;           }
 | expr '/' expr          { $$ = $1 / $3;      }
 | expr '%' expr          { $$ = $1 % $3;      }
 | expr SS expr           { $$ = pow($1, $3);  }
-| expr '[' expr ']'      { emit();            }
 | '-' expr %prec NEG     { $$ = -$2;          }
 | '~' expr %prec NEG     { $$ = ~$2;          }
 | '!' expr %prec NEG     { $$ = !$2;          }
-| '[' oexpr_list ']'     { $$ = $2;           }
 | '{' oexpr_list '}'     { $$ = $2;           } /* If this is empty, interpret as an object, not a set. */
 | '{' kv_list '}'        { $$ = $2;           }
-| dexpr                  { $$ = $1;           }
-| fexpr                  { $$ = $1;           }
-| pexpr                  { $$ = $1;           }
 | AWAIT expr             { $$ = $2;           }
 | expr '@' '(' id_list ')' expr { $$ = $1; }
 ;
 
+dfpexpr:
+dexpr
+| fexpr
+| pexpr
+;
+
 dexpr:
-dexpr '.' ID   { emit();             }
-| fexpr '.' ID { emit();             }
-| pexpr '.' ID { emit();             }
-| ID           { $$ = get_value($1); }
+dfpexpr '.' ID         { emit();             }
+| dfpexpr '[' expr ']' { emit();             }
+| '[' oexpr_list ']'   { $$ = $2;            }
+| ID                   { $$ = get_value($1); }
+| NUMBER               { $$ = $1;            }
 ;
 
 fexpr:
-dexpr '(' oexpr_list ')' { $$ = $3; }
-| fexpr '(' oexpr_list ')' { $$ = $1; }
-| pexpr '(' oexpr_list ')' { $$ = $3; }
+dfpexpr '(' oexpr_list ')' { $$ = $1; }
 ;
 
 pexpr:
