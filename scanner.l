@@ -10,11 +10,10 @@
 # define RETURN_ASSIGNMENT(v) return (printf(" '%s':%d ", yytext, (v)), yylval.value = (v), ASSIGNMENT)
 #else
 # define RETURN_(v) return (v)
+# define RETURN_ASSIGNMENT(v) return (yylval.value = (v), ASSIGNMENT)
 #endif
 #pragma warning(push)
-#pragma warning(disable: 4127 4267 4996)
-
-static int bracket_depth;
+#pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
 %}
 
 ws      [\r\t\v ]+
@@ -74,15 +73,8 @@ if       { RETURN_(IF); }
 "&&"     RETURN_(AND);
 "||"     RETURN_(OR);
 "**"     RETURN_(SS);
-\n       { ++yylineno; if(bracket_depth == 0) RETURN_(SEP); }
+\n       ++yylineno;
 "="      RETURN_ASSIGNMENT(0);
-";"      RETURN_(SEP);
-"{"      |
-"("      |
-"["      { ++bracket_depth; RETURN_(yytext[0]); }
-"}"      { if(bracket_depth > 0) --bracket_depth; RETURN_(yytext[0]); }
-")"      |
-"]"      { --bracket_depth; RETURN_(yytext[0]); }
 .        RETURN_(yytext[0]);
 
 %%
@@ -93,13 +85,4 @@ int yywrap() {
 	return 1;
 }
 
-void undo_bracket(int expected_bracket_depth) {
-	// The detection of an open curly brace immediately succeeds an invocation of this function.  For those constructs that require a
-	// token look-ahead, the bracket depth will be one.  Otherwise, it will be zero.
-	printf("bracket_depth is %d\n", bracket_depth);
-	assert((expected_bracket_depth & ~1) == 0);
-	assert(bracket_depth == expected_bracket_depth);
-	--bracket_depth;
-}
-
-#pragma warning(disable: 4505)
+#pragma warning(disable: 4505) // 'yyunput': unreferenced function with internal linkage has been removed

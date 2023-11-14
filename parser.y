@@ -14,13 +14,13 @@
 	char* id;
 }
 
-%token AS ASYNC BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN SEP STRING SWITCH VAR WHILE YIELD
+%token AS ASYNC BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN STRING SWITCH VAR WHILE YIELD
 %token <value> ASSIGNMENT NUMBER
 %token <id> ID
 %nonassoc '?' ':'
 %left AND OR
 %left EQ NE LE GE '<' '>'
-%left '@' ')' /* TODO:  perhaps nonassoc? */
+%left '@' ')'
 %left '+' '-'
 %left '&' '|' '^'
 %left ASR LSR SHL
@@ -34,32 +34,33 @@
 %%
 
 block:
-statement { emit(); }
-| block SEP statement { emit(); }
+%empty { emit(); }
+| block statement { emit(); }
 ;
 
 statement:
-%empty { emit(); }
-| ID ':' { add_symbol($1); }
-| function ID '(' oid_list ')' { undo_bracket(0); } '{' block '}' { add_symbol($2); }
+ID ':' { add_symbol($1); }
+| function ID '(' oid_list ')' '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
 | BREAK { emit(); }
 | CONTINUE { emit(); }
-| DO { undo_bracket(0); } '{' block '}' WHILE expr { emit(); }
-| FOR simple_statement SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR SEP expr SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR simple_statement SEP SEP simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
-| FOR id_list ':' simple_statement { undo_bracket(1); } '{' block '}' { emit(); }
+| DO '{' block '}' WHILE expr { emit(); }
+| FOR for_clause ';' expr ';' for_clause '{' block '}' { emit(); }
+| FOR ';' expr ';' for_clause '{' block '}' { emit(); }
+| FOR for_clause ';' ';' for_clause '{' block '}' { emit(); }
+| FOR id_list ':' for_clause '{' block '}' { emit(); }
 | if_statement { emit(); }
-| if_statement ELSE { undo_bracket(0); } '{' block '}' { emit(); }
+| if_statement ELSE '{' block '}' { emit(); }
 | RETURN expr { emit(); }
-| SWITCH expr { undo_bracket(1); } '{' cases '}' { emit(); }
-| WHILE expr { undo_bracket(1); } '{' block '}' { emit(); }
+| SWITCH expr '{' cases '}' { emit(); }
+| WHILE expr '{' block '}' { emit(); }
 | YIELD expr { emit(); }
 | FROM STRING IMPORT imports { emit(); }
 | IMPORT STRING { emit(); }
 | IMPORT STRING AS ID { emit(); }
-| simple_statement { emit(); }
+| ':' dexpr ASSIGNMENT expr { emit($3); }
+| ':' fexpr { emit($2); }
+| di dexpr { emit($2); }
 ;
 
 function:
@@ -77,19 +78,20 @@ ID { emit(); }
 | ID '=' expr { emit(); }
 ;
 
+for_clause:
+dexpr ASSIGNMENT expr { emit($3); }
+| di dexpr { emit($2); }
+| fexpr { emit($1); }
+;
+
 if_statement:
-IF expr { undo_bracket(1); } '{' block '}' { emit(); }
+IF expr '{' block '}' { emit(); }
 ;
 
 cases:
-separators { emit(); }
+%empty
 | cases CASE expr ':' block { emit(); }
 | cases DEFAULT ':' block { emit(); }
-;
-
-separators:
-%empty { emit(); }
-| separators SEP { emit(); }
 ;
 
 imports:
@@ -100,13 +102,6 @@ import { emit(); }
 import:
 ID { emit(); }
 | ID AS ID { emit(); }
-;
-
-simple_statement:
-dexpr ASSIGNMENT expr { emit($3); }
-| di dexpr { emit($2); }
-| dexpr di { emit($1); }
-| fexpr { emit($1); }
 ;
 
 di:
