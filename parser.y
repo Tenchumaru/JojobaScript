@@ -160,8 +160,10 @@ NUMBER                   { $$ = $1;           }
 ;
 
 dexpr:
-expr '.' ID { emit();             }
-| ID        { $$ = get_value($1); }
+dexpr '.' ID   { emit();             }
+| fexpr '.' ID { emit();             }
+| pexpr '.' ID { emit();             }
+| ID           { $$ = get_value($1); }
 ;
 
 fexpr:
