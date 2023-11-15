@@ -45,9 +45,7 @@ ID ':' { add_symbol($1); }
 | BREAK { emit(); }
 | CONTINUE { emit(); }
 | DO '{' block '}' WHILE expr { emit(); }
-| FOR for_clause ';' expr ';' for_clause '{' block '}' { emit(); }
-| FOR ';' expr ';' for_clause '{' block '}' { emit(); }
-| FOR for_clause ';' ';' for_clause '{' block '}' { emit(); }
+| FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}' { emit(); }
 | FOR id_list ':' for_clause '{' block '}' { emit(); }
 | if_statement { emit(); }
 | if_statement ELSE '{' block '}' { emit(); }
@@ -76,6 +74,16 @@ initializer { emit(); }
 initializer:
 ID { emit(); }
 | ID '=' expr { emit(); }
+;
+
+ofor_clauses:
+%empty { emit(); }
+| for_clauses
+;
+
+for_clauses:
+for_clause
+| for_clauses ',' for_clause
 ;
 
 for_clause:
