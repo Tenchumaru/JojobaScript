@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <stdexcept>
 #include "JojobaScript.h"
 #include "scanner.h"
 
@@ -73,7 +74,7 @@ initializer { emit(); }
 
 initializer:
 ID { emit(); }
-| ID '=' expr { emit(); }
+| ID ASSIGNMENT expr { if ($2 != 0) throw std::logic_error("invalid initializing assignment"); emit(); }
 ;
 
 ofor_clauses:
