@@ -173,6 +173,7 @@ dexpr:
 dfpexpr '.' ID         { emit();             }
 | dfpexpr '[' expr ']' { emit();             }
 | '[' oexpr_list ']'   { $$ = $2;            }
+| '[' expr FOR id_list IN expr ']' { $$ = $2; }
 | ID                   { $$ = get_value($1); }
 | NUMBER               { $$ = $1;            }
 ;
