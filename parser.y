@@ -15,7 +15,7 @@
 	char* id;
 }
 
-%token AS ASYNC BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN STRING SWITCH VAR WHILE YIELD
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN STRING SWITCH VAR WHILE YIELD
 %token <value> ASSIGNMENT NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -41,7 +41,7 @@ block:
 
 statement:
 ID ':' { add_symbol($1); }
-| function ID '(' oid_list ')' '{' block '}' { add_symbol($2); }
+| FUNCTION ID '(' oid_list ')' '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
 | BREAK { emit(); }
 | CONTINUE { emit(); }
@@ -60,11 +60,6 @@ ID ':' { add_symbol($1); }
 | ':' dexpr ASSIGNMENT expr { emit($3); }
 | ':' fexpr { emit($2); }
 | di dexpr { emit($2); }
-;
-
-function:
-ASYNC FUNCTION { emit(); }
-| FUNCTION { emit(); }
 ;
 
 initializers:

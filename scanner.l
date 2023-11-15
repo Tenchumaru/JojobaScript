@@ -36,7 +36,6 @@ default  { RETURN_(DEFAULT); }
 import   { RETURN_(IMPORT); }
 return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }
-async    { RETURN_(ASYNC); }
 await    { RETURN_(AWAIT); }
 break    { RETURN_(BREAK); }
 while    { RETURN_(WHILE); }
