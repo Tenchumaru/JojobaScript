@@ -158,6 +158,7 @@ dfpexpr
 | '-' expr %prec NEG     { $$ = -$2;          }
 | '~' expr %prec NEG     { $$ = ~$2;          }
 | '!' expr %prec NEG     { $$ = !$2;          }
+| '{' expr ':' expr FOR id_list IN expr '}' { $$ = $2; }
 | '{' oexpr_list '}'     { $$ = $2;           } /* If this is empty, interpret as an object, not a set. */
 | '{' kv_list '}'        { $$ = $2;           }
 | AWAIT expr             { $$ = $2;           }
