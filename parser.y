@@ -1,7 +1,5 @@
 %{
-#include <cmath>
 #include <cstdio>
-#include <cstring>
 #include <stdexcept>
 #include "JojobaScript.h"
 #include "scanner.h"
@@ -29,36 +27,35 @@
 %right SS
 %nonassoc AWAIT
 %left '.' '['
-%type <value> dexpr dfpexpr expr expr_list fexpr id_list kv_list oexpr_list oid_list pexpr
 
 %%
 
 block:
-%empty { emit(); }
-| block statement { emit(); }
+%empty
+| block statement
 ;
 
 statement:
-ID ':' { add_symbol($1); }
-| FUNCTION ID '(' oid_list ')' otype '{' block '}' { add_symbol($2); }
-| VAR initializers { emit(); }
-| BREAK { emit(); }
-| CONTINUE { emit(); }
-| DO '{' block '}' WHILE expr { emit(); }
-| FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}' { emit(); }
-| FOR id_list IN for_clause '{' block '}' { emit(); }
-| if_statement { emit(); }
-| if_statement ELSE '{' block '}' { emit(); }
-| RETURN expr { emit(); }
-| SWITCH expr '{' cases '}' { emit(); }
-| WHILE expr '{' block '}' { emit(); }
-| YIELD expr { emit(); }
-| FROM STRING IMPORT imports { emit(); }
-| IMPORT STRING { emit(); }
-| IMPORT STRING AS ID { emit(); }
-| '@' dexpr ASSIGNMENT expr { emit($3); }
-| '@' fexpr { emit($2); }
-| di dexpr { emit($2); }
+ID ':'
+| FUNCTION ID '(' oid_list ')' otype '{' block '}'
+| VAR initializers
+| BREAK
+| CONTINUE
+| DO '{' block '}' WHILE expr
+| FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}'
+| FOR id_list IN for_clause '{' block '}'
+| if_statement
+| if_statement ELSE '{' block '}'
+| RETURN expr
+| SWITCH expr '{' cases '}'
+| WHILE expr '{' block '}'
+| YIELD expr
+| FROM STRING IMPORT imports
+| IMPORT STRING
+| IMPORT STRING AS ID
+| '@' dexpr ASSIGNMENT expr
+| '@' fexpr
+| di dexpr
 ;
 
 otype:
@@ -82,17 +79,17 @@ type
 ;
 
 initializers:
-initializer { emit(); }
-| initializers ',' initializer { emit(); }
+initializer
+| initializers ',' initializer
 ;
 
 initializer:
-ID otype { emit(); }
-| ID otype ASSIGNMENT expr { if ($3 != 0) throw std::logic_error("invalid initializing assignment"); emit(); }
+ID otype
+| ID otype ASSIGNMENT expr { if ($3 != 0) throw std::logic_error("invalid initializing assignment"); }
 ;
 
 ofor_clauses:
-%empty { emit(); }
+%empty
 | for_clauses
 ;
 
@@ -102,66 +99,66 @@ for_clause
 ;
 
 for_clause:
-dexpr ASSIGNMENT expr { emit($3); }
-| di dexpr { emit($2); }
-| fexpr { emit($1); }
+dexpr ASSIGNMENT expr
+| di dexpr
+| fexpr
 ;
 
 if_statement:
-IF expr '{' block '}' { emit(); }
+IF expr '{' block '}'
 ;
 
 cases:
 %empty
-| cases CASE expr ':' block { emit(); }
-| cases DEFAULT ':' block { emit(); }
+| cases CASE expr ':' block
+| cases DEFAULT ':' block
 ;
 
 imports:
-import { emit(); }
-| imports ',' import { emit(); }
+import
+| imports ',' import
 ;
 
 import:
-ID { emit(); }
-| ID AS ID { emit(); }
+ID
+| ID AS ID
 ;
 
 di:
-DEC { emit(); }
-| INC { emit(); }
+DEC
+| INC
 ;
 
 expr:
 dfpexpr
-| expr '?' expr ':' expr { $$ = $1 ? $3 : $5; }
-| expr AND expr          { $$ = $1 && $3;     }
-| expr OR expr           { $$ = $1 || $3;     }
-| expr EQ expr           { $$ = $1 == $3;     }
-| expr NE expr           { $$ = $1 != $3;     }
-| expr LE expr           { $$ = $1 <= $3;     }
-| expr GE expr           { $$ = $1 >= $3;     }
-| expr '<' expr          { $$ = $1 < $3;      }
-| expr '>' expr          { $$ = $1 > $3;      }
-| expr '+' expr          { $$ = $1 + $3;      }
-| expr '-' expr          { $$ = $1 - $3;      }
-| expr '&' expr          { $$ = $1 & $3;      }
-| expr '|' expr          { $$ = $1 | $3;      }
-| expr '^' expr          { $$ = $1 ^ $3;      }
-| expr SHL expr          { $$ = $1 << $3;     }
-| expr LSR expr          { $$ = $1 >> $3;     }
-| expr ASR expr          { $$ = $1 < 0 ? -(-$1 >> $3) : $1 >> $3; }
-| expr '*' expr          { $$ = $1 * $3;      }
-| expr '/' expr          { $$ = $1 / $3;      }
-| expr '%' expr          { $$ = $1 % $3;      }
-| expr SS expr           { $$ = pow($1, $3);  }
-| '-' expr %prec NEG     { $$ = -$2;          }
-| '~' expr %prec NEG     { $$ = ~$2;          }
-| '!' expr %prec NEG     { $$ = !$2;          }
-| '{' expr ':' expr FOR id_list IN expr '}' { $$ = $2; }
-| '{' oexpr_list '}'     { $$ = $2;           } /* If this is empty, interpret as an object, not a set. */
-| '{' kv_list '}'        { $$ = $2;           }
-| AWAIT expr             { $$ = $2;           }
+| expr '?' expr ':' expr
+| expr AND expr
+| expr OR expr
+| expr EQ expr
+| expr NE expr
+| expr LE expr
+| expr GE expr
+| expr '<' expr
+| expr '>' expr
+| expr '+' expr
+| expr '-' expr
+| expr '&' expr
+| expr '|' expr
+| expr '^' expr
+| expr SHL expr
+| expr LSR expr
+| expr ASR expr
+| expr '*' expr
+| expr '/' expr
+| expr '%' expr
+| expr SS expr
+| '-' expr %prec NEG
+| '~' expr %prec NEG
+| '!' expr %prec NEG
+| '{' expr ':' expr FOR id_list IN expr '}'
+| '{' oexpr_list '}' /* If this is empty, interpret as an object, not a set. */
+| '{' kv_list '}'
+| AWAIT expr
 ;
 
 dfpexpr:
@@ -171,45 +168,45 @@ dexpr
 ;
 
 dexpr:
-dfpexpr '.' ID         { emit();             }
-| dfpexpr '[' expr ']' { emit();             }
-| '[' oexpr_list ']'   { $$ = $2;            }
-| '[' expr FOR id_list IN expr ']' { $$ = $2; }
-| ID                   { $$ = get_value($1); }
-| NUMBER               { $$ = $1;            }
+dfpexpr '.' ID
+| dfpexpr '[' expr ']'
+| '[' oexpr_list ']'
+| '[' expr FOR id_list IN expr ']'
+| ID
+| NUMBER
 ;
 
 fexpr:
-dfpexpr '(' oexpr_list ')' { $$ = $1; }
+dfpexpr '(' oexpr_list ')'
 ;
 
 pexpr:
-'(' expr ')' { $$ = $2; }
+'(' expr ')'
 ;
 
 oexpr_list:
-%empty { emit(); }
-| expr_list { $$ = $1; }
+%empty
+| expr_list
 ;
 
 expr_list:
-expr { $$ = $1; }
-| expr_list ',' expr { $$ = $3; }
+expr
+| expr_list ',' expr
 ;
 
 kv_list:
-expr ':' expr { $$ = $3; }
-| kv_list ',' expr ':' expr { $$ = $5; }
+expr ':' expr
+| kv_list ',' expr ':' expr
 ;
 
 oid_list:
-%empty { emit(); }
-| id_list { $$ = $1; }
+%empty
+| id_list
 ;
 
 id_list:
-ID otype { $$ = get_value($1); }
-| id_list ',' ID otype { $$ = $1; }
+ID otype
+| id_list ',' ID otype
 ;
 
 %%

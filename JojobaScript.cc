@@ -3,19 +3,6 @@
 #include <cstring>
 #include "JojobaScript.h"
 
-void add_symbol(char const* id, int expr /*= 0*/) {
-	id, expr;
-}
-
-void emit(int expr /*= 0*/) {
-	expr;
-}
-
-int get_value(char const* id) {
-	id;
-	return 0;
-}
-
 int yyparse();
 
 extern FILE *yyin, *yyout;
