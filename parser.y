@@ -21,7 +21,6 @@
 %nonassoc '?' ':'
 %left AND OR
 %left EQ NE LE GE '<' '>'
-%left '@' ')'
 %left '+' '-'
 %left '&' '|' '^'
 %left ASR LSR SHL
@@ -142,7 +141,6 @@ dfpexpr
 | '{' oexpr_list '}'     { $$ = $2;           } /* If this is empty, interpret as an object, not a set. */
 | '{' kv_list '}'        { $$ = $2;           }
 | AWAIT expr             { $$ = $2;           }
-| expr '@' '(' id_list ')' expr { $$ = $1; }
 ;
 
 dfpexpr:
