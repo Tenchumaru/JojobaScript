@@ -48,6 +48,7 @@ var      { RETURN_(VAR); }
 as       { RETURN_(AS); }
 do       { RETURN_(DO); }
 if       { RETURN_(IF); }
+in       { RETURN_(IN); }
 {id}     { yylval.id = _strdup(yytext); RETURN_(ID); }
 ">>>"    RETURN_(ASR);
 "&="     RETURN_ASSIGNMENT(AA);

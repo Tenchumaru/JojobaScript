@@ -15,7 +15,7 @@
 	char* id;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT INC RETURN STRING SWITCH VAR WHILE YIELD
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN STRING SWITCH VAR WHILE YIELD
 %token <value> ASSIGNMENT NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -40,13 +40,13 @@ block:
 
 statement:
 ID ':' { add_symbol($1); }
-| FUNCTION ID '(' oid_list ')' '{' block '}' { add_symbol($2); }
+| FUNCTION ID '(' oid_list ')' otype '{' block '}' { add_symbol($2); }
 | VAR initializers { emit(); }
 | BREAK { emit(); }
 | CONTINUE { emit(); }
 | DO '{' block '}' WHILE expr { emit(); }
 | FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}' { emit(); }
-| FOR id_list ':' for_clause '{' block '}' { emit(); }
+| FOR id_list IN for_clause '{' block '}' { emit(); }
 | if_statement { emit(); }
 | if_statement ELSE '{' block '}' { emit(); }
 | RETURN expr { emit(); }
@@ -56,9 +56,29 @@ ID ':' { add_symbol($1); }
 | FROM STRING IMPORT imports { emit(); }
 | IMPORT STRING { emit(); }
 | IMPORT STRING AS ID { emit(); }
-| ':' dexpr ASSIGNMENT expr { emit($3); }
-| ':' fexpr { emit($2); }
+| '@' dexpr ASSIGNMENT expr { emit($3); }
+| '@' fexpr { emit($2); }
 | di dexpr { emit($2); }
+;
+
+otype:
+%empty
+| ':' type
+;
+
+type:
+ID
+| type '[' otype_list ']'
+;
+
+otype_list:
+%empty
+| type_list
+;
+
+type_list:
+type
+| type_list ',' type
 ;
 
 initializers:
@@ -67,8 +87,8 @@ initializer { emit(); }
 ;
 
 initializer:
-ID { emit(); }
-| ID ASSIGNMENT expr { if ($2 != 0) throw std::logic_error("invalid initializing assignment"); emit(); }
+ID otype { emit(); }
+| ID otype ASSIGNMENT expr { if ($3 != 0) throw std::logic_error("invalid initializing assignment"); emit(); }
 ;
 
 ofor_clauses:
@@ -180,14 +200,14 @@ expr ':' expr { $$ = $3; }
 | kv_list ',' expr ':' expr { $$ = $5; }
 ;
 
-id_list:
-ID { $$ = get_value($1); }
-| id_list ',' ID { $$ = $1; }
-;
-
 oid_list:
 %empty { emit(); }
 | id_list { $$ = $1; }
+;
+
+id_list:
+ID otype { $$ = get_value($1); }
+| id_list ',' ID otype { $$ = $1; }
 ;
 
 %%
