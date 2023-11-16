@@ -155,10 +155,13 @@ dfpexpr
 | '-' expr %prec NEG
 | '~' expr %prec NEG
 | '!' expr %prec NEG
+| '[' oexpr_list ']'
+| '[' expr FOR id_list IN expr ']'
 | '{' expr ':' expr FOR id_list IN expr '}'
 | '{' oexpr_list '}' /* If this is empty, interpret as an object, not a set. */
 | '{' kv_list '}'
 | AWAIT expr
+| NUMBER
 ;
 
 dfpexpr:
@@ -170,10 +173,7 @@ dexpr
 dexpr:
 dfpexpr '.' ID
 | dfpexpr '[' expr ']'
-| '[' oexpr_list ']'
-| '[' expr FOR id_list IN expr ']'
 | ID
-| NUMBER
 ;
 
 fexpr:
