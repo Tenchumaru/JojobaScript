@@ -164,7 +164,7 @@ dfpexpr
 dfpexpr:
 dexpr
 | fexpr
-| pexpr
+| '(' expr ')'
 ;
 
 dexpr:
@@ -178,10 +178,6 @@ dfpexpr '.' ID
 
 fexpr:
 dfpexpr '(' oexpr_list ')'
-;
-
-pexpr:
-'(' expr ')'
 ;
 
 oexpr_list:
