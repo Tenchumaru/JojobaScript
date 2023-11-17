@@ -36,8 +36,7 @@ block:
 ;
 
 statement:
-ID ':'
-| FUNCTION ID '(' oid_list ')' otype '{' block '}'
+FUNCTION ID '(' oid_list ')' otype '{' block '}'
 | VAR initializers
 | BREAK
 | CONTINUE
