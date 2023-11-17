@@ -1,0 +1,7 @@
+var a: int = 1
+
+function fn(b: int) {
+	return a + b
+}
+
+@print(fn(2))
