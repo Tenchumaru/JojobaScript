@@ -23,6 +23,8 @@ hex     $[0-9A-Fa-f]+
 num     [0-9]+
 str     \"[^"]\"
 
+%x COMMENT
+
 %%
 
 {ws}     |
@@ -73,9 +75,16 @@ in       { RETURN_(IN); }
 "&&"     RETURN_(AND);
 "||"     RETURN_(OR);
 "**"     RETURN_(SS);
+"/*"     BEGIN(COMMENT);
 \n       ++yylineno;
 "="      RETURN_ASSIGNMENT(0);
 .        RETURN_(yytext[0]);
+
+<COMMENT>{
+"*/"     BEGIN(INITIAL);
+[^*]*    |
+.        ;
+}
 
 %%
 
