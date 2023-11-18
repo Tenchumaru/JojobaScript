@@ -44,7 +44,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}'
 | FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}'
 | FOR id_list IN for_clause '{' block '}'
 | if_statement
-| if_statement ELSE '{' block '}'
+| if_statement oelseif_statements ELSE '{' block '}'
 | RETURN expr
 | SWITCH expr '{' cases '}'
 | WHILE expr '{' block '}'
@@ -105,6 +105,15 @@ dexpr ASSIGNMENT expr
 
 if_statement:
 IF expr '{' block '}'
+;
+
+oelseif_statements:
+%empty
+| oelseif_statements elseif_statement
+;
+
+elseif_statement:
+ELSE IF expr '{' block '}'
 ;
 
 cases:
