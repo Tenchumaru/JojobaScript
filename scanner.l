@@ -35,6 +35,7 @@ return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }
 await    { RETURN_(AWAIT); }
 break    { RETURN_(BREAK); }
+until    { RETURN_(UNTIL); }
 while    { RETURN_(WHILE); }
 yield    { RETURN_(YIELD); }
 case     { RETURN_(CASE); }

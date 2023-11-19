@@ -13,7 +13,7 @@
 	char* id;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN STRING SWITCH VAR WHILE YIELD
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN STRING SWITCH UNTIL VAR WHILE YIELD
 %token <value> ASSIGNMENT NUMBER
 %token <id> ID
 %nonassoc '?' ':'
@@ -40,14 +40,14 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}'
 | VAR initializers
 | BREAK
 | CONTINUE
-| DO '{' block '}' WHILE expr
+| DO '{' block '}' uw expr
 | FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}'
 | FOR id_list IN for_clause '{' block '}'
 | if_statement
 | if_statement oelseif_statements ELSE '{' block '}'
 | RETURN expr
 | SWITCH expr '{' cases '}'
-| WHILE expr '{' block '}'
+| uw expr '{' block '}'
 | YIELD expr
 | FROM STRING IMPORT imports
 | IMPORT STRING
@@ -85,6 +85,11 @@ initializer
 initializer:
 ID otype
 | ID otype ASSIGNMENT expr { if ($3 != 0) throw std::logic_error("invalid initializing assignment"); }
+;
+
+uw:
+UNTIL
+| WHILE
 ;
 
 ofor_clauses:
