@@ -1,14 +1,13 @@
 %{
+#pragma warning(push)
+#pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+#pragma warning(disable: 4005) // '*': macro redefinition
 #include <cstdlib> // strtoul
-#include <cstring> // _strdup
 #include "Debug.h"
-#include "parser.h"
-#include "scanner.h"
+#include "JojobaScript.h"
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
 #define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.value = v__; return ASSIGNMENT; } while(false)
-#pragma warning(push)
-#pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
 %}
 
 ws      [\r\t\v ]+
@@ -16,7 +15,7 @@ rem     \/\/.*
 id      [_A-Za-z][_0-9A-Za-z]*
 hex     $[0-9A-Fa-f]+
 num     [0-9]+
-str     \"[^"]\"
+str     \"([^\"]|(\\\"))*\"
 
 %x COMMENT
 
@@ -26,7 +25,7 @@ str     \"[^"]\"
 {rem}    ;
 {hex}    { yylval.value = strtoul(yytext + 1, nullptr, 16); RETURN_(NUMBER); }
 {num}    { yylval.value = strtoul(yytext, nullptr, 10); RETURN_(NUMBER); }
-{str}    { yylval.id = _strdup(yytext); RETURN_(STRING); }
+{str}    { yylval.id = new std::string(yytext); RETURN_(STRING); }
 continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }
 default  { RETURN_(DEFAULT); }
@@ -47,7 +46,7 @@ as       { RETURN_(AS); }
 do       { RETURN_(DO); }
 if       { RETURN_(IF); }
 in       { RETURN_(IN); }
-{id}     { yylval.id = _strdup(yytext); RETURN_(ID); }
+{id}     { yylval.id = new std::string(yytext); RETURN_(ID); }
 ">>>"    RETURN_(ASR);
 "&="     RETURN_ASSIGNMENT(AA);
 ">>>="   RETURN_ASSIGNMENT(ARA);

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <format>
 #include <memory>
 #include <string>
 #include <vector>
+#include "Statement.h"
 
 enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
 
@@ -29,16 +31,28 @@ public:
 private:
 };
 
+class Type {
+public:
+	Type(std::string&& type) : type(std::move(type)) {}
+	~Type() = default;
+
+private:
+	std::string type;
+};
+
 class Function {
 public:
 	Function(std::vector<std::string> const& parameters, ContextTemplate const& contextTemplate, std::shared_ptr<Context> parentContext) : parameters(parameters), contextTemplate(contextTemplate), parentContext(std::move(parentContext)) {}
-	~Function();
+	~Function() = default;
 
 private:
 	std::vector<std::string> parameters;
 	ContextTemplate const& contextTemplate;
 	std::shared_ptr<Context> parentContext;
 };
+
+#include "parser.h"
+#include "scanner.h"
 
 extern std::vector<std::shared_ptr<Context>> contextStack;
 extern std::vector<ContextTemplate> contextTemplates;

@@ -17,6 +17,8 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="JojobaScript.cc" />
+    <ClCompile Include="Statement.cc" />
+    <ClCompile Include="Expression.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -24,6 +26,9 @@
     </ClInclude>
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="scanner.h" />
+    <ClInclude Include="Statement.h" />
+    <ClInclude Include="Expression.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">
