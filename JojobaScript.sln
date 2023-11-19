@@ -11,6 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Application", "Application.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4B98610C-363C-4FC5-8764-61AD5CB1AE97}"
 	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
 		tesst.jjs = tesst.jjs
 	EndProjectSection
 EndProject
