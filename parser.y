@@ -1,14 +1,18 @@
 %{
 #include <cstdio>
+#include <format>
 #include <stdexcept>
+#include "Expression.h"
 #include "JojobaScript.h"
+#include "Statement.h"
+#include "scanner.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)
 %}
 
 %union {
-	int assignment;
+	Assignment assignment;
 	std::vector<std::unique_ptr<Statement>>* block;
 	bool boolean;
 	std::vector<SwitchStatement::Case>* cases;
@@ -132,7 +136,7 @@ initializer { $$ = new std::vector<std::tuple<std::string, std::string, std::uni
 initializer:
 ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>()); delete $1; delete $2; }
 | ID otype ASSIGNMENT expr {
-	if ($3 != 0) throw std::logic_error("invalid initializing assignment");
+	if ($3 != Assignment()) throw std::logic_error("invalid initializing assignment");
 	$$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>($4)); delete $1; delete $2;
 }
 ;

@@ -4,7 +4,10 @@
 #pragma warning(disable: 4005) // '*': macro redefinition
 #include <cstdlib> // std::strtod and std::strtoll
 #include "Debug.h"
+#include "Expression.h"
 #include "JojobaScript.h"
+#include "Statement.h"
+#include "parser.h"
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
 #define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.assignment = v__; return ASSIGNMENT; } while(false)
@@ -54,17 +57,17 @@ if       { RETURN_(IF); }
 in       { RETURN_(IN); }
 {id}     { yylval.id = new std::string(yytext); RETURN_(ID); }
 ">>>"    RETURN_(ASR);
-"&="     RETURN_ASSIGNMENT(AA);
-">>>="   RETURN_ASSIGNMENT(ARA);
-"/="     RETURN_ASSIGNMENT(DA);
-"-="     RETURN_ASSIGNMENT(MIA);
-"%="     RETURN_ASSIGNMENT(MOA);
-"|="     RETURN_ASSIGNMENT(OA);
-"+="     RETURN_ASSIGNMENT(PA);
-"<<="    RETURN_ASSIGNMENT(SLA);
-">>="    RETURN_ASSIGNMENT(SRA);
-"*="     RETURN_ASSIGNMENT(TA);
-"^="     RETURN_ASSIGNMENT(XA);
+"&="     RETURN_ASSIGNMENT(Assignment::AA);
+">>>="   RETURN_ASSIGNMENT(Assignment::ARA);
+"/="     RETURN_ASSIGNMENT(Assignment::DA);
+"-="     RETURN_ASSIGNMENT(Assignment::MIA);
+"%="     RETURN_ASSIGNMENT(Assignment::MOA);
+"|="     RETURN_ASSIGNMENT(Assignment::OA);
+"+="     RETURN_ASSIGNMENT(Assignment::PA);
+"<<="    RETURN_ASSIGNMENT(Assignment::SLA);
+">>="    RETURN_ASSIGNMENT(Assignment::SRA);
+"*="     RETURN_ASSIGNMENT(Assignment::TA);
+"^="     RETURN_ASSIGNMENT(Assignment::XA);
 "<<"     RETURN_(SHL);
 ">>"     RETURN_(LSR);
 "--"     RETURN_(DEC);
@@ -78,7 +81,7 @@ in       { RETURN_(IN); }
 "**"     RETURN_(SS);
 "/*"     BEGIN(COMMENT);
 \n       ++yylineno;
-"="      RETURN_ASSIGNMENT(0);
+"="      RETURN_ASSIGNMENT(Assignment());
 .        RETURN_(yytext[0]);
 
 <COMMENT>{

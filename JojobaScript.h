@@ -1,12 +1,12 @@
 #pragma once
 
-#include <format>
 #include <memory>
 #include <string>
 #include <vector>
-#include "Statement.h"
 
 enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
+
+enum class Assignment { AA = 1, ARA, DA, MIA, MOA, OA, PA, SLA, SRA, TA, XA };
 
 class ContextTemplate;
 
@@ -50,9 +50,6 @@ private:
 	ContextTemplate const& contextTemplate;
 	std::shared_ptr<Context> parentContext;
 };
-
-#include "parser.h"
-#include "scanner.h"
 
 extern std::vector<std::shared_ptr<Context>> contextStack;
 extern std::vector<ContextTemplate> contextTemplates;

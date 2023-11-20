@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include "Expression.h"
+#include "JojobaScript.h"
 
 class Statement {
 public:
@@ -18,14 +19,14 @@ private:
 
 class AssignmentStatement : public Statement {
 public:
-	AssignmentStatement(Expression* targetExpression, int assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
+	AssignmentStatement(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
 	AssignmentStatement(AssignmentStatement&&) = default;
 	~AssignmentStatement() = default;
 
 private:
 	std::unique_ptr<Expression> targetExpression;
 	std::unique_ptr<Expression> sourceExpression;
-	int assignment;
+	Assignment assignment;
 };
 
 class BreakStatement : public Statement {};
@@ -53,14 +54,14 @@ public:
 
 	class AssignmentClause : public Clause {
 	public:
-		AssignmentClause(Expression* targetExpression, int assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
+		AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
 		AssignmentClause(AssignmentClause&&) = default;
 		~AssignmentClause() = default;
 
 	private:
 		std::unique_ptr<Expression> targetExpression;
 		std::unique_ptr<Expression> sourceExpression;
-		int assignment;
+		Assignment assignment;
 	};
 
 	class DiClause : public Clause {
