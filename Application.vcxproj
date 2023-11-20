@@ -100,7 +100,6 @@
     <ClInclude Include="parser.h" />
     <ClInclude Include="scanner.h" />
     <ClInclude Include="Statement.h" />
-    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output" />

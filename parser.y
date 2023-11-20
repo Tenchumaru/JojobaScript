@@ -8,24 +8,24 @@
 %}
 
 %union {
-	std::vector<Statement*>* block;
+	std::vector<std::unique_ptr<Statement>>* block;
 	std::vector<SwitchStatement::Case>* cases;
 	Expression* expr;
-	std::vector<Expression*>* expr_list;
+	std::vector<std::unique_ptr<Expression>>* expr_list;
 	InvocationExpression* fexpr;
 	ForStatement::Clause* for_clause;
-	std::vector<ForStatement::Clause*>* for_clauses;
+	std::vector<std::unique_ptr<ForStatement::Clause>>* for_clauses;
 	std::string* id;
 	IfStatement* if_statement;
-	std::vector<IfStatement*>* if_statements;
+	std::vector<std::unique_ptr<IfStatement>>* if_statements;
 	std::pair<std::string, std::string>* import;
-	std::tuple<std::string, std::string, Expression*>* initializer;
-	std::vector<std::tuple<std::string, std::string, Expression*>>* initializers;
-	std::vector<std::pair<Expression*, Expression*>>* kv_list;
+	std::tuple<std::string, std::string, std::unique_ptr<Expression>>* initializer;
+	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
+	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
 	Statement* statement;
 	bool boolean;
 	int value;
-	std::vector<std::pair<std::string, std::string>>* vpss;
+	std::vector<std::pair<std::string, std::string>>* id_list;
 }
 
 %token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL VAR WHILE YIELD
@@ -58,18 +58,19 @@
 %type<kv_list> kv_list
 %type<statement> statement
 %type<boolean> di uw
-%type<vpss> id_list imports oid_list
+%type<id_list> id_list imports oid_list
 
 %%
 
 block:
-%empty { $$ = new std::vector<Statement*>; }
+%empty { $$ = new std::vector<std::unique_ptr<Statement>>; }
 | block statement { $1->emplace_back($2); $$ = $1; }
 ;
 
 statement:
 FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$$ = new FunctionStatement(std::move(*$2), std::move(*$6), std::move(*$4), std::move(*$8));
+	delete $8;
 }
 | VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
 | BREAK { $$ = new BreakStatement; }
@@ -121,15 +122,15 @@ type
 ;
 
 initializers:
-initializer { $$ = new std::vector<std::tuple<std::string, std::string, Expression*>>{ { std::move(*$1) } }; delete $1; }
+initializer { $$ = new std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>; $$->emplace_back(std::move(*$1)); delete $1; }
 | initializers ',' initializer { $1->emplace_back(std::move(*$3)); delete $3; }
 ;
 
 initializer:
-ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), static_cast<Expression*>(nullptr)); delete $1; delete $2; }
+ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>()); delete $1; delete $2; }
 | ID otype ASSIGNMENT expr {
 	if ($3 != 0) throw std::logic_error("invalid initializing assignment");
-	$$ = new std::tuple(std::move(*$1), std::move(*$2), $4); delete $1; delete $2;
+	$$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>($4)); delete $1; delete $2;
 }
 ;
 
@@ -139,12 +140,12 @@ UNTIL { $$ = false; }
 ;
 
 ofor_clauses:
-%empty { $$ = new std::vector<ForStatement::Clause*>; }
+%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
 | for_clauses
 ;
 
 for_clauses:
-for_clause { $$ = new std::vector<ForStatement::Clause*>{ $1 }; }
+for_clause { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back(std::unique_ptr<ForStatement::Clause>($1)); }
 | for_clauses ',' for_clause { $1->emplace_back($3); $$ = $1; }
 ;
 
@@ -159,7 +160,7 @@ IF expr '{' block '}' { $$ = new IfStatement($2, std::move(*$4)); delete $4; }
 ;
 
 oelseif_statements:
-%empty { $$ = new std::vector<IfStatement*>; }
+%empty { $$ = new std::vector<std::unique_ptr<IfStatement>>; }
 | oelseif_statements elseif_statement { $1->emplace_back($2); $$ = $1; }
 ;
 
@@ -174,13 +175,13 @@ cases:
 ;
 
 imports:
-import { $$ = new std::vector<std::pair<std::string, std::string>>{ std::move(*$1) }; delete $1; }
+import { $$ = new std::vector{ std::move(*$1) }; delete $1; }
 | imports ',' import { $1->emplace_back(std::move(*$3)); delete $3; $$ = $1; }
 ;
 
 import:
-ID { $$ = new std::pair<std::string, std::string>(std::move(*$1), {}); delete $1; }
-| ID AS ID { $$ = new std::pair<std::string, std::string>(std::move(*$1), std::move(*$3)); delete $1; delete $3; }
+ID { $$ = new std::pair(std::move(*$1), std::string()); delete $1; }
+| ID AS ID { $$ = new std::pair(std::move(*$1), std::move(*$3)); delete $1; delete $3; }
 ;
 
 di:
@@ -217,7 +218,7 @@ dfpexpr
 | '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
 | '[' expr FOR id_list IN expr ']' { $$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4; }
 | '{' expr ':' expr FOR id_list IN expr '}' { $$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6; }
-| '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(std::vector<std::pair<Expression*, Expression*>>()); else $$ = new SetExpression(std::move(*$2)); delete $2; }
+| '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(); else $$ = new SetExpression(std::move(*$2)); delete $2; }
 | '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
 | NUMBER { $$ = new NumericExpression($1); }
@@ -240,17 +241,17 @@ dfpexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); 
 ;
 
 oexpr_list:
-%empty { $$ = new std::vector<Expression*>; }
+%empty { $$ = new std::vector<std::unique_ptr<Expression>>; }
 | expr_list
 ;
 
 expr_list:
-expr { $$ = new std::vector<Expression*>{ $1 }; }
+expr { $$ = new std::vector<std::unique_ptr<Expression>>; $$->emplace_back(std::unique_ptr<Expression>($1)); }
 | expr_list ',' expr { $1->emplace_back($3); $$ = $1; }
 ;
 
 kv_list:
-expr ':' expr { $$ = new std::vector<std::pair<Expression*, Expression*>>{ { $1, $3 }}; }
+expr ':' expr { $$ = new std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>; $$->emplace_back(std::make_pair(std::unique_ptr<Expression>($1), std::unique_ptr<Expression>($3))); }
 | kv_list ',' expr ':' expr { $1->emplace_back(std::make_pair($3, $5)); }
 ;
 
@@ -260,7 +261,7 @@ oid_list:
 ;
 
 id_list:
-ID otype { $$ = new std::vector<std::pair<std::string, std::string>>{ { std::move(*$1), std::move(*$2) } }; delete $1; delete $2; }
+ID otype { $$ = new std::vector{ std::make_pair(std::move(*$1), std::move(*$2)) }; delete $1; delete $2; }
 | id_list ',' ID otype { $1->emplace_back(std::make_pair(std::move(*$3), std::move(*$4))); delete $3; delete $4; $$ = $1; }
 ;
 
