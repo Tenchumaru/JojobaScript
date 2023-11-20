@@ -1,7 +1,7 @@
 #include "Statement.h"
 #include "Expression.h"
 
-std::vector<std::unique_ptr<Statement>> Statement::program;
+FunctionStatement* FunctionStatement::program;
 
 Statement::~Statement() {}
 

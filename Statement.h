@@ -14,10 +14,6 @@ class Statement {
 public:
 	Statement() = default;
 	virtual ~Statement() = 0;
-	static std::vector<std::unique_ptr<Statement>> program;
-
-private:
-
 };
 
 class AssignmentStatement : public Statement {
@@ -100,6 +96,8 @@ private:
 
 class FunctionStatement : public Statement {
 public:
+	static FunctionStatement* program;
+
 	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
 	~FunctionStatement() = default;
 

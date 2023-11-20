@@ -71,7 +71,7 @@
 %%
 
 program:
-block { Statement::program = std::move(*$1); delete $1; }
+block { FunctionStatement::program = new FunctionStatement("", "", {}, std::move(*$1)); delete $1; }
 ;
 
 block:
