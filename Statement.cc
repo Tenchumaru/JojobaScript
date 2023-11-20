@@ -1,5 +1,7 @@
 #include "Statement.h"
 
+std::vector<std::unique_ptr<Statement>> Statement::program;
+
 Statement::~Statement() {}
 
 ForStatement::Clause::~Clause() {}

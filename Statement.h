@@ -12,6 +12,7 @@ class Statement {
 public:
 	Statement() = default;
 	virtual ~Statement() = 0;
+	static std::vector<std::unique_ptr<Statement>> program;
 
 private:
 

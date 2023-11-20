@@ -69,6 +69,10 @@
 
 %%
 
+program:
+block { Statement::program = std::move(*$1); delete $1; }
+;
+
 block:
 %empty { $$ = new std::vector<std::unique_ptr<Statement>>; }
 | block statement { $1->emplace_back($2); $$ = $1; }
