@@ -49,6 +49,7 @@
 %right SS
 %nonassoc AWAIT
 %left '.' '['
+%right ARROW
 %type<block> block
 %type<cases> cases
 %type<expr> dexpr dfpexpr expr
@@ -226,6 +227,8 @@ dfpexpr
 | '-' expr %prec NEG { $$ = new UnaryExpression($2, '-'); }
 | '~' expr %prec NEG { $$ = new UnaryExpression($2, '~'); }
 | '!' expr %prec NEG { $$ = new UnaryExpression($2, '!'); }
+| ':' '(' id_list ')' '{' block '}' { $$ = new LambdaExpression(std::move(*$3), std::move(*$6)); }
+| ':' '(' id_list ')' ARROW expr { $$ = new LambdaExpression(std::move(*$3), $6); }
 | '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
 | '[' expr FOR id_list IN expr ']' { $$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4; }
 | '{' expr ':' expr FOR id_list IN expr '}' { $$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6; }

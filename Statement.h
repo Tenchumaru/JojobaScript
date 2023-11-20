@@ -5,8 +5,10 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "Expression.h"
 #include "JojobaScript.h"
+
+class Expression;
+class InvocationExpression;
 
 class Statement {
 public:

@@ -6,6 +6,8 @@
 #include <variant>
 #include <vector>
 
+class Statement;
+
 class Expression {
 public:
 	virtual ~Expression() = 0;
@@ -89,6 +91,19 @@ public:
 private:
 	std::unique_ptr<Expression> expression;
 	std::vector<std::unique_ptr<Expression>> arguments;
+};
+
+class LambdaExpression : public Expression {
+public:
+	LambdaExpression(std::vector<std::pair<std::string, std::string>>&& ids, std::vector<std::unique_ptr<Statement>>&& statements) : ids(std::move(ids)), statements(std::move(statements)) {}
+	LambdaExpression(std::vector<std::pair<std::string, std::string>>&& ids, Expression* expression) : ids(std::move(ids)), expression(expression) {}
+	LambdaExpression(LambdaExpression&&) = default;
+	~LambdaExpression() = default;
+
+private:
+	std::vector<std::pair<std::string, std::string>> ids;
+	std::vector<std::unique_ptr<Statement>> statements;
+	Expression* expression = nullptr;
 };
 
 class ListExpression : public Expression {
