@@ -2,12 +2,12 @@
 #pragma warning(push)
 #pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
 #pragma warning(disable: 4005) // '*': macro redefinition
-#include <cstdlib> // strtoul
+#include <cstdlib> // std::strtod and std::strtoll
 #include "Debug.h"
 #include "JojobaScript.h"
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
-#define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.value = v__; return ASSIGNMENT; } while(false)
+#define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.assignment = v__; return ASSIGNMENT; } while(false)
 %}
 
 ws      [\r\t\v ]+
@@ -16,6 +16,7 @@ id      [_A-Za-z][_0-9A-Za-z]*
 hex     $[0-9A-Fa-f]+
 num     [0-9]+
 str     \"([^\"]|(\\\"))*\"
+real    ({num}?\.{num}|{num}\.{num}?)([Ee][-+]?{num})?
 
 %x COMMENT
 
@@ -23,8 +24,11 @@ str     \"([^\"]|(\\\"))*\"
 
 {ws}     |
 {rem}    ;
-{hex}    { yylval.value = strtoul(yytext + 1, nullptr, 16); RETURN_(NUMBER); }
-{num}    { yylval.value = strtoul(yytext, nullptr, 10); RETURN_(NUMBER); }
+"infinity" | 
+"NaN"    |
+{real}   { yylval.number = new std::variant<std::int64_t, double>(std::strtod(yytext + 1, nullptr)); RETURN_(NUMBER); }
+{hex}    { yylval.number = new std::variant<std::int64_t, double>(std::strtoll(yytext + 1, nullptr, 16)); RETURN_(NUMBER); }
+{num}    { yylval.number = new std::variant<std::int64_t, double>(std::strtoll(yytext, nullptr, 10)); RETURN_(NUMBER); }
 {str}    { yylval.id = new std::string(yytext); RETURN_(STRING); }
 continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }

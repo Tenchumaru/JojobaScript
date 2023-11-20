@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 class Expression {
@@ -102,15 +103,14 @@ private:
 	std::unique_ptr<Expression> sourceExpression;
 };
 
-// TODO:  accept any numeric type by using a variant.
 class NumericExpression : public Expression {
 public:
-	NumericExpression(int value) : value(value) {}
+	NumericExpression(std::variant<std::int64_t, double>&& value) : value(std::move(value)) {}
 	NumericExpression(NumericExpression&&) = default;
 	~NumericExpression() = default;
 
 private:
-	int value;
+	std::variant<std::int64_t, double> value;
 };
 
 class SetExpression : public Expression {

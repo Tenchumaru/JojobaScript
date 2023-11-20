@@ -8,7 +8,9 @@
 %}
 
 %union {
+	int assignment;
 	std::vector<std::unique_ptr<Statement>>* block;
+	bool boolean;
 	std::vector<SwitchStatement::Case>* cases;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
@@ -22,14 +24,14 @@
 	std::tuple<std::string, std::string, std::unique_ptr<Expression>>* initializer;
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
 	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
+	std::variant<std::int64_t, double>* number;
 	Statement* statement;
-	bool boolean;
-	int value;
 	std::vector<std::pair<std::string, std::string>>* id_list;
 }
 
 %token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL VAR WHILE YIELD
-%token <value> ASSIGNMENT NUMBER
+%token <assignment> ASSIGNMENT
+%token <number> NUMBER
 %token <id> ID STRING
 %nonassoc '?' ':'
 %left AND OR
@@ -221,7 +223,7 @@ dfpexpr
 | '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(); else $$ = new SetExpression(std::move(*$2)); delete $2; }
 | '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
-| NUMBER { $$ = new NumericExpression($1); }
+| NUMBER { $$ = new NumericExpression(std::move(*$1)); delete $1; }
 ;
 
 dfpexpr:
