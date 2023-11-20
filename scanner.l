@@ -38,12 +38,14 @@ return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }
 await    { RETURN_(AWAIT); }
 break    { RETURN_(BREAK); }
+false    { yylval.boolean = false; RETURN_(BOOLEAN); }
 until    { RETURN_(UNTIL); }
 while    { RETURN_(WHILE); }
 yield    { RETURN_(YIELD); }
 case     { RETURN_(CASE); }
 else     { RETURN_(ELSE); }
 from     { RETURN_(FROM); }
+true     { yylval.boolean = true; RETURN_(BOOLEAN); }
 for      { RETURN_(FOR); }
 var      { RETURN_(VAR); }
 as       { RETURN_(AS); }

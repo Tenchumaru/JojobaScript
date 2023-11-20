@@ -36,6 +36,16 @@ private:
 	std::unique_ptr<Expression> rightExpression;
 };
 
+class BooleanExpression : public Expression {
+public:
+	BooleanExpression(bool value) : value(value) {}
+	BooleanExpression(BooleanExpression&&) = default;
+	~BooleanExpression() = default;
+
+private:
+	bool value;
+};
+
 class DictionaryExpression : public Expression {
 public:
 	DictionaryExpression() = default;

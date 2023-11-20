@@ -31,6 +31,7 @@
 
 %token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL VAR WHILE YIELD
 %token <assignment> ASSIGNMENT
+%token <boolean> BOOLEAN
 %token <number> NUMBER
 %token <id> ID STRING
 %nonassoc '?' ':'
@@ -224,6 +225,7 @@ dfpexpr
 | '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
 | NUMBER { $$ = new NumericExpression(std::move(*$1)); delete $1; }
+| BOOLEAN { $$ = new BooleanExpression($1); }
 ;
 
 dfpexpr:
