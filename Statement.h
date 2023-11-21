@@ -148,12 +148,12 @@ private:
 
 class InvocationStatement : public Statement {
 public:
-	InvocationStatement(InvocationExpression* expression) : expression(expression) {}
+	InvocationStatement(Expression* expression) : expression(expression) {}
 	InvocationStatement(InvocationStatement&&) = default;
 	~InvocationStatement() = default;
 
 private:
-	std::unique_ptr<InvocationExpression> expression;
+	std::unique_ptr<Expression> expression;
 };
 
 class RangeForStatement : public Statement {

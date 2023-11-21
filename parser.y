@@ -109,7 +109,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | '@' dexpr ASSIGNMENT expr { $$ = new AssignmentStatement($2, $3, $4); }
-| '@' fexpr { $$ = new InvocationStatement($2); }
+| '@' expr { $$ = new InvocationStatement($2); }
 | di dexpr { $$ = new IncrementStatement($2, $1); }
 ;
 
