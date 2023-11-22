@@ -52,7 +52,7 @@
 %right ARROW
 %type<block> block oelse
 %type<cases> cases
-%type<expr> bexpr iexpr cexpr fpexpr lexpr expr
+%type<expr> bexpr iexpr cexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause for_initializer
@@ -279,13 +279,9 @@ BOOLEAN { $$ = new BooleanExpression($1); }
 ;
 
 iexpr:
-fpexpr
-| lexpr
-;
-
-fpexpr:
 fexpr { $$ = $1; }
 | '(' expr ')' { $$ = $2; }
+| lexpr
 ;
 
 fexpr:
@@ -293,8 +289,9 @@ iexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); de
 ;
 
 lexpr:
-iexpr '.' ID
-| iexpr '[' expr ']'
+iexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
+| cexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
+| iexpr '[' expr ']' { $$ = new IndexExpression($1, $3); }
 | ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
 ;
 

@@ -71,6 +71,17 @@ private:
 	std::unique_ptr<Expression> sourceExpression;
 };
 
+class DotExpression : public Expression {
+public:
+	DotExpression(Expression* expression, std::string&& id) : expression(expression), id(std::move(id)) {}
+	DotExpression(DotExpression&&) = default;
+	~DotExpression() = default;
+
+private:
+	std::unique_ptr<Expression> expression;
+	std::string id;
+};
+
 class IdentifierExpression : public Expression {
 public:
 	IdentifierExpression(std::string&& id) : id(std::move(id)) {}
@@ -81,9 +92,20 @@ private:
 	std::string id;
 };
 
+class IndexExpression : public Expression {
+public:
+	IndexExpression(Expression* indexedExpression, Expression* indexingExpression) : indexedExpression(indexedExpression), indexingExpression(indexingExpression) {}
+	IndexExpression(IndexExpression&&) = default;
+	~IndexExpression() = default;
+
+private:
+	std::unique_ptr<Expression> indexedExpression;
+	std::unique_ptr<Expression> indexingExpression;
+};
+
 class InvocationExpression : public Expression {
 public:
-	InvocationExpression(Expression* expression, std::vector<std::unique_ptr<Expression>>&& arguments) : expression(std::move(expression)), arguments(std::move(arguments)) {}
+	InvocationExpression(Expression* expression, std::vector<std::unique_ptr<Expression>>&& arguments) : expression(expression), arguments(std::move(arguments)) {}
 	InvocationExpression(InvocationExpression&&) = default;
 	~InvocationExpression() = default;
 
