@@ -50,7 +50,7 @@
 %nonassoc AWAIT
 %left '.' '['
 %right ARROW
-%type<block> block
+%type<block> block oelse
 %type<cases> cases
 %type<expr> dexpr dfpexpr expr
 %type<expr_list> expr_list oexpr_list
@@ -58,7 +58,7 @@
 %type<for_clause> for_clause
 %type<for_clauses> for_clauses ofor_clauses
 %type<id> otype otype_list type type_list
-%type<if_statement> if_statement elseif_statement
+%type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
 %type<import> import
 %type<initializer> initializer
@@ -96,10 +96,9 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$$ = new RangeForStatement(std::move(*$2), $4, std::move(*$6));
 	delete $2; delete $6;
 }
-| if_statement { $$ = $1; }
-| if_statement oelseif_statements ELSE '{' block '}' {
-	$$ = new IfStatement($1, std::move(*$2), std::move(*$5));
-	delete $2; delete $5;
+| IF expr '{' block '}' oelseif_statements oelse {
+	$$ = new IfStatement($2, std::move(*$4), std::move(*$6), std::move(*$7));
+	delete $2; delete $4; delete $6; delete $7;
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
 | SWITCH expr '{' cases '}' { $$ = new SwitchStatement($2, std::move(*$4)); delete $4; }
@@ -167,13 +166,14 @@ dexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($1, $2, $3); }
 | fexpr { $$ = new ForStatement::InvocationClause($1); }
 ;
 
-if_statement:
-IF expr '{' block '}' { $$ = new IfStatement($2, std::move(*$4)); delete $4; }
-;
-
 oelseif_statements:
 %empty { $$ = new std::vector<std::unique_ptr<IfStatement>>; }
 | oelseif_statements elseif_statement { $1->emplace_back($2); $$ = $1; }
+;
+
+oelse:
+%empty { $$ = new std::vector<std::unique_ptr<Statement>>; }
+| ELSE '{' block '}' { $$ = $3; }
 ;
 
 elseif_statement:

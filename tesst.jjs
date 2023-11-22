@@ -4,4 +4,13 @@ function fn(b: int) {
 	return a + b
 }
 
+do {
+	if a > 1 {
+		break
+	} else if a == 1 {
+		continue
+	} else {
+		@a = 1
+	}
+} while a < 1
 @print(fn(2))

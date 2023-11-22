@@ -111,14 +111,14 @@ private:
 class IfStatement : public Statement {
 public:
 	IfStatement(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : expression(expression), statements(std::move(statements)) {}
-	IfStatement(IfStatement* ifStatement, std::vector<std::unique_ptr<IfStatement>>&& elseIfStatements, std::vector<std::unique_ptr<Statement>>&& elseStatements);
+	IfStatement(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements, std::vector<std::unique_ptr<IfStatement>>&& elseIfStatements, std::vector<std::unique_ptr<Statement>>&& elseStatements) : expression(expression), statements(std::move(statements)), elseIfStatements(std::move(elseIfStatements)), elseStatements(std::move(elseStatements)) {}
 	IfStatement(IfStatement&&) = default;
 	~IfStatement() = default;
 
 private:
 	std::unique_ptr<Expression> expression;
 	std::vector<std::unique_ptr<Statement>> statements;
-	std::vector<std::unique_ptr<IfStatement>> elseIfStatements;
+	std::vector<std::unique_ptr<IfStatement>> elseIfStatements; // TODO:  consider replacing with std::vector<std::pair<Expression*, std::vector<std::unique_ptr<Statement>>>>.
 	std::vector<std::unique_ptr<Statement>> elseStatements;
 };
 
