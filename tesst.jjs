@@ -19,6 +19,13 @@ for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; --a, @fn(a) {
 }
 switch var b = 1, a {
 	case 1:
+		@a = 1
+		break
+	case 2:
+		@a = 2
+		break
+	default:
+		@a = 1
 		break
 }
 while var a = 1, a == 1 {

@@ -15,6 +15,7 @@
 	Assignment assignment;
 	std::vector<std::unique_ptr<Statement>>* block;
 	bool boolean;
+	SwitchStatement::Case* case_;
 	std::vector<SwitchStatement::Case>* cases;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
@@ -51,6 +52,7 @@
 %left '.' '['
 %right ARROW
 %type<block> block oelse
+%type<case_> case
 %type<cases> cases
 %type<expr> bexpr iexpr cexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
@@ -212,9 +214,13 @@ ELSE IF condition_list '{' block '}' { $$ = new IfStatement(std::move(*$3), std:
 ;
 
 cases:
-%empty { $$ = new std::vector<SwitchStatement::Case>; }
-| cases CASE expr ':' block { $1->emplace_back(SwitchStatement::Case($3, std::move(*$5))); delete $5; $$ = $1; }
-| cases DEFAULT ':' block { $1->emplace_back(SwitchStatement::Case(nullptr, std::move(*$4))); delete $4; $$ = $1; }
+case { $$ = new std::vector<SwitchStatement::Case>; $$->emplace_back(std::move(*$1)); delete $1; }
+| cases case { $1->emplace_back(std::move(*$2)); delete $2; $$ = $1; }
+;
+
+case:
+CASE expr ':' block { $$ = new SwitchStatement::Case($2, std::move(*$4)); delete $4; }
+| DEFAULT ':' block { $$ = new SwitchStatement::Case(nullptr, std::move(*$3)); delete $3; }
 ;
 
 imports:
