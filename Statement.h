@@ -193,12 +193,12 @@ public:
 		std::vector<std::unique_ptr<Statement>> statements;
 	};
 
-	SwitchStatement(Expression* expression, std::vector<SwitchStatement::Case>&& cases) : expression(expression), cases(std::move(cases)) {}
+	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<SwitchStatement::Case>&& cases) : initializerClauses(std::move(initializerClauses)), cases(std::move(cases)) {}
 	SwitchStatement(SwitchStatement&&) = default;
 	~SwitchStatement() = default;
 
 private:
-	std::unique_ptr<Expression> expression;
+	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
 	std::vector<SwitchStatement::Case> cases;
 };
 

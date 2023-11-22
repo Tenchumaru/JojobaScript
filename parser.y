@@ -56,7 +56,7 @@
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause for_initializer
-%type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list
+%type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
 %type<id> otype otype_list type type_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
@@ -101,7 +101,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	delete $2; delete $4; delete $6; delete $7;
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
-| SWITCH expr '{' cases '}' { $$ = new SwitchStatement($2, std::move(*$4)); delete $4; }
+| SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
 | YIELD expr { $$ = new YieldStatement($2); }
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
@@ -185,6 +185,11 @@ oforexpr_list:
 %empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
 | bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(std::make_unique<Statement::ExpressionClause>($1)); }
 | for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+;
+
+switch_list:
+expr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
+| for_initializers ',' expr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
 ;
 
 condition_list:
