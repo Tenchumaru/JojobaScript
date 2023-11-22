@@ -55,8 +55,8 @@
 %type<expr> bexpr iexpr cexpr fpexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
-%type<for_clause> for_clause
-%type<for_clauses> for_clauses ofor_clauses oforexpr_list
+%type<for_clause> for_clause for_initializer
+%type<for_clauses> for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list
 %type<id> otype otype_list type type_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
@@ -88,7 +88,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 | BREAK { $$ = new BreakStatement; }
 | CONTINUE { $$ = new ContinueStatement; }
 | DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
-| FOR ofor_clauses ';' oforexpr_list ';' ofor_clauses '{' block '}' {
+| FOR ofor_initializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
 	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));
 	delete $2; delete $4; delete $6; delete $8;
 }
@@ -148,6 +148,21 @@ ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<E
 uw:
 UNTIL { $$ = false; }
 | WHILE { $$ = true; }
+;
+
+ofor_initializers:
+%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
+| for_initializers
+;
+
+for_initializers:
+for_initializer { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back($1); }
+| for_initializers ',' for_initializer { $1->emplace_back($3); $$ = $1; }
+;
+
+for_initializer:
+for_clause
+| VAR initializer { $$ = new ForStatement::AssignmentClause(std::move(*$2)); delete $2; }
 ;
 
 ofor_clauses:
