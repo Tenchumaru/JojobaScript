@@ -56,7 +56,7 @@
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause
-%type<for_clauses> for_clauses ofor_clauses
+%type<for_clauses> for_clauses ofor_clauses oforexpr_list
 %type<id> otype otype_list type type_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
@@ -88,7 +88,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 | BREAK { $$ = new BreakStatement; }
 | CONTINUE { $$ = new ContinueStatement; }
 | DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
-| FOR ofor_clauses ';' oexpr_list ';' ofor_clauses '{' block '}' {
+| FOR ofor_clauses ';' oforexpr_list ';' ofor_clauses '{' block '}' {
 	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));
 	delete $2; delete $4; delete $6; delete $8;
 }
@@ -161,9 +161,15 @@ for_clause { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->em
 ;
 
 for_clause:
-lexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($1, $2, $3); }
+'@' lexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($2, $3, $4); }
 | di lexpr { $$ = new ForStatement::DiClause($2, $1); }
-| fexpr { $$ = new ForStatement::InvocationClause($1); }
+| '@' expr { $$ = new ForStatement::ExpressionClause($2); }
+;
+
+oforexpr_list:
+%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
+| bexpr { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back(std::make_unique<ForStatement::ExpressionClause>($1)); }
+| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<ForStatement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 oelseif_statements:

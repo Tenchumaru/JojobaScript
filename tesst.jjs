@@ -1,6 +1,6 @@
 var a: int = 1
 
-function fn(b: int) {
+function fn(b: int): int {
 	return a + b
 }
 
@@ -13,4 +13,8 @@ do {
 		@a = 1
 	}
 } while a < 1
+for ;; {
+}
+for @a = 1, --a, @fn(a); @fn(a), a < 1; --a, @fn(a) {
+}
 @print(fn(2))

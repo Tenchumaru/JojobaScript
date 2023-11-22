@@ -74,22 +74,22 @@ public:
 		bool isIncrement;
 	};
 
-	class InvocationClause : public Clause {
+	class ExpressionClause : public Clause {
 	public:
-		InvocationClause(Expression* expression) : expression(expression) {}
-		InvocationClause(InvocationClause&&) = default;
-		~InvocationClause() = default;
+		ExpressionClause(Expression* expression) : expression(expression) {}
+		ExpressionClause(ExpressionClause&&) = default;
+		~ExpressionClause() = default;
 
 	private:
 		std::unique_ptr<Expression> expression;
 	};
 
-	ForStatement(std::vector<std::unique_ptr<ForStatement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Expression>>&& expressions, std::vector<std::unique_ptr<ForStatement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressions(std::move(expressions)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
+	ForStatement(std::vector<std::unique_ptr<ForStatement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<ForStatement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<ForStatement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
 	~ForStatement() = default;
 
 private:
 	std::vector<std::unique_ptr<ForStatement::Clause>> initializerClauses;
-	std::vector<std::unique_ptr<Expression>> expressions;
+	std::vector<std::unique_ptr<ForStatement::Clause>> expressionClauses;
 	std::vector<std::unique_ptr<ForStatement::Clause>> updaterClauses;
 	std::vector<std::unique_ptr<Statement>> statements;
 };
