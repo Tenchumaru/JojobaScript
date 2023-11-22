@@ -52,7 +52,7 @@
 %right ARROW
 %type<block> block oelse
 %type<cases> cases
-%type<expr> dexpr dfpexpr expr
+%type<expr> bexpr iexpr cexpr fpexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause
@@ -107,9 +107,9 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
-| '@' dexpr ASSIGNMENT expr { $$ = new AssignmentStatement($2, $3, $4); }
+| '@' lexpr ASSIGNMENT expr { $$ = new AssignmentStatement($2, $3, $4); }
 | '@' expr { $$ = new InvocationStatement($2); }
-| di dexpr { $$ = new IncrementStatement($2, $1); }
+| di lexpr { $$ = new IncrementStatement($2, $1); }
 ;
 
 otype:
@@ -156,13 +156,13 @@ ofor_clauses:
 ;
 
 for_clauses:
-for_clause { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back(std::unique_ptr<ForStatement::Clause>($1)); }
+for_clause { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back($1); }
 | for_clauses ',' for_clause { $1->emplace_back($3); $$ = $1; }
 ;
 
 for_clause:
-dexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($1, $2, $3); }
-| di dexpr { $$ = new ForStatement::DiClause($2, $1); }
+lexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($1, $2, $3); }
+| di lexpr { $$ = new ForStatement::DiClause($2, $1); }
 | fexpr { $$ = new ForStatement::InvocationClause($1); }
 ;
 
@@ -202,8 +202,27 @@ DEC { $$ = false; }
 ;
 
 expr:
-dfpexpr
-| expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
+':' '(' id_list ')' '{' block '}' { $$ = new LambdaExpression(std::move(*$3), std::move(*$6)); }
+| ':' '(' id_list ')' ARROW expr { $$ = new LambdaExpression(std::move(*$3), $6); }
+| bexpr
+| cexpr
+;
+
+cexpr:
+'[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
+| '[' expr FOR id_list IN expr ']' { $$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4; }
+| '{' expr ':' expr FOR id_list IN expr '}' { $$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6; }
+| '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(); else $$ = new SetExpression(std::move(*$2)); delete $2; }
+| '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
+;
+
+bexpr:
+BOOLEAN { $$ = new BooleanExpression($1); }
+| NUMBER { $$ = new NumericExpression(std::move(*$1)); delete $1; }
+| AWAIT expr { $$ = new AwaitExpression($2); }
+| '-' expr %prec NEG { $$ = new UnaryExpression($2, '-'); }
+| '~' expr %prec NEG { $$ = new UnaryExpression($2, '~'); }
+| '!' expr %prec NEG { $$ = new UnaryExpression($2, '!'); }
 | expr AND expr { $$ = new BinaryExpression($1, AND, $3); }
 | expr OR expr { $$ = new BinaryExpression($1, OR, $3); }
 | expr EQ expr { $$ = new BinaryExpression($1, EQ, $3); }
@@ -224,35 +243,28 @@ dfpexpr
 | expr '/' expr { $$ = new BinaryExpression($1, '/', $3); }
 | expr '%' expr { $$ = new BinaryExpression($1, '%', $3); }
 | expr SS expr { $$ = new BinaryExpression($1, SS, $3); }
-| '-' expr %prec NEG { $$ = new UnaryExpression($2, '-'); }
-| '~' expr %prec NEG { $$ = new UnaryExpression($2, '~'); }
-| '!' expr %prec NEG { $$ = new UnaryExpression($2, '!'); }
-| ':' '(' id_list ')' '{' block '}' { $$ = new LambdaExpression(std::move(*$3), std::move(*$6)); }
-| ':' '(' id_list ')' ARROW expr { $$ = new LambdaExpression(std::move(*$3), $6); }
-| '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
-| '[' expr FOR id_list IN expr ']' { $$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4; }
-| '{' expr ':' expr FOR id_list IN expr '}' { $$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6; }
-| '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(); else $$ = new SetExpression(std::move(*$2)); delete $2; }
-| '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
-| AWAIT expr { $$ = new AwaitExpression($2); }
-| NUMBER { $$ = new NumericExpression(std::move(*$1)); delete $1; }
-| BOOLEAN { $$ = new BooleanExpression($1); }
+| expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
+| iexpr
 ;
 
-dfpexpr:
-dexpr
-| fexpr { $$ = $1; }
+iexpr:
+fpexpr
+| lexpr
+;
+
+fpexpr:
+fexpr { $$ = $1; }
 | '(' expr ')' { $$ = $2; }
 ;
 
-dexpr:
-dfpexpr '.' ID
-| dfpexpr '[' expr ']'
-| ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
+fexpr:
+iexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
 ;
 
-fexpr:
-dfpexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
+lexpr:
+iexpr '.' ID
+| iexpr '[' expr ']'
+| ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
 ;
 
 oexpr_list:
@@ -261,7 +273,7 @@ oexpr_list:
 ;
 
 expr_list:
-expr { $$ = new std::vector<std::unique_ptr<Expression>>; $$->emplace_back(std::unique_ptr<Expression>($1)); }
+expr { $$ = new std::vector<std::unique_ptr<Expression>>; $$->emplace_back($1); }
 | expr_list ',' expr { $1->emplace_back($3); $$ = $1; }
 ;
 
