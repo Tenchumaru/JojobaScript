@@ -63,7 +63,7 @@
 %type<import> import
 %type<initializer> initializer
 %type<initializers> initializers
-%type<kv_list> kv_list
+%type<kv_list> kv_list okv_list
 %type<statement> statement
 %type<boolean> di uw
 %type<id_list> id_list imports oid_list
@@ -218,8 +218,8 @@ cexpr:
 '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
 | '[' expr FOR id_list IN expr ']' { $$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4; }
 | '{' expr ':' expr FOR id_list IN expr '}' { $$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6; }
-| '{' oexpr_list '}' { if ($2->empty()) $$ = new DictionaryExpression(); else $$ = new SetExpression(std::move(*$2)); delete $2; }
-| '{' kv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
+| '{' expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
+| '{' okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 ;
 
 bexpr:
@@ -281,6 +281,11 @@ oexpr_list:
 expr_list:
 expr { $$ = new std::vector<std::unique_ptr<Expression>>; $$->emplace_back($1); }
 | expr_list ',' expr { $1->emplace_back($3); $$ = $1; }
+;
+
+okv_list:
+%empty { $$ = new std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>; }
+| kv_list
 ;
 
 kv_list:

@@ -50,7 +50,6 @@ private:
 
 class DictionaryExpression : public Expression {
 public:
-	DictionaryExpression() = default;
 	DictionaryExpression(std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>&& keyValuePairs) : keyValuePairs(std::move(keyValuePairs)) {}
 	DictionaryExpression(DictionaryExpression&&) = default;
 	~DictionaryExpression() = default;

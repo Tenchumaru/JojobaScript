@@ -10,7 +10,7 @@ do {
 	} else if a == 1 {
 		continue
 	} else {
-		@a = 1
+		var b: dict = {}
 	}
 } while a < 1
 for ;; {
