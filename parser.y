@@ -56,7 +56,7 @@
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause for_initializer
-%type<for_clauses> for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list while_initializers
+%type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list
 %type<id> otype otype_list type type_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
@@ -96,13 +96,13 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$$ = new RangeForStatement(std::move(*$2), $4, std::move(*$6));
 	delete $2; delete $6;
 }
-| IF expr '{' block '}' oelseif_statements oelse {
-	$$ = new IfStatement($2, std::move(*$4), std::move(*$6), std::move(*$7));
+| IF condition_list '{' block '}' oelseif_statements oelse {
+	$$ = new IfStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$7));
 	delete $2; delete $4; delete $6; delete $7;
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
 | SWITCH expr '{' cases '}' { $$ = new SwitchStatement($2, std::move(*$4)); delete $4; }
-| uw while_initializers '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
+| uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
 | YIELD expr { $$ = new YieldStatement($2); }
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
@@ -187,6 +187,11 @@ oforexpr_list:
 | for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
+condition_list:
+bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
+| for_initializers ',' bexpr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
+;
+
 oelseif_statements:
 %empty { $$ = new std::vector<std::unique_ptr<IfStatement>>; }
 | oelseif_statements elseif_statement { $1->emplace_back($2); $$ = $1; }
@@ -198,18 +203,13 @@ oelse:
 ;
 
 elseif_statement:
-ELSE IF expr '{' block '}' { $$ = new IfStatement($3, std::move(*$5)); delete $5; }
+ELSE IF condition_list '{' block '}' { $$ = new IfStatement(std::move(*$3), std::move(*$5)); delete $3; delete $5; }
 ;
 
 cases:
 %empty { $$ = new std::vector<SwitchStatement::Case>; }
 | cases CASE expr ':' block { $1->emplace_back(SwitchStatement::Case($3, std::move(*$5))); delete $5; $$ = $1; }
 | cases DEFAULT ':' block { $1->emplace_back(SwitchStatement::Case(nullptr, std::move(*$4))); delete $4; $$ = $1; }
-;
-
-while_initializers:
-bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
-| for_initializers ',' bexpr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
 ;
 
 imports:

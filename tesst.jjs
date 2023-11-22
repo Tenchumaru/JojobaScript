@@ -5,9 +5,9 @@ function fn(b: int): int {
 }
 
 do {
-	if a > 1 {
+	if var b = 1, a > 1 {
 		break
-	} else if a == 1 {
+	} else if var b = 1, a == 1 {
 		continue
 	} else {
 		var b: dict = {}
