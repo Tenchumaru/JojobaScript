@@ -19,8 +19,8 @@
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
 	InvocationExpression* fexpr;
-	ForStatement::Clause* for_clause;
-	std::vector<std::unique_ptr<ForStatement::Clause>>* for_clauses;
+	Statement::Clause* for_clause;
+	std::vector<std::unique_ptr<Statement::Clause>>* for_clauses;
 	std::string* id;
 	IfStatement* if_statement;
 	std::vector<std::unique_ptr<IfStatement>>* if_statements;
@@ -56,7 +56,7 @@
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
 %type<for_clause> for_clause for_initializer
-%type<for_clauses> for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list
+%type<for_clauses> for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list while_initializers
 %type<id> otype otype_list type type_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
@@ -102,7 +102,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
 | SWITCH expr '{' cases '}' { $$ = new SwitchStatement($2, std::move(*$4)); delete $4; }
-| uw expr '{' block '}' { $$ = new WhileStatement($2, std::move(*$4), $1); delete $4; }
+| uw while_initializers '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
 | YIELD expr { $$ = new YieldStatement($2); }
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
@@ -151,40 +151,40 @@ UNTIL { $$ = false; }
 ;
 
 ofor_initializers:
-%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
+%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
 | for_initializers
 ;
 
 for_initializers:
-for_initializer { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back($1); }
+for_initializer { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back($1); }
 | for_initializers ',' for_initializer { $1->emplace_back($3); $$ = $1; }
 ;
 
 for_initializer:
 for_clause
-| VAR initializer { $$ = new ForStatement::AssignmentClause(std::move(*$2)); delete $2; }
+| VAR initializer { $$ = new Statement::AssignmentClause(std::move(*$2)); delete $2; }
 ;
 
 ofor_clauses:
-%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
+%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
 | for_clauses
 ;
 
 for_clauses:
-for_clause { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back($1); }
+for_clause { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back($1); }
 | for_clauses ',' for_clause { $1->emplace_back($3); $$ = $1; }
 ;
 
 for_clause:
-'@' lexpr ASSIGNMENT expr { $$ = new ForStatement::AssignmentClause($2, $3, $4); }
-| di lexpr { $$ = new ForStatement::DiClause($2, $1); }
-| '@' expr { $$ = new ForStatement::ExpressionClause($2); }
+'@' lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($2, $3, $4); }
+| di lexpr { $$ = new Statement::DiClause($2, $1); }
+| '@' expr { $$ = new Statement::ExpressionClause($2); }
 ;
 
 oforexpr_list:
-%empty { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; }
-| bexpr { $$ = new std::vector<std::unique_ptr<ForStatement::Clause>>; $$->emplace_back(std::make_unique<ForStatement::ExpressionClause>($1)); }
-| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<ForStatement::ExpressionClause>($3)); $$ = $1; }
+%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
+| bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(std::make_unique<Statement::ExpressionClause>($1)); }
+| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 oelseif_statements:
@@ -205,6 +205,11 @@ cases:
 %empty { $$ = new std::vector<SwitchStatement::Case>; }
 | cases CASE expr ':' block { $1->emplace_back(SwitchStatement::Case($3, std::move(*$5))); delete $5; $$ = $1; }
 | cases DEFAULT ':' block { $1->emplace_back(SwitchStatement::Case(nullptr, std::move(*$4))); delete $4; $$ = $1; }
+;
+
+while_initializers:
+bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
+| for_initializers ',' bexpr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
 ;
 
 imports:

@@ -17,4 +17,7 @@ for ;; {
 }
 for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; --a, @fn(a) {
 }
+while var a = 1, a == 1 {
+	++a
+}
 @print(fn(2))

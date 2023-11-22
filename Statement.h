@@ -12,40 +12,6 @@ class InvocationExpression;
 
 class Statement {
 public:
-	Statement() = default;
-	virtual ~Statement() = 0;
-};
-
-class AssignmentStatement : public Statement {
-public:
-	AssignmentStatement(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
-	AssignmentStatement(AssignmentStatement&&) = default;
-	~AssignmentStatement() = default;
-
-private:
-	std::unique_ptr<Expression> targetExpression;
-	std::unique_ptr<Expression> sourceExpression;
-	Assignment assignment;
-};
-
-class BreakStatement : public Statement {};
-
-class ContinueStatement : public Statement {};
-
-class DoStatement : public Statement {
-public:
-	DoStatement(std::vector<std::unique_ptr<Statement>>&& statements, Expression* expression, bool isWhile) : statements(std::move(statements)), expression(expression), isWhile(isWhile) {}
-	DoStatement(DoStatement&&) = default;
-	~DoStatement() = default;
-
-private:
-	std::vector<std::unique_ptr<Statement>> statements;
-	std::unique_ptr<Expression> expression;
-	bool isWhile;
-};
-
-class ForStatement : public Statement {
-public:
 	class Clause {
 	public:
 		virtual ~Clause() = 0;
@@ -86,13 +52,47 @@ public:
 		std::unique_ptr<Expression> expression;
 	};
 
-	ForStatement(std::vector<std::unique_ptr<ForStatement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<ForStatement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<ForStatement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
+	Statement() = default;
+	virtual ~Statement() = 0;
+};
+
+class AssignmentStatement : public Statement {
+public:
+	AssignmentStatement(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
+	AssignmentStatement(AssignmentStatement&&) = default;
+	~AssignmentStatement() = default;
+
+private:
+	std::unique_ptr<Expression> targetExpression;
+	std::unique_ptr<Expression> sourceExpression;
+	Assignment assignment;
+};
+
+class BreakStatement : public Statement {};
+
+class ContinueStatement : public Statement {};
+
+class DoStatement : public Statement {
+public:
+	DoStatement(std::vector<std::unique_ptr<Statement>>&& statements, Expression* expression, bool isWhile) : statements(std::move(statements)), expression(expression), isWhile(isWhile) {}
+	DoStatement(DoStatement&&) = default;
+	~DoStatement() = default;
+
+private:
+	std::vector<std::unique_ptr<Statement>> statements;
+	std::unique_ptr<Expression> expression;
+	bool isWhile;
+};
+
+class ForStatement : public Statement {
+public:
+	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
 	~ForStatement() = default;
 
 private:
-	std::vector<std::unique_ptr<ForStatement::Clause>> initializerClauses;
-	std::vector<std::unique_ptr<ForStatement::Clause>> expressionClauses;
-	std::vector<std::unique_ptr<ForStatement::Clause>> updaterClauses;
+	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+	std::vector<std::unique_ptr<Statement::Clause>> expressionClauses;
+	std::vector<std::unique_ptr<Statement::Clause>> updaterClauses;
 	std::vector<std::unique_ptr<Statement>> statements;
 };
 
@@ -213,12 +213,12 @@ private:
 
 class WhileStatement : public Statement {
 public:
-	WhileStatement(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : expression(expression), statements(std::move(statements)), isWhile(isWhile) {}
+	WhileStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)), isWhile(isWhile) {}
 	WhileStatement(WhileStatement&&) = default;
 	~WhileStatement() = default;
 
 private:
-	std::unique_ptr<Expression> expression;
+	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
 	std::vector<std::unique_ptr<Statement>> statements;
 	bool isWhile;
 };
