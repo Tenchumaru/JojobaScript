@@ -68,9 +68,21 @@ private:
 	Assignment assignment;
 };
 
-class BreakStatement : public Statement {};
+class BreakStatement : public Statement {
+public:
+	BreakStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
 
-class ContinueStatement : public Statement {};
+private:
+	int nPrecedingBreaks;
+};
+
+class ContinueStatement : public Statement {
+public:
+	ContinueStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
+
+private:
+	int nPrecedingBreaks;
+};
 
 class DoStatement : public Statement {
 public:

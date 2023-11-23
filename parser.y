@@ -30,6 +30,7 @@
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
 	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
 	std::variant<std::int64_t, double>* number;
+	int obreaks;
 	Statement* statement;
 	std::vector<std::pair<std::string, std::string>>* id_list;
 }
@@ -52,6 +53,7 @@
 %left '.' '['
 %right ARROW
 %type<block> block oelse
+%type<boolean> di uw
 %type<case_> case
 %type<cases> cases
 %type<expr> bexpr iexpr cexpr lexpr expr
@@ -60,15 +62,15 @@
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
 %type<id> otype otype_list type type_list
+%type<id_list> id_list imports oid_list
 %type<if_statement> elseif_statement
 %type<if_statements> oelseif_statements
 %type<import> import
 %type<initializer> initializer
 %type<initializers> initializers
 %type<kv_list> kv_list okv_list
+%type<obreaks> obreaks
 %type<statement> statement
-%type<boolean> di uw
-%type<id_list> id_list imports oid_list
 
 %%
 
@@ -87,8 +89,8 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	delete $8;
 }
 | VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
-| BREAK { $$ = new BreakStatement; }
-| CONTINUE { $$ = new ContinueStatement; }
+| obreaks BREAK { $$ = new BreakStatement($1); }
+| obreaks CONTINUE { $$ = new ContinueStatement($1); }
 | DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
 | FOR ofor_initializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
 	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));
@@ -145,6 +147,11 @@ ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<E
 	if ($3 != Assignment()) throw std::logic_error("invalid initializing assignment");
 	$$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>($4)); delete $1; delete $2;
 }
+;
+
+obreaks:
+%empty { $$ = 0; }
+| obreaks BREAK ',' { $$ = $1 + 1; }
 ;
 
 uw:

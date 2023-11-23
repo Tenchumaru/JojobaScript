@@ -1,4 +1,8 @@
 var a: int = 1
+var b = [1, 2]
+var b = {1, 2}
+var b = {1: 2, 2: 1}
+@a = b.size >= 1 ? 2 : 1
 
 function fn(b: int): int {
 	return a + b
@@ -6,27 +10,31 @@ function fn(b: int): int {
 
 do {
 	if var b = 1, a > 1 {
+		@b = fn(b)
 		break
 	} else if var b = 1, a == 1 {
 		continue
+	} else if a < 1 {
+		@a += 1
 	} else {
 		var b: dict = {}
 	}
 } while a < 1
-for ;; {
-}
 for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; --a, @fn(a) {
+	@b -= fn(b)
 }
-switch var b = 1, a {
-	case 1:
-		@a = 1
-		break
-	case 2:
-		@a = 2
-		break
-	default:
-		@a = 1
-		break
+for ;; {
+	switch var b = 1, a - 1 {
+		case 1: // TODO:  consider having case statements create contexts as if they were blocks.
+			@a = 2
+			break
+		case 0:
+			@a = 3
+			break, continue
+		default:
+			@a = 2
+			break, break
+	}
 }
 while var a = 1, a == 1 {
 	++a
