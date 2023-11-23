@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
+enum class Assignment { AA = 1, ASRA, DA, LSLA, LSRA, MA, OA, PA, SA, TA, XA };
 
-enum class Assignment { AA = 1, ARA, DA, MIA, MOA, OA, PA, SLA, SRA, TA, XA };
+enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
 
 class ContextTemplate;
 

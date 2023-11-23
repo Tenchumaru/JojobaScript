@@ -56,26 +56,26 @@ do       { RETURN_(DO); }
 if       { RETURN_(IF); }
 in       { RETURN_(IN); }
 {id}     { yylval.id = new std::string(yytext); RETURN_(ID); }
-">>>"    RETURN_(ASR);
 "&="     RETURN_ASSIGNMENT(Assignment::AA);
-">>>="   RETURN_ASSIGNMENT(Assignment::ARA);
+">>>="   RETURN_ASSIGNMENT(Assignment::ASRA);
 "/="     RETURN_ASSIGNMENT(Assignment::DA);
-"-="     RETURN_ASSIGNMENT(Assignment::MIA);
-"%="     RETURN_ASSIGNMENT(Assignment::MOA);
+"<<="    RETURN_ASSIGNMENT(Assignment::LSLA);
+">>="    RETURN_ASSIGNMENT(Assignment::LSRA);
+"%="     RETURN_ASSIGNMENT(Assignment::MA);
 "|="     RETURN_ASSIGNMENT(Assignment::OA);
 "+="     RETURN_ASSIGNMENT(Assignment::PA);
-"<<="    RETURN_ASSIGNMENT(Assignment::SLA);
-">>="    RETURN_ASSIGNMENT(Assignment::SRA);
+"-="     RETURN_ASSIGNMENT(Assignment::SA);
 "*="     RETURN_ASSIGNMENT(Assignment::TA);
 "^="     RETURN_ASSIGNMENT(Assignment::XA);
-"<<"     RETURN_(SHL);
+">>>"    RETURN_(ASR);
+"<<"     RETURN_(LSL);
 ">>"     RETURN_(LSR);
 "--"     RETURN_(DEC);
 "++"     RETURN_(INC);
 "=="     RETURN_(EQ);
 "!="     RETURN_(NE);
-"<="     RETURN_(LE);
 ">="     RETURN_(GE);
+"<="     RETURN_(LE);
 "&&"     RETURN_(AND);
 "||"     RETURN_(OR);
 "**"     RETURN_(SS);

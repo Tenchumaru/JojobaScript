@@ -44,7 +44,7 @@
 %left EQ NE LE GE '<' '>'
 %left '+' '-'
 %left '&' '|' '^'
-%left ASR LSR SHL
+%left ASR LSR LSL
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
 %right SS
@@ -273,7 +273,7 @@ BOOLEAN { $$ = new BooleanExpression($1); }
 | expr '&' expr { $$ = new BinaryExpression($1, '&', $3); }
 | expr '|' expr { $$ = new BinaryExpression($1, '|', $3); }
 | expr '^' expr { $$ = new BinaryExpression($1, '^', $3); }
-| expr SHL expr { $$ = new BinaryExpression($1, SHL, $3); }
+| expr LSL expr { $$ = new BinaryExpression($1, LSL, $3); }
 | expr LSR expr { $$ = new BinaryExpression($1, LSR, $3); }
 | expr ASR expr { $$ = new BinaryExpression($1, ASR, $3); }
 | expr '*' expr { $$ = new BinaryExpression($1, '*', $3); }
