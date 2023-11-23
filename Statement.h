@@ -84,6 +84,16 @@ private:
 	bool isWhile;
 };
 
+class ExpressionStatement : public Statement {
+public:
+	ExpressionStatement(Expression* expression) : expression(expression) {}
+	ExpressionStatement(ExpressionStatement&&) = default;
+	~ExpressionStatement() = default;
+
+private:
+	std::unique_ptr<Expression> expression;
+};
+
 class ForStatement : public Statement {
 public:
 	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
@@ -146,16 +156,6 @@ public:
 private:
 	std::unique_ptr<Expression> expression;
 	bool isIncrement;
-};
-
-class InvocationStatement : public Statement {
-public:
-	InvocationStatement(Expression* expression) : expression(expression) {}
-	InvocationStatement(InvocationStatement&&) = default;
-	~InvocationStatement() = default;
-
-private:
-	std::unique_ptr<Expression> expression;
 };
 
 class RangeForStatement : public Statement {
