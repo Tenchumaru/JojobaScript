@@ -10,13 +10,13 @@ class ContextTemplate;
 
 class Context {
 public:
-	Context(ContextTemplate& contextTemplate, std::shared_ptr<Context> parentContext) : contextTemplate(contextTemplate), parentContext(std::move(parentContext)) {}
+	Context(ContextTemplate& contextTemplate, std::shared_ptr<Context> outerContext) : contextTemplate(contextTemplate), outerContext(std::move(outerContext)) {}
 	Context(Context&&) = default;
 	~Context() = default;
 
 private:
 	ContextTemplate& contextTemplate;
-	std::shared_ptr<Context> parentContext;
+	std::shared_ptr<Context> outerContext;
 };
 
 class ContextTemplate {
@@ -42,14 +42,14 @@ private:
 
 class Function {
 public:
-	Function(std::vector<std::string> const& parameters, ContextTemplate const& contextTemplate, std::shared_ptr<Context> parentContext) : parameters(parameters), contextTemplate(contextTemplate), parentContext(std::move(parentContext)) {}
+	Function(std::vector<std::string> const& parameters, ContextTemplate const& contextTemplate, std::shared_ptr<Context> outerContext) : parameters(parameters), contextTemplate(contextTemplate), outerContext(std::move(outerContext)) {}
 	Function(Function&&) = default;
 	~Function() = default;
 
 private:
 	std::vector<std::string> parameters;
 	ContextTemplate const& contextTemplate;
-	std::shared_ptr<Context> parentContext;
+	std::shared_ptr<Context> outerContext;
 };
 
 extern std::vector<std::shared_ptr<Context>> contextStack;
