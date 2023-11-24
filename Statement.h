@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-enum class Assignment { AA = 1, ASRA, DA, LSLA, LSRA, MA, OA, PA, SA, TA, XA };
+enum class Assignment { AA = 1, ASRA, DA, SLA, LSRA, MA, OA, PA, SA, TA, XA };
 
 enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
 

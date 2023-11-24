@@ -43,7 +43,7 @@
 %left EQ NE LE GE '<' '>'
 %left '+' '-'
 %left '&' '|' '^'
-%left ASR LSR LSL
+%left ASR LSR SL
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
 %right SS
@@ -278,12 +278,12 @@ BOOLEAN { $$ = new BooleanExpression($1); }
 | expr '&' expr { $$ = new BinaryExpression($1, '&', $3); }
 | expr '|' expr { $$ = new BinaryExpression($1, '|', $3); }
 | expr '^' expr { $$ = new BinaryExpression($1, '^', $3); }
-| expr LSL expr { $$ = new BinaryExpression($1, LSL, $3); }
-| expr LSR expr { $$ = new BinaryExpression($1, LSR, $3); }
-| expr ASR expr { $$ = new BinaryExpression($1, ASR, $3); }
 | expr '*' expr { $$ = new BinaryExpression($1, '*', $3); }
 | expr '/' expr { $$ = new BinaryExpression($1, '/', $3); }
 | expr '%' expr { $$ = new BinaryExpression($1, '%', $3); }
+| expr ASR expr { $$ = new BinaryExpression($1, ASR, $3); }
+| expr LSR expr { $$ = new BinaryExpression($1, LSR, $3); }
+| expr SL expr { $$ = new BinaryExpression($1, SL, $3); }
 | expr SS expr { $$ = new BinaryExpression($1, SS, $3); }
 | expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
 | iexpr
