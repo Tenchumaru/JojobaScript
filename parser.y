@@ -170,7 +170,7 @@ for_initializer { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->
 
 for_initializer:
 for_clause
-| VAR initializer { $$ = new Statement::AssignmentClause(std::move(*$2)); delete $2; }
+| VAR initializer { $$ = new Statement::VarClause(std::move(*$2)); delete $2; }
 ;
 
 ofor_clauses:

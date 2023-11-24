@@ -22,12 +22,10 @@ public:
 	class AssignmentClause : public Clause {
 	public:
 		AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
-		AssignmentClause(std::tuple<std::string, std::string, std::unique_ptr<Expression>>&& initializer) : initializer(std::move(initializer)), assignment() {}
 		AssignmentClause(AssignmentClause&&) = default;
 		~AssignmentClause() = default;
 
 	private:
-		std::tuple<std::string, std::string, std::unique_ptr<Expression>> initializer;
 		std::unique_ptr<Expression> targetExpression;
 		std::unique_ptr<Expression> sourceExpression;
 		Assignment assignment;
@@ -52,6 +50,16 @@ public:
 
 	private:
 		std::unique_ptr<Expression> expression;
+	};
+
+	class VarClause : public Clause {
+	public:
+		VarClause(std::tuple<std::string, std::string, std::unique_ptr<Expression>>&& initializer) : initializer(std::move(initializer)) {}
+		VarClause(VarClause&&) = default;
+		~VarClause() = default;
+
+	private:
+		std::tuple<std::string, std::string, std::unique_ptr<Expression>> initializer;
 	};
 
 	Statement() = default;
