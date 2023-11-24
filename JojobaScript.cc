@@ -5,7 +5,8 @@
 
 int yyparse();
 
-extern FILE *yyin, *yyout;
+extern FILE* yyin;
+extern FILE* yyout;
 std::vector<std::shared_ptr<Context>> contextStack;
 
 static int usage(char const* prog) {
@@ -15,15 +16,15 @@ static int usage(char const* prog) {
 
 int main(int argc, char* argv[]) {
 	// Set the program name.
-	char const *prog = strrchr(argv[0], '\\');
-	if(prog)
+	char const* prog = strrchr(argv[0], '\\');
+	if (prog)
 		++prog;
 	else
 		prog = argv[0];
 
 	// Collect the options.
-	while(argc > 1 && argv[1][0] == '-' && argv[1][1] != '\0') {
-		switch(argv[1][1]) {
+	while (argc > 1 && argv[1][0] == '-' && argv[1][1] != '\0') {
+		switch (argv[1][1]) {
 		case 'x': // TODO
 			break;
 		default:
@@ -33,24 +34,29 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Set the input and output files.
-	if(argc > 1) {
-		if(strcmp("-", argv[1]) && fopen_s(&yyin, argv[1], "rt")) {
+	if (argc > 1) {
+		if (strcmp("-", argv[1]) && fopen_s(&yyin, argv[1], "rt")) {
 			fprintf(stderr, "%s: cannot open '%s' for reading\n", prog, argv[1]);
 			return 1;
 		}
-		if(argc > 2) {
-			if(fopen_s(&yyout, argv[2], "wt")) {
+		if (argc > 2) {
+			if (fopen_s(&yyout, argv[2], "wt")) {
 				fprintf(stderr, "%s: cannot open '%s' for writing\n", prog, argv[2]);
 				return 1;
 			}
 		}
 	}
 
+	// Parse the input.
+	int parseError = yyparse();
+	if (parseError) {
+		return parseError;
+	}
+
 	// Create the global context.
 	contextStack.emplace_back(std::make_shared<Context>(std::shared_ptr<Context>()));
 
 	// TODO:  define the globals.
-	// 
-	// Parse the input.
-	return yyparse();
+
+	return 0;
 }
