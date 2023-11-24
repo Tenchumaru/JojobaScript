@@ -2,9 +2,7 @@
 #include <cstdio>
 #include <format>
 #include <stdexcept>
-#include "Expression.h"
 #include "JojobaScript.h"
-#include "Statement.h"
 #include "scanner.h"
 
 #pragma warning(push)

@@ -1,5 +1,4 @@
-#include "Statement.h"
-#include "Expression.h"
+#include "JojobaScript.h"
 
 FunctionStatement* FunctionStatement::program;
 

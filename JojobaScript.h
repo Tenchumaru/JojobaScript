@@ -3,10 +3,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-enum class Assignment { AA = 1, ASRA, DA, LSLA, LSRA, MA, OA, PA, SA, TA, XA };
-
-enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
+#include "Statement.h"
+#include "Expression.h"
 
 class ContextTemplate;
 

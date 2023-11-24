@@ -4,9 +4,7 @@
 #pragma warning(disable: 4005) // '*': macro redefinition
 #include <cstdlib> // std::strtod and std::strtoll
 #include "Debug.h"
-#include "Expression.h"
 #include "JojobaScript.h"
-#include "Statement.h"
 #include "parser.h"
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)

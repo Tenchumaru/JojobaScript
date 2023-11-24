@@ -5,10 +5,12 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "JojobaScript.h"
+
+enum class Assignment { AA = 1, ASRA, DA, LSLA, LSRA, MA, OA, PA, SA, TA, XA };
+
+enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };
 
 class Expression;
-class InvocationExpression;
 
 class Statement {
 public:
