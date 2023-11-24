@@ -3,18 +3,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "Context.h"
 #include "Expression.h"
 #include "Statement.h"
-
-class Context {
-public:
-	Context(std::shared_ptr<Context> outerContext) : outerContext(std::move(outerContext)) {}
-	Context(Context&&) = default;
-	~Context() = default;
-
-private:
-	std::shared_ptr<Context> outerContext;
-};
 
 class Type {
 public:

@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Context.cpp" />
     <ClCompile Include="Expression.cc" />
     <ClCompile Include="JojobaScript.cc" />
     <ClCompile Include="parser.cc" />
@@ -95,6 +96,7 @@
     <ClCompile Include="Statement.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Context.h" />
     <ClInclude Include="Expression.h" />
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="parser.h" />

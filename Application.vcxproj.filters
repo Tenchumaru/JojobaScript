@@ -19,6 +19,7 @@
     <ClCompile Include="JojobaScript.cc" />
     <ClCompile Include="Statement.cc" />
     <ClCompile Include="Expression.cc" />
+    <ClCompile Include="Context.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -28,6 +29,7 @@
     <ClInclude Include="scanner.h" />
     <ClInclude Include="Statement.h" />
     <ClInclude Include="Expression.h" />
+    <ClInclude Include="Context.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">
