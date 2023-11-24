@@ -73,6 +73,8 @@ private:
 class BreakStatement : public Statement {
 public:
 	BreakStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
+	BreakStatement(BreakStatement&&) = default;
+	~BreakStatement() = default;
 
 private:
 	int nPrecedingBreaks;
@@ -81,6 +83,8 @@ private:
 class ContinueStatement : public Statement {
 public:
 	ContinueStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
+	ContinueStatement(ContinueStatement&&) = default;
+	~ContinueStatement() = default;
 
 private:
 	int nPrecedingBreaks;
@@ -111,6 +115,7 @@ private:
 class ForStatement : public Statement {
 public:
 	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
+	ForStatement(ForStatement&&) = default;
 	~ForStatement() = default;
 
 private:
@@ -125,6 +130,7 @@ public:
 	static std::unique_ptr<FunctionStatement> program;
 
 	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
+	FunctionStatement(FunctionStatement&&) = default;
 	~FunctionStatement() = default;
 
 private:
@@ -161,6 +167,7 @@ public:
 	ImportStatement(std::string&& moduleName) : moduleName(std::move(moduleName)) {}
 	ImportStatement(std::string&& moduleName, std::string&& alias) : moduleName(std::move(moduleName)), alias(std::move(alias)) {}
 	ImportStatement(std::string&& moduleName, std::vector<std::pair<std::string, std::string>>&& pairs) : moduleName(std::move(moduleName)), pairs(std::move(pairs)) {}
+	ImportStatement(ImportStatement&&) = default;
 	~ImportStatement() = default;
 
 private:
@@ -227,6 +234,7 @@ private:
 class VarStatement : public Statement {
 public:
 	VarStatement(std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>&& initializers) : initializers(std::move(initializers)) {}
+	VarStatement(VarStatement&&) = default;
 	~VarStatement() = default;
 
 private:

@@ -11,6 +11,7 @@ class ContextTemplate;
 class Context {
 public:
 	Context(ContextTemplate& contextTemplate, std::shared_ptr<Context> parentContext) : contextTemplate(contextTemplate), parentContext(std::move(parentContext)) {}
+	Context(Context&&) = default;
 	~Context() = default;
 
 private:
@@ -32,6 +33,7 @@ private:
 class Type {
 public:
 	Type(std::string&& type) : type(std::move(type)) {}
+	Type(Type&&) = default;
 	~Type() = default;
 
 private:
@@ -41,6 +43,7 @@ private:
 class Function {
 public:
 	Function(std::vector<std::string> const& parameters, ContextTemplate const& contextTemplate, std::shared_ptr<Context> parentContext) : parameters(parameters), contextTemplate(contextTemplate), parentContext(std::move(parentContext)) {}
+	Function(Function&&) = default;
 	~Function() = default;
 
 private:
