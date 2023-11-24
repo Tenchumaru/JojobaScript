@@ -4,4 +4,6 @@ std::unique_ptr<FunctionStatement> FunctionStatement::program;
 
 Statement::~Statement() {}
 
+BlockStatement::~BlockStatement() {}
+
 ForStatement::Clause::~Clause() {}

@@ -13,8 +13,6 @@
 	Assignment assignment;
 	std::vector<std::unique_ptr<Statement>>* block;
 	bool boolean;
-	SwitchStatement::Case* case_;
-	std::vector<SwitchStatement::Case>* cases;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
 	InvocationExpression* fexpr;
@@ -50,10 +48,8 @@
 %nonassoc AWAIT
 %left '.' '['
 %right ARROW
-%type<block> block oelse
+%type<block> block cases oelse
 %type<boolean> di uw
-%type<case_> case
-%type<cases> cases
 %type<expr> bexpr iexpr cexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
 %type<fexpr> fexpr
@@ -68,7 +64,7 @@
 %type<initializers> initializers
 %type<kv_list> kv_list okv_list
 %type<obreaks> obreaks
-%type<statement> statement
+%type<statement> case statement
 
 %%
 
@@ -219,8 +215,8 @@ ELSE IF condition_list '{' block '}' { $$ = new IfStatement::Fragment(std::move(
 ;
 
 cases:
-case { $$ = new std::vector<SwitchStatement::Case>; $$->emplace_back(std::move(*$1)); delete $1; }
-| cases case { $1->emplace_back(std::move(*$2)); delete $2; $$ = $1; }
+case { $$ = new std::vector<std::unique_ptr<Statement>>; $$->emplace_back($1); }
+| cases case { $1->emplace_back($2); $$ = $1; }
 ;
 
 case:

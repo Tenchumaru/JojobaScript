@@ -78,6 +78,15 @@ private:
 	Assignment assignment;
 };
 
+class BlockStatement : public Statement {
+public:
+	BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) : statements(std::move(statements)) {}
+	virtual ~BlockStatement() = 0;
+
+protected:
+	std::vector<std::unique_ptr<Statement>> statements;
+};
+
 class BreakStatement : public Statement {
 public:
 	BreakStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
@@ -98,14 +107,13 @@ private:
 	int nPrecedingBreaks;
 };
 
-class DoStatement : public Statement {
+class DoStatement : public BlockStatement {
 public:
-	DoStatement(std::vector<std::unique_ptr<Statement>>&& statements, Expression* expression, bool isWhile) : statements(std::move(statements)), expression(expression), isWhile(isWhile) {}
+	DoStatement(std::vector<std::unique_ptr<Statement>>&& statements, Expression* expression, bool isWhile) : BlockStatement(std::move(statements)), expression(expression), isWhile(isWhile) {}
 	DoStatement(DoStatement&&) = default;
 	~DoStatement() = default;
 
 private:
-	std::vector<std::unique_ptr<Statement>> statements;
 	std::unique_ptr<Expression> expression;
 	bool isWhile;
 };
@@ -120,9 +128,9 @@ private:
 	std::unique_ptr<Expression> expression;
 };
 
-class ForStatement : public Statement {
+class ForStatement : public BlockStatement {
 public:
-	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)), statements(std::move(statements)) {}
+	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)) {}
 	ForStatement(ForStatement&&) = default;
 	~ForStatement() = default;
 
@@ -130,14 +138,13 @@ private:
 	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
 	std::vector<std::unique_ptr<Statement::Clause>> expressionClauses;
 	std::vector<std::unique_ptr<Statement::Clause>> updaterClauses;
-	std::vector<std::unique_ptr<Statement>> statements;
 };
 
-class FunctionStatement : public Statement {
+class FunctionStatement : public BlockStatement {
 public:
 	static std::unique_ptr<FunctionStatement> program;
 
-	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
+	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)) {}
 	FunctionStatement(FunctionStatement&&) = default;
 	~FunctionStatement() = default;
 
@@ -145,10 +152,9 @@ private:
 	std::string name;
 	std::string type;
 	std::vector<std::pair<std::string, std::string>> parameters;
-	std::vector<std::unique_ptr<Statement>> statements;
 };
 
-class IfStatement : public Statement {
+class IfStatement : public BlockStatement {
 public:
 	class Fragment {
 	public:
@@ -161,13 +167,12 @@ public:
 		std::vector<std::unique_ptr<Statement>> statements;
 	};
 
-	IfStatement(std::vector<std::unique_ptr<Fragment>>&& fragments, std::vector<std::unique_ptr<Statement>>&& elseStatements) : fragments(std::move(fragments)), elseStatements(std::move(elseStatements)) {}
+	IfStatement(std::vector<std::unique_ptr<Fragment>>&& fragments, std::vector<std::unique_ptr<Statement>>&& elseStatements) : BlockStatement(std::move(elseStatements)), fragments(std::move(fragments)) {}
 	IfStatement(IfStatement&&) = default;
 	~IfStatement() = default;
 
 private:
 	std::vector<std::unique_ptr<Fragment>> fragments;
-	std::vector<std::unique_ptr<Statement>> elseStatements;
 };
 
 class ImportStatement : public Statement {
@@ -195,16 +200,15 @@ private:
 	bool isIncrement;
 };
 
-class RangeForStatement : public Statement {
+class RangeForStatement : public BlockStatement {
 public:
-	RangeForStatement(std::vector<std::pair<std::string, std::string>>&& ids, Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : ids(std::move(ids)), expression(expression), statements(std::move(statements)) {}
+	RangeForStatement(std::vector<std::pair<std::string, std::string>>&& ids, Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), ids(std::move(ids)), expression(expression) {}
 	RangeForStatement(RangeForStatement&&) = default;
 	~RangeForStatement() = default;
 
 private:
 	std::vector<std::pair<std::string, std::string>> ids;
 	std::unique_ptr<Expression> expression;
-	std::vector<std::unique_ptr<Statement>> statements;
 };
 
 class ReturnStatement : public Statement {
@@ -217,26 +221,24 @@ private:
 	std::unique_ptr<Expression> expression;
 };
 
-class SwitchStatement : public Statement {
+class SwitchStatement : public BlockStatement {
 public:
-	class Case {
+	class Case : public BlockStatement {
 	public:
-		Case(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : expression(expression), statements(std::move(statements)) {}
+		Case(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), expression(expression) {}
 		Case(Case&&) = default;
 		~Case() = default;
 
 	private:
 		std::unique_ptr<Expression> expression;
-		std::vector<std::unique_ptr<Statement>> statements;
 	};
 
-	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<SwitchStatement::Case>&& cases) : initializerClauses(std::move(initializerClauses)), cases(std::move(cases)) {}
+	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& cases) : initializerClauses(std::move(initializerClauses)), BlockStatement(std::move(cases)) {}
 	SwitchStatement(SwitchStatement&&) = default;
 	~SwitchStatement() = default;
 
 private:
 	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
-	std::vector<SwitchStatement::Case> cases;
 };
 
 class VarStatement : public Statement {
@@ -249,15 +251,14 @@ private:
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>> initializers;
 };
 
-class WhileStatement : public Statement {
+class WhileStatement : public BlockStatement {
 public:
-	WhileStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)), isWhile(isWhile) {}
+	WhileStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)), isWhile(isWhile) {}
 	WhileStatement(WhileStatement&&) = default;
 	~WhileStatement() = default;
 
 private:
 	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
-	std::vector<std::unique_ptr<Statement>> statements;
 	bool isWhile;
 };
 
