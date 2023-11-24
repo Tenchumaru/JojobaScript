@@ -195,13 +195,13 @@ oforexpr_list:
 ;
 
 switch_list:
-expr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
-| for_initializers ',' expr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
+expr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(std::make_unique<Statement::ExpressionClause>($1)); }
+| for_initializers ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 condition_list:
-bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(new Statement::ExpressionClause($1)); }
-| for_initializers ',' bexpr { $1->emplace_back(new Statement::ExpressionClause($3)); $$ = $1; }
+bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back(std::make_unique<Statement::ExpressionClause>($1)); }
+| for_initializers ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 oelseif_statements:
