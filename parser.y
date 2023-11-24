@@ -229,7 +229,7 @@ CASE expr ':' block { $$ = new SwitchStatement::Case($2, std::move(*$4)); delete
 ;
 
 imports:
-import { $$ = new std::vector{ std::move(*$1) }; delete $1; }
+import { $$ = new std::vector<std::pair<std::string, std::string>>; $$->emplace_back(std::move(*$1)); delete $1; }
 | imports ',' import { $1->emplace_back(std::move(*$3)); delete $3; $$ = $1; }
 ;
 
@@ -332,7 +332,7 @@ oid_list:
 ;
 
 id_list:
-ID otype { $$ = new std::vector{ std::make_pair(std::move(*$1), std::move(*$2)) }; delete $1; delete $2; }
+ID otype { $$ = new std::vector<std::pair<std::string, std::string>>; $$->emplace_back(std::make_pair(std::move(*$1), std::move(*$2))); delete $1; delete $2; }
 | id_list ',' ID otype { $1->emplace_back(std::make_pair(std::move(*$3), std::move(*$4))); delete $3; delete $4; $$ = $1; }
 ;
 
