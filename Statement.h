@@ -122,7 +122,7 @@ private:
 
 class FunctionStatement : public Statement {
 public:
-	static FunctionStatement* program;
+	static std::unique_ptr<FunctionStatement> program;
 
 	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
 	~FunctionStatement() = default;

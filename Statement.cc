@@ -1,6 +1,6 @@
 #include "JojobaScript.h"
 
-FunctionStatement* FunctionStatement::program;
+std::unique_ptr<FunctionStatement> FunctionStatement::program;
 
 Statement::~Statement() {}
 
