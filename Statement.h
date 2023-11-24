@@ -136,15 +136,23 @@ private:
 
 class IfStatement : public Statement {
 public:
-	IfStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)) {}
-	IfStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements, std::vector<std::unique_ptr<IfStatement>>&& elseIfStatements, std::vector<std::unique_ptr<Statement>>&& elseStatements) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)), elseIfStatements(std::move(elseIfStatements)), elseStatements(std::move(elseStatements)) {}
+	class Fragment {
+	public:
+		Fragment(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)) {}
+		Fragment(Fragment&&) = default;
+		~Fragment() = default;
+
+	private:
+		std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+		std::vector<std::unique_ptr<Statement>> statements;
+	};
+
+	IfStatement(std::vector<std::unique_ptr<Fragment>>&& fragments, std::vector<std::unique_ptr<Statement>>&& elseStatements) : fragments(std::move(fragments)), elseStatements(std::move(elseStatements)) {}
 	IfStatement(IfStatement&&) = default;
 	~IfStatement() = default;
 
 private:
-	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
-	std::vector<std::unique_ptr<Statement>> statements;
-	std::vector<std::unique_ptr<IfStatement>> elseIfStatements; // TODO:  consider replacing with std::vector<std::pair<Expression*, std::vector<std::unique_ptr<Statement>>>>.
+	std::vector<std::unique_ptr<Fragment>> fragments;
 	std::vector<std::unique_ptr<Statement>> elseStatements;
 };
 

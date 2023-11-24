@@ -21,8 +21,8 @@
 	Statement::Clause* for_clause;
 	std::vector<std::unique_ptr<Statement::Clause>>* for_clauses;
 	std::string* id;
-	IfStatement* if_statement;
-	std::vector<std::unique_ptr<IfStatement>>* if_statements;
+	IfStatement::Fragment* if_fragment;
+	std::vector<std::unique_ptr<IfStatement::Fragment>>* if_fragments;
 	std::pair<std::string, std::string>* import;
 	std::tuple<std::string, std::string, std::unique_ptr<Expression>>* initializer;
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
@@ -61,8 +61,8 @@
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
 %type<id> otype otype_list type type_list
 %type<id_list> id_list imports oid_list
-%type<if_statement> elseif_statement
-%type<if_statements> oelseif_statements
+%type<if_fragment> elseif_statement
+%type<if_fragments> oelseif_statements
 %type<import> import
 %type<initializer> initializer
 %type<initializers> initializers
@@ -99,8 +99,9 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	delete $2; delete $6;
 }
 | IF condition_list '{' block '}' oelseif_statements oelse {
-	$$ = new IfStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$7));
-	delete $2; delete $4; delete $6; delete $7;
+	auto p = std::make_unique<IfStatement::Fragment>(std::move(*$2), std::move(*$4)); delete $2; delete $4;
+	$6->emplace($6->begin(), std::move(p));
+	$$ = new IfStatement(std::move(*$6), std::move(*$7)); delete $6; delete $7;
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
 | SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
@@ -205,7 +206,7 @@ bexpr { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_ba
 ;
 
 oelseif_statements:
-%empty { $$ = new std::vector<std::unique_ptr<IfStatement>>; }
+%empty { $$ = new std::vector<std::unique_ptr<IfStatement::Fragment>>; }
 | oelseif_statements elseif_statement { $1->emplace_back($2); $$ = $1; }
 ;
 
@@ -215,7 +216,7 @@ oelse:
 ;
 
 elseif_statement:
-ELSE IF condition_list '{' block '}' { $$ = new IfStatement(std::move(*$3), std::move(*$5)); delete $3; delete $5; }
+ELSE IF condition_list '{' block '}' { $$ = new IfStatement::Fragment(std::move(*$3), std::move(*$5)); delete $3; delete $5; }
 ;
 
 cases:
