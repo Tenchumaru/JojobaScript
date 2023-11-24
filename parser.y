@@ -141,8 +141,7 @@ initializer { $$ = new std::vector<std::tuple<std::string, std::string, std::uni
 ;
 
 initializer:
-ID otype { $$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>()); delete $1; delete $2; }
-| ID otype ASSIGNMENT expr {
+ID otype ASSIGNMENT expr {
 	if ($3 != Assignment()) throw std::logic_error("invalid initializing assignment");
 	$$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>($4)); delete $1; delete $2;
 }

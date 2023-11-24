@@ -1,4 +1,4 @@
-All zeros of a type (e.g. `0`, `false`, `null`) are falsy.  Empty dictionaries and lists are falsy.  Everything else is truthy.
+All zeros of a type (e.g. `0`, `false`) are falsy.  Empty dictionaries and lists are falsy.  Everything else is truthy.
 
 A "block" is delimited by curly braces.  Each block has its own context.
 
