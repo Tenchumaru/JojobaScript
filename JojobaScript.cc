@@ -7,7 +7,6 @@ int yyparse();
 
 extern FILE *yyin, *yyout;
 std::vector<std::shared_ptr<Context>> contextStack;
-std::vector<ContextTemplate> contextTemplates;
 
 static int usage(char const* prog) {
 	fprintf(stderr, "usage: %s [input.s [output.hex]]\n", prog);
@@ -47,11 +46,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	// Create the first context template for globals.
-	contextTemplates.emplace_back(ContextTemplate());
-
 	// Create the global context.
-	contextStack.emplace_back(std::make_shared<Context>(contextTemplates.back(), std::shared_ptr<Context>()));
+	contextStack.emplace_back(std::make_shared<Context>(std::shared_ptr<Context>()));
 
 	// TODO:  define the globals.
 	// 
