@@ -19,11 +19,11 @@ namespace {
 
 	Value PerformNumericBinaryOperation(Value const& leftValue, Value const& rightValue, std::function<std::int64_t(std::int64_t, std::int64_t)> integralOperation, std::function<double(double, double)> realOperation) {
 		if ((!std::holds_alternative<std::int64_t>(leftValue) && !std::holds_alternative<double>(leftValue)) || (!std::holds_alternative<std::int64_t>(rightValue) && !std::holds_alternative<double>(rightValue))) {
-			throw std::logic_error("cannot use non-numeric in a numeric operation");
+			throw std::runtime_error("cannot use non-numeric in a numeric operation");
 		} else if (std::holds_alternative<std::int64_t>(leftValue) && std::holds_alternative<std::int64_t>(rightValue)) {
 			return integralOperation(std::get<std::int64_t>(leftValue), std::get<std::int64_t>(rightValue));
 		} else if (!realOperation) {
-			throw std::logic_error("cannot use non-integer in an integral operation");
+			throw std::runtime_error("cannot use non-integer in an integral operation");
 		} else {
 			auto leftReal = std::holds_alternative<double>(leftValue) ? std::get<double>(leftValue) : static_cast<double>(std::get<std::int64_t>(leftValue));
 			auto rightReal = std::holds_alternative<double>(rightValue) ? std::get<double>(rightValue) : static_cast<double>(std::get<std::int64_t>(rightValue));
@@ -35,9 +35,9 @@ namespace {
 		if (std::holds_alternative<std::int64_t>(value)) {
 			return integralOperation(std::get<std::int64_t>(value));
 		} else if (!std::holds_alternative<double>(value)) {
-			throw std::logic_error("cannot use non-numeric in a numeric operation");
+			throw std::runtime_error("cannot use non-numeric in a numeric operation");
 		} else if (!realOperation) {
-			throw std::logic_error("cannot use non-integer in an integral operation");
+			throw std::runtime_error("cannot use non-integer in an integral operation");
 		} else {
 			return realOperation(std::get<double>(value));
 		}
@@ -46,7 +46,7 @@ namespace {
 Expression::~Expression() {}
 
 Value& Expression::GetReference(std::shared_ptr<Context> context) {
-	throw std::logic_error("cannot get a reference to an r-value expression");
+	throw std::runtime_error("cannot get a reference to an r-value expression");
 }
 
 Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {

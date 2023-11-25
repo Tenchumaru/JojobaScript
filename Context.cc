@@ -4,7 +4,7 @@
 bool AsBoolean(Value const& value) {
 	switch (value.index()) {
 	case 0: // nullptr_t
-		throw std::logic_error("cannot use empty value");
+		throw std::runtime_error("cannot use empty value");
 	case 1: // bool
 		return std::get<1>(value);
 	case 2: // std::int64_t
@@ -23,7 +23,7 @@ void Context::AddValue(std::string const& key, Value value) {
 	if (it == values.end()) {
 		values.insert({ key, value });
 	} else {
-		throw std::logic_error("cannot add known value");
+		throw std::runtime_error("cannot add known value");
 	}
 }
 
@@ -34,7 +34,7 @@ Value& Context::GetReference(std::string const& key) {
 	} else if (outerContext) {
 		return outerContext->GetReference(key);
 	}
-	throw std::logic_error("cannot find value");
+	throw std::runtime_error("cannot find value");
 }
 
 Value Context::GetValue(std::string const& key) {
@@ -44,7 +44,7 @@ Value Context::GetValue(std::string const& key) {
 	} else if (outerContext) {
 		return outerContext->GetValue(key);
 	}
-	throw std::logic_error("cannot find value");
+	throw std::runtime_error("cannot find value");
 }
 
 void Context::SetValue(std::string const& key, Value value) {
@@ -55,5 +55,5 @@ void Context::SetValue(std::string const& key, Value value) {
 	} else if (outerContext) {
 		return outerContext->SetValue(key, value);
 	}
-	throw std::logic_error("cannot find key");
+	throw std::runtime_error("cannot find key");
 }
