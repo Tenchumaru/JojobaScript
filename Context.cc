@@ -10,7 +10,7 @@ void Context::AddValue(std::string const& key, Value value) {
 	}
 }
 
-int Context::GetValue(std::string const& key) {
+Value Context::GetValue(std::string const& key) {
 	auto it = values.find(key);
 	if (it != values.end()) {
 		return it->second;

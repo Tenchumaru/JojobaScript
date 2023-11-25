@@ -3,104 +3,104 @@
 
 Expression::~Expression() {}
 
-int& Expression::GetReference(std::shared_ptr<Context> context) {
+Value& Expression::GetReference(std::shared_ptr<Context> context) {
 	throw std::logic_error("cannot get a reference to an r-value expression");
 }
 
-int AwaitExpression::GetValue(std::shared_ptr<Context> context) {
+Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int BinaryExpression::GetValue(std::shared_ptr<Context> context) {
+Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int BooleanExpression::GetValue(std::shared_ptr<Context> context) {
+Value BooleanExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int DictionaryExpression::GetValue(std::shared_ptr<Context> context) {
+Value DictionaryExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
+Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int& DotExpression::GetReference(std::shared_ptr<Context> context) {
+Value& DotExpression::GetReference(std::shared_ptr<Context> context) {
 	context;
-	static int n;
+	static Value n;
 	return n;
 }
 
-int DotExpression::GetValue(std::shared_ptr<Context> context) {
+Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
+Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
 	context;
-	static int n;
+	static Value n;
 	return n;
 }
 
-int IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
+Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int& IndexExpression::GetReference(std::shared_ptr<Context> context) {
+Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	context;
-	static int n;
+	static Value n;
 	return n;
 }
 
-int IndexExpression::GetValue(std::shared_ptr<Context> context) {
+Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int InvocationExpression::GetValue(std::shared_ptr<Context> context) {
+Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int LambdaExpression::GetValue(std::shared_ptr<Context> context) {
+Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int ListExpression::GetValue(std::shared_ptr<Context> context) {
+Value ListExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int ListComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
+Value ListComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int NumericExpression::GetValue(std::shared_ptr<Context> context) {
+Value NumericExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int SetExpression::GetValue(std::shared_ptr<Context> context) {
+Value SetExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int TernaryExpression::GetValue(std::shared_ptr<Context> context) {
+Value TernaryExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }
 
-int UnaryExpression::GetValue(std::shared_ptr<Context> context) {
+Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
 	context;
 	return 0;
 }

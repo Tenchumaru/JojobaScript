@@ -12,7 +12,7 @@ public:
 	Context(Context&&) = default;
 	~Context() = default;
 	void AddValue(std::string const& key, Value value);
-	int GetValue(std::string const& key);
+	Value GetValue(std::string const& key);
 	void SetValue(std::string const& key, Value value);
 
 private:
