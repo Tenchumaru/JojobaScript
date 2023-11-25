@@ -5,8 +5,9 @@ void Context::AddValue(std::string const& key, Value value) {
 	auto it = values.find(key);
 	if (it == values.end()) {
 		values.insert({ key, value });
+	} else {
+		throw std::logic_error("cannot add known value");
 	}
-	throw std::logic_error("cannot add known value");
 }
 
 int Context::GetValue(std::string const& key) {
