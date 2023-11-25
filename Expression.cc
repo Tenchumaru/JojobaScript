@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <functional>
+#include <iterator>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
@@ -140,16 +142,22 @@ Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain an indexable type.
-	context;
-	static Value n;
-	return n;
+	// TODO:  this supports only lists.
+	auto indexedValue = indexedExpression->GetValue(context);
+	if (indexedValue.index() == 5) {
+		auto indexingValue = indexingExpression->GetValue(context);
+		if (indexingValue.index() == 2) {
+			auto&& list = *std::get<5>(indexedValue);
+			std::int64_t index = std::get<2>(indexingValue);
+			return list[index];
+		}
+		throw std::runtime_error("cannot index list with non-integral value");
+	}
+	throw std::runtime_error("cannot index non-indexable");
 }
 
 Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain an indexable type.
-	context;
-	return 0;
+	return GetReference(context);
 }
 
 Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
@@ -165,13 +173,13 @@ Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value ListExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value cannot yet contain a list.
-	context;
-	return 0;
+	List values;
+	std::ranges::transform(expressions, std::back_inserter(values), [&context](auto&& p) { return p->GetValue(context); });
+	return std::make_shared<List>(std::move(values));
 }
 
 Value ListComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value cannot yet contain a list.
+	// TODO
 	context;
 	return 0;
 }

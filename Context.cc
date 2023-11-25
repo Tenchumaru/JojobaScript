@@ -13,6 +13,8 @@ bool AsBoolean(Value const& value) {
 		return std::get<3>(value) != 0.0;
 	case 4: // std::string
 		return !std::get<4>(value).empty();
+	case 5: // std::shared_ptr<List>
+		return !std::get<5>(value)->empty();
 	default:
 		throw std::logic_error("unexpected value index");
 	}

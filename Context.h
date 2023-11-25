@@ -4,8 +4,13 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
-using Value = std::variant<nullptr_t, bool, std::int64_t, double, std::string>;
+class List;
+
+using Value = std::variant<nullptr_t, bool, std::int64_t, double, std::string, std::shared_ptr<List>>;
+
+class List : public std::vector<Value> {};
 
 bool AsBoolean(Value const& value);
 
