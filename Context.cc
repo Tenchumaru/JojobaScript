@@ -10,6 +10,15 @@ void Context::AddValue(std::string const& key, Value value) {
 	}
 }
 
+Value& Context::GetReference(std::string const& key) {
+	auto it = values.find(key);
+	if (it != values.end()) {
+		return it->second;
+	} else if (outerContext) {
+		return outerContext->GetReference(key);
+	}
+	throw std::logic_error("cannot find value");}
+
 Value Context::GetValue(std::string const& key) {
 	auto it = values.find(key);
 	if (it != values.end()) {

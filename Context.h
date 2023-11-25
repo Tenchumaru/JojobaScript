@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-using Value = int;
+using Value = std::int64_t;
 
 class Context {
 public:
@@ -12,6 +12,7 @@ public:
 	Context(Context&&) = default;
 	~Context() = default;
 	void AddValue(std::string const& key, Value value);
+	Value& GetReference(std::string const& key);
 	Value GetValue(std::string const& key);
 	void SetValue(std::string const& key, Value value);
 
