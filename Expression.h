@@ -11,7 +11,7 @@ class Statement;
 class Expression {
 public:
 	virtual ~Expression() = 0;
-	virtual int& GetReference(std::shared_ptr<Context> context) = 0;
+	virtual int& GetReference(std::shared_ptr<Context> context);
 	virtual int GetValue(std::shared_ptr<Context> context) = 0;
 
 private:
@@ -23,7 +23,6 @@ public:
 	AwaitExpression(Expression* expression) : expression(expression) {}
 	AwaitExpression(AwaitExpression&&) = default;
 	~AwaitExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -35,7 +34,6 @@ public:
 	BinaryExpression(Expression* leftExpression, int operation, Expression* rightExpression) : leftExpression(leftExpression), operation(operation), rightExpression(rightExpression) {}
 	BinaryExpression(BinaryExpression&&) = default;
 	~BinaryExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -49,7 +47,6 @@ public:
 	BooleanExpression(bool value) : value(value) {}
 	BooleanExpression(BooleanExpression&&) = default;
 	~BooleanExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -61,7 +58,6 @@ public:
 	DictionaryExpression(std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>&& keyValuePairs) : keyValuePairs(std::move(keyValuePairs)) {}
 	DictionaryExpression(DictionaryExpression&&) = default;
 	~DictionaryExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -73,7 +69,6 @@ public:
 	DictionaryComprehensionExpression(Expression* keyExpression, Expression* valueExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : keyExpression(keyExpression), valueExpression(valueExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
 	DictionaryComprehensionExpression(DictionaryComprehensionExpression&&) = default;
 	~DictionaryComprehensionExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -126,7 +121,6 @@ public:
 	InvocationExpression(Expression* expression, std::vector<std::unique_ptr<Expression>>&& arguments) : expression(expression), arguments(std::move(arguments)) {}
 	InvocationExpression(InvocationExpression&&) = default;
 	~InvocationExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -140,7 +134,6 @@ public:
 	LambdaExpression(std::vector<std::pair<std::string, std::string>>&& ids, Expression* expression) : ids(std::move(ids)), expression(expression) {}
 	LambdaExpression(LambdaExpression&&) = default;
 	~LambdaExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -154,7 +147,6 @@ public:
 	ListExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
 	ListExpression(ListExpression&&) = default;
 	~ListExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -166,7 +158,6 @@ public:
 	ListComprehensionExpression(Expression* targetExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : targetExpression(targetExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
 	ListComprehensionExpression(ListComprehensionExpression&&) = default;
 	~ListComprehensionExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -180,7 +171,6 @@ public:
 	NumericExpression(std::variant<std::int64_t, double>&& value) : value(std::move(value)) {}
 	NumericExpression(NumericExpression&&) = default;
 	~NumericExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -192,7 +182,6 @@ public:
 	SetExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
 	SetExpression(SetExpression&&) = default;
 	~SetExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -204,7 +193,6 @@ public:
 	TernaryExpression(Expression* expression, Expression* trueExpression, Expression* falseExpression) : expression(expression), trueExpression(trueExpression), falseExpression(falseExpression) {}
 	TernaryExpression(TernaryExpression&&) = default;
 	~TernaryExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -218,7 +206,6 @@ public:
 	UnaryExpression(Expression* expression, int operation) : expression(expression), operation(operation) {}
 	UnaryExpression(UnaryExpression&&) = default;
 	~UnaryExpression() = default;
-	int& GetReference(std::shared_ptr<Context> context) override;
 	int GetValue(std::shared_ptr<Context> context) override;
 
 private:
