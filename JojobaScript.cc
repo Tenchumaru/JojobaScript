@@ -7,7 +7,6 @@ int yyparse();
 
 extern FILE* yyin;
 extern FILE* yyout;
-std::vector<std::shared_ptr<Context>> contextStack;
 
 static int usage(char const* prog) {
 	fprintf(stderr, "usage: %s [input.s [output.hex]]\n", prog);
@@ -54,7 +53,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Create the global context.
-	contextStack.emplace_back(std::make_shared<Context>(std::shared_ptr<Context>()));
+	auto globalContext = std::make_shared<Context>(std::shared_ptr<Context>());
 
 	// TODO:  define the globals.
 

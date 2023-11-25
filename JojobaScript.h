@@ -27,5 +27,3 @@ private:
 	std::vector<std::string> parameters;
 	std::shared_ptr<Context> outerContext;
 };
-
-extern std::vector<std::shared_ptr<Context>> contextStack;
