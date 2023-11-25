@@ -146,7 +146,7 @@ public:
 private:
 	std::vector<std::pair<std::string, std::string>> ids;
 	std::vector<std::unique_ptr<Statement>> statements;
-	Expression* expression = nullptr;
+	std::unique_ptr<Expression> expression;
 };
 
 class ListExpression : public Expression {
