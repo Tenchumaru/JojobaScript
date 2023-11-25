@@ -25,7 +25,7 @@
 	std::tuple<std::string, std::string, std::unique_ptr<Expression>>* initializer;
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
 	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
-	std::variant<std::int64_t, double>* number;
+	Value* number;
 	int obreaks;
 	Statement* statement;
 	std::vector<std::pair<std::string, std::string>>* id_list;
@@ -255,8 +255,9 @@ cexpr:
 ;
 
 bexpr:
-BOOLEAN { $$ = new BooleanExpression($1); }
-| NUMBER { $$ = new NumericExpression(std::move(*$1)); delete $1; }
+BOOLEAN { $$ = new LiteralExpression($1); }
+| NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
+| STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
 | '-' expr %prec NEG { $$ = new UnaryExpression($2, '-'); }
 | '~' expr %prec NEG { $$ = new UnaryExpression($2, '~'); }

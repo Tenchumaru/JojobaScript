@@ -43,17 +43,6 @@ private:
 	std::unique_ptr<Expression> rightExpression;
 };
 
-class BooleanExpression : public Expression {
-public:
-	BooleanExpression(bool value) : value(value) {}
-	BooleanExpression(BooleanExpression&&) = default;
-	~BooleanExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
-	bool value;
-};
-
 class DictionaryExpression : public Expression {
 public:
 	DictionaryExpression(std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>&& keyValuePairs) : keyValuePairs(std::move(keyValuePairs)) {}
@@ -167,15 +156,15 @@ private:
 	std::unique_ptr<Expression> sourceExpression;
 };
 
-class NumericExpression : public Expression {
+class LiteralExpression : public Expression {
 public:
-	NumericExpression(std::variant<std::int64_t, double>&& value) : value(std::move(value)) {}
-	NumericExpression(NumericExpression&&) = default;
-	~NumericExpression() = default;
+	LiteralExpression(Value&& value) : value(std::move(value)) {}
+	LiteralExpression(LiteralExpression&&) = default;
+	~LiteralExpression() = default;
 	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:
-	std::variant<std::int64_t, double> value;
+	Value value;
 };
 
 class SetExpression : public Expression {

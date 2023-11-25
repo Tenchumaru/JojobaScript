@@ -1,9 +1,48 @@
+#include <functional>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
 #include "JojobaScript.h"
 #include "parser.h"
 
+namespace {
+	std::int64_t EvaluateIntegralExponentiation(std::int64_t left, std::int64_t right) {
+		if (right < 0) {
+			return 0;
+		} else if (right == 0) {
+			return 1;
+		} else if (right & 1) {
+			return left * EvaluateIntegralExponentiation(left * left, (right - 1) >> 1);
+		}
+		return EvaluateIntegralExponentiation(left * left, right >> 1);
+	}
+
+	Value PerformNumericBinaryOperation(Value const& leftValue, Value const& rightValue, std::function<std::int64_t(std::int64_t, std::int64_t)> integralOperation, std::function<double(double, double)> realOperation) {
+		if ((!std::holds_alternative<std::int64_t>(leftValue) && !std::holds_alternative<double>(leftValue)) || (!std::holds_alternative<std::int64_t>(rightValue) && !std::holds_alternative<double>(rightValue))) {
+			throw std::logic_error("cannot use non-numeric in a numeric operation");
+		} else if (std::holds_alternative<std::int64_t>(leftValue) && std::holds_alternative<std::int64_t>(rightValue)) {
+			return integralOperation(std::get<std::int64_t>(leftValue), std::get<std::int64_t>(rightValue));
+		} else if (!realOperation) {
+			throw std::logic_error("cannot use non-integer in an integral operation");
+		} else {
+			auto leftReal = std::holds_alternative<double>(leftValue) ? std::get<double>(leftValue) : static_cast<double>(std::get<std::int64_t>(leftValue));
+			auto rightReal = std::holds_alternative<double>(rightValue) ? std::get<double>(rightValue) : static_cast<double>(std::get<std::int64_t>(rightValue));
+			return realOperation(leftReal, rightReal);
+		}
+	}
+
+	Value PerformNumericUnaryOperation(Value const& value, std::function<std::int64_t(std::int64_t)> integralOperation, std::function<double(double)> realOperation) {
+		if (std::holds_alternative<std::int64_t>(value)) {
+			return integralOperation(std::get<std::int64_t>(value));
+		} else if (!std::holds_alternative<double>(value)) {
+			throw std::logic_error("cannot use non-numeric in a numeric operation");
+		} else if (!realOperation) {
+			throw std::logic_error("cannot use non-integer in an integral operation");
+		} else {
+			return realOperation(std::get<double>(value));
+		}
+	}
+}
 Expression::~Expression() {}
 
 Value& Expression::GetReference(std::shared_ptr<Context> context) {
@@ -18,61 +57,53 @@ Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {
 Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
 	if (operation == AND) {
 		auto leftValue = leftExpression->GetValue(context);
-		return leftValue ? rightExpression->GetValue(context) : leftValue;
+		return AsBoolean(leftValue) ? rightExpression->GetValue(context) : leftValue;
 	} else if (operation == OR) {
 		auto leftValue = leftExpression->GetValue(context);
-		return leftValue ? leftValue : rightExpression->GetValue(context);
-	} else if (operation == SS) {
-		auto leftValue = leftExpression->GetValue(context);
-		auto rightValue = rightExpression->GetValue(context);
-		auto iota = std::ranges::iota_view{ 1ll, rightValue };
-		return std::accumulate(iota.begin(), iota.end(), leftValue, [](auto a, auto b) { return a * b; });
+		return AsBoolean(leftValue) ? leftValue : rightExpression->GetValue(context);
 	}
 	auto leftValue = leftExpression->GetValue(context);
 	auto rightValue = rightExpression->GetValue(context);
 	switch (operation) {
 	case EQ:
-		return leftValue == rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a == b; }, [](auto a, auto b) { return a == b; });
 	case NE:
-		return leftValue != rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a != b; }, [](auto a, auto b) { return a != b; });
 	case LE:
-		return leftValue <= rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a <= b; }, [](auto a, auto b) { return a <= b; });
 	case GE:
-		return leftValue >= rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a >= b; }, [](auto a, auto b) { return a >= b; });
 	case '<':
-		return leftValue < rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a < b; }, [](auto a, auto b) { return a < b; });
 	case '>':
-		return leftValue > rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a > b; }, [](auto a, auto b) { return a > b; });
 	case '+':
-		return leftValue + rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a + b; }, [](auto a, auto b) { return a + b; });
 	case '-':
-		return leftValue - rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a - b; }, [](auto a, auto b) { return a - b; });
 	case '&':
-		return leftValue & rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a & b; }, {});
 	case '|':
-		return leftValue | rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a | b; }, {});
 	case '^':
-		return leftValue ^ rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a ^ b; }, {});
 	case '*':
-		return leftValue * rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a * b; }, [](auto a, auto b) { return a * b; });
 	case '/':
-		return leftValue / rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a / b; }, [](auto a, auto b) { return a / b; });
 	case '%':
-		return leftValue % rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a % b; }, {});
 	case ASR:
-		return leftValue >> rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a >> b; }, {});
 	case LSR:
-		return static_cast<Value>(static_cast<std::uint64_t>(leftValue) >> rightValue);
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return static_cast<std::int64_t>(static_cast<std::uint64_t>(a) >> b); }, {});
 	case SL:
-		return leftValue << rightValue;
+		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a << b; }, {});
+	case SS:
+		return PerformNumericBinaryOperation(leftValue, rightValue, EvaluateIntegralExponentiation, [](auto a, auto b) { return std::pow(a, b); });
 	default:
 		throw std::logic_error("unexpected binary operation");
 	}
-	return 0;
-}
-
-Value BooleanExpression::GetValue(std::shared_ptr<Context> /*context*/) {
-	return value;
 }
 
 Value DictionaryExpression::GetValue(std::shared_ptr<Context> context) {
@@ -145,9 +176,9 @@ Value ListComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
 	return 0;
 }
 
-Value NumericExpression::GetValue(std::shared_ptr<Context> /*context*/) {
-	// TODO:  Value contains only an integer.
-	return std::get<0>(value);
+Value LiteralExpression::GetValue(std::shared_ptr<Context> /*context*/) {
+	// Value contains a number or string.
+	return value;
 }
 
 Value SetExpression::GetValue(std::shared_ptr<Context> context) {
@@ -157,20 +188,19 @@ Value SetExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value TernaryExpression::GetValue(std::shared_ptr<Context> context) {
-	return expression->GetValue(context) ? trueExpression->GetValue(context) : falseExpression->GetValue(context);
+	return AsBoolean(expression->GetValue(context)) ? trueExpression->GetValue(context) : falseExpression->GetValue(context);
 }
 
 Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
 	auto value = expression->GetValue(context);
 	switch (operation) {
 	case '-':
-		return -value;
+		return PerformNumericUnaryOperation(value, [](auto v) { return -v; }, [](auto v) { return -v; });
 	case '~':
-		return ~value;
+		return PerformNumericUnaryOperation(value, [](auto v) { return ~v; }, {});
 	case '!':
-		return value == 0;
+		return !AsBoolean(value);
 	default:
 		throw std::logic_error("unexpected unary operation");
 	}
-	return 0;
 }

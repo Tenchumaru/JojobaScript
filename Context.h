@@ -3,8 +3,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
-using Value = std::int64_t;
+using Value = std::variant<nullptr_t, bool, std::int64_t, double, std::string>;
+
+bool AsBoolean(Value const& value);
 
 class Context {
 public:
