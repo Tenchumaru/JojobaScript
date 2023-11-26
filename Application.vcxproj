@@ -105,6 +105,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output" />
+    <None Include="Value.cc.g.inl" />
+    <None Include="Value.h.g.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -35,5 +35,11 @@
     <None Include="parser.output">
       <Filter>Generated Files</Filter>
     </None>
+    <None Include="Value.cc.g.inl">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="Value.h.g.inl">
+      <Filter>Generated Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

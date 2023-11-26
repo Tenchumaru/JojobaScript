@@ -10,5 +10,10 @@
     <None Include="Makefile" />
     <None Include="parser.y" />
     <None Include="scanner.l" />
+    <None Include="Value.cc.tt" />
+    <None Include="Value.h.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Value.txt" />
   </ItemGroup>
 </Project>

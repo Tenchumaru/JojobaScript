@@ -1,0 +1,20 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".g.inl" #>
+// This file is auto-generated; do not edit.
+
+bool AsBoolean(Value const& value) {
+	switch (value.index()) {
+<#
+string[] lines = File.ReadAllLines("Value.txt");
+foreach ((int index, string typeName, string code) in lines.Select((s) => s.Split('\t')).Select((a, i) => (i, a[0], a[1]))) {
+#>	case <#= index #>: // <#= typeName #>
+		<#= code #>
+<#
+}
+#>	default:
+		throw std::logic_error("unexpected value index");
+	}
+}

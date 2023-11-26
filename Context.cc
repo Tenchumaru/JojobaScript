@@ -1,28 +1,8 @@
 #include <stdexcept>
 #include "Context.h"
+#include "Value.cc.g.inl"
 
-bool AsBoolean(Value const& value) {
-	switch (value.index()) {
-	case 0: // nullptr_t
-		throw std::runtime_error("cannot use empty value");
-	case 1: // bool
-		return std::get<1>(value);
-	case 2: // std::int64_t
-		return std::get<2>(value) != 0;
-	case 3: // double
-		return std::get<3>(value) != 0.0;
-	case 4: // std::string
-		return !std::get<4>(value).empty();
-	case 5: // std::shared_ptr<List>
-		return !std::get<5>(value)->empty();
-	case 6: // std::shared_ptr<Dictionary>
-		return !std::get<6>(value)->empty();
-	default:
-		throw std::logic_error("unexpected value index");
-	}
-}
-
-void Context::AddValue(std::string const& key, Value value) {
+void Context::AddValue(std::string const& key, Value const& value) {
 	auto it = values.find(key);
 	if (it == values.end()) {
 		values.insert({ key, value });
@@ -51,7 +31,7 @@ Value Context::GetValue(std::string const& key) {
 	throw std::runtime_error("cannot find value");
 }
 
-void Context::SetValue(std::string const& key, Value value) {
+void Context::SetValue(std::string const& key, Value const& value) {
 	// TODO:  add the "const" concept and refuse to set such values.
 	auto it = values.find(key);
 	if (it != values.end()) {
