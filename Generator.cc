@@ -3,40 +3,55 @@
 #include <stdexcept>
 #include "Generator.h"
 
-Generator::~Generator() {}
+Strategy::~Strategy() {}
 
-Value Generator::Evaluate(std::function<void(std::shared_ptr<Context>)> fn) {
-	auto context = std::make_shared<Context>(outerContext);
-	fn(context);
-	return targetExpression->GetValue(context);
-}
-
-std::shared_ptr<Generator> Generator::Create(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::vector<std::pair<std::string, std::string>> const& ids, Value&& sourceValue) {
+Generator::Generator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::vector<std::pair<std::string, std::string>> const& ids, std::unique_ptr<Expression> const& sourceExpression) : outerContext(outerContext), targetExpression(targetExpression), ids(ids), sourceExpression(sourceExpression) {
+	Value sourceValue = sourceExpression->GetValue(outerContext);
 	if (std::holds_alternative<std::string>(sourceValue)) {
 		if (ids.size() != 1) {
 			throw std::runtime_error("too many comprehension identifiers");
 		}
-		return std::make_shared<StringGenerator>(outerContext, std::cref(targetExpression), std::cref(ids[0]), std::get<std::string>(sourceValue));
+		strategy = std::make_unique<StringStrategy>(std::get<std::string>(sourceValue));
+	} else if (std::holds_alternative<std::shared_ptr<Set>>(sourceValue)) {
+		strategy = std::make_unique<SetStrategy>(std::get<std::shared_ptr<Set>>(sourceValue));
 	} else if (std::holds_alternative<std::shared_ptr<List>>(sourceValue)) {
-		if (ids.size() != 1) {
-			throw std::runtime_error("too many comprehension identifiers");
-		}
-		return std::make_shared<ListGenerator>(outerContext, std::cref(targetExpression), std::cref(ids[0]), std::get<std::shared_ptr<List>>(sourceValue));
+		strategy = std::make_unique<ListStrategy>(std::get<std::shared_ptr<List>>(sourceValue));
 	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(sourceValue)) {
 		if (ids.size() != 2) {
 			throw std::runtime_error("incorrect number of comprehension identifiers");
 		}
-		return std::make_shared<DictionaryGenerator>(outerContext, std::cref(targetExpression), std::cref(ids[0]), std::cref(ids[1]), std::get<std::shared_ptr<Dictionary>>(sourceValue));
+		strategy = std::make_unique<DictionaryStrategy>(std::get<std::shared_ptr<Dictionary>>(sourceValue));
 	} else if (std::holds_alternative<std::shared_ptr<Generator>>(sourceValue)) {
-		if (ids.size() != 1) {
-			throw std::runtime_error("too many comprehension identifiers");
-		}
-		return std::make_shared<GeneratorGenerator>(outerContext, std::cref(targetExpression), std::cref(ids[0]), std::get<std::shared_ptr<Generator>>(sourceValue));
+		strategy = std::make_unique<GeneratorStrategy>(std::get<std::shared_ptr<Generator>>(sourceValue));
+	} else {
+		throw std::runtime_error("source value is not iterable");
 	}
-	throw std::runtime_error("source value is not iterable");
 }
 
-Value DictionaryGenerator::operator++() {
+Value Generator::operator++() {
+	Value nextValue = ++*strategy;
+	if (std::holds_alternative<nullptr_t>(nextValue)) {
+		return nextValue;
+	}
+	auto context = std::make_shared<Context>(outerContext);
+	if (ids.size() == 1) {
+		context->AddValue(ids.back().first, nextValue);
+	} else if (std::holds_alternative<std::shared_ptr<List>>(nextValue)) {
+		auto&& list = *std::get<std::shared_ptr<List>>(nextValue);
+		if (ids.size() != list.size()) {
+			throw std::runtime_error("incorrect number of comprehension identifiers");
+		}
+		for (size_t i = 0; i < ids.size(); ++i) {
+			context->AddValue(ids[i].first, list[i]);
+		}
+	} else {
+		throw std::runtime_error("incorrect number of comprehension identifiers");
+	}
+	Value targetValue = targetExpression->GetValue(context);
+	return targetValue;
+}
+
+Value DictionaryStrategy::operator++() {
 	if (keys.empty()) {
 		std::ranges::transform(*sourceValue, std::back_inserter(keys), [](auto const& pair) { return pair.first; });
 		keyIt = keys.begin();
@@ -45,12 +60,9 @@ Value DictionaryGenerator::operator++() {
 	}
 	if (keyIt != keys.end()) {
 		if (keys.size() == sourceValue->size()) {
-			auto valueIt = sourceValue->find(*keyIt);
-			if (valueIt != sourceValue->end()) {
-				Value nextValue = valueIt->second;
-				return Evaluate([this, valueIt](std::shared_ptr<Context> context) {
-					context->AddValue(keyId.first, valueIt->first),
-					context->AddValue(valueId.first, valueIt->second); });
+			auto pairIt = sourceValue->find(*keyIt);
+			if (pairIt != sourceValue->end()) {
+				return std::make_shared<List>(std::vector<Value>{ pairIt->first, pairIt->second });
 			}
 		}
 		throw std::runtime_error("dictionary changed");
@@ -58,36 +70,36 @@ Value DictionaryGenerator::operator++() {
 	return nullptr;
 }
 
-Value GeneratorGenerator::operator++() {
-	Value nextValue = ++*sourceValue;
-	if (std::holds_alternative<nullptr_t>(nextValue)) {
-		return nextValue;
-	}
-	return Evaluate([this, &nextValue](std::shared_ptr<Context> context) { context->AddValue(id.first, nextValue); });
+Value GeneratorStrategy::operator++() {
+	return ++*sourceValue;
 }
 
-Value ListGenerator::operator++() {
+Value ListStrategy::operator++() {
 	if (index < 0) {
 		index = 0;
 	} else if (index < sourceValue->size()) {
 		++index;
 	}
 	if (index < sourceValue->size()) {
-		Value nextValue = (*sourceValue)[index];
-		return Evaluate([this, &nextValue](std::shared_ptr<Context> context) { context->AddValue(id.first, nextValue); });
+		return (*sourceValue)[index];
 	}
 	return nullptr;
 }
 
-Value StringGenerator::operator++() {
-	if (it == std::string::const_iterator{}) {
+std::shared_ptr<List> SetStrategy::ConvertToList(std::shared_ptr<Set> sourceValue) {
+	auto&& set = *sourceValue;
+	std::vector<Value> values(set.begin(), set.end());
+	return std::make_shared<List>(std::move(values));
+}
+
+Value StringStrategy::operator++() {
+	if (!it.has_value()) {
 		it = sourceValue.begin();
-	} else if (it != sourceValue.end()) {
-		++it;
+	} else if (it.value() != sourceValue.end()) {
+		++it.value();
 	}
 	if (it != sourceValue.end()) {
-		Value nextValue = Value(std::string(1, *it));
-		return Evaluate([this, &nextValue](std::shared_ptr<Context> context) { context->AddValue(id.first, nextValue); });
+		return Value(std::string(1, *it.value()));
 	}
 	return nullptr;
 }

@@ -1,7 +1,17 @@
+var g = (v + 1 for v in [0, 1, 2])
+var l = [v - 1 for v in g]
+var l2 = [v - 1 for v in g]
+@g = (v + 1 for v in [0, 1, 2])
+var d = {v - 1: v + 1 for v in g}
+var d2 = {k + 1: v - 1 for k, v in d}
+@g = (v + 1 for v in [0, 1, 2])
+var s = {v - 1 for v in g}
+var s2 = {v + 1 for v in s}
+@s = {c + c for c in "jooby"}
+
 var a: int = 1
 var b = [1, 2]
 var c = {1, 2}
-var d = {1: 2, 2: 1}
 @a = b.size >= 1 ? 2 : 1
 
 function fn(b: int): int {

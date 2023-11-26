@@ -59,7 +59,7 @@ public:
 	DictionaryComprehensionExpression(Expression* keyExpression, Expression* valueExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : keyExpression(keyExpression), valueExpression(valueExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
 	DictionaryComprehensionExpression(DictionaryComprehensionExpression&&) = default;
 	~DictionaryComprehensionExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
+	Value GetValue(std::shared_ptr<Context> outerContext) override;
 
 private:
 	std::unique_ptr<Expression> keyExpression;
@@ -189,6 +189,19 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Expression>> expressions;
+};
+
+class SetComprehensionExpression : public Expression {
+public:
+	SetComprehensionExpression(Expression* targetExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : targetExpression(targetExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
+	SetComprehensionExpression(SetComprehensionExpression&&) = default;
+	~SetComprehensionExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
+
+private:
+	std::unique_ptr<Expression> targetExpression;
+	std::vector<std::pair<std::string, std::string>> ids;
+	std::unique_ptr<Expression> sourceExpression;
 };
 
 class TernaryExpression : public Expression {

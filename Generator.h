@@ -2,72 +2,91 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 #include "JojobaScript.h"
 
+class Strategy {
+public:
+	virtual ~Strategy() = 0;
+	virtual Value operator++() = 0;
+};
+
 class Generator {
 public:
-	static std::shared_ptr<Generator> Create(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::vector<std::pair<std::string, std::string>> const& ids, Value&& sourceValue);
+	Generator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::vector<std::pair<std::string, std::string>> const& ids, std::unique_ptr<Expression> const& sourceExpression);
 	Generator(Generator&&) = default;
-	virtual ~Generator() = 0;
-	virtual Value operator++() = 0;
-
-protected:
-	Generator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression) : outerContext(outerContext), targetExpression(targetExpression) {}
-	Value Evaluate(std::function<void(std::shared_ptr<Context>)> fn);
+	~Generator() = default;
+	Value operator++();
 
 private:
 	std::shared_ptr<Context> outerContext;
 	std::unique_ptr<Expression> const& targetExpression;
+	std::vector<std::pair<std::string, std::string>> const& ids;
+	std::unique_ptr<Expression> const& sourceExpression;
+	std::unique_ptr<Strategy> strategy;
 };
 
-class DictionaryGenerator : public Generator {
+class DictionaryStrategy : public Strategy {
 public:
-	DictionaryGenerator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::pair<std::string, std::string> const& keyId, std::pair<std::string, std::string> const& valueId, std::shared_ptr<Dictionary> sourceValue) : Generator(outerContext, targetExpression), keyId(keyId), valueId(valueId), sourceValue(sourceValue) {}
-	~DictionaryGenerator() = default;
-	Value operator++() override;
+	DictionaryStrategy(std::shared_ptr<Dictionary> sourceValue) : sourceValue(std::move(sourceValue)) {}
+	DictionaryStrategy(DictionaryStrategy&&) = default;
+	~DictionaryStrategy() = default;
 
 private:
-	std::pair<std::string, std::string> const& keyId;
-	std::pair<std::string, std::string> const& valueId;
 	std::shared_ptr<Dictionary> sourceValue;
 	std::vector<Value> keys; // Keep a collection of keys since an iterator might become invalid if the dictionary changes.
 	std::vector<Value>::const_iterator keyIt;
+
+	Value operator++() override;
 };
 
-class GeneratorGenerator : public Generator {
+class GeneratorStrategy : public Strategy {
 public:
-	GeneratorGenerator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::pair<std::string, std::string> const& id, std::shared_ptr<Generator> sourceValue) : Generator(outerContext, targetExpression), id(id), sourceValue(sourceValue) {}
-	~GeneratorGenerator() = default;
-	Value operator++() override;
+	GeneratorStrategy(std::shared_ptr<Generator> sourceValue) : sourceValue(std::move(sourceValue)) {}
+	GeneratorStrategy(GeneratorStrategy&&) = default;
+	~GeneratorStrategy() = default;
 
 private:
-	std::pair<std::string, std::string> const& id;
 	std::shared_ptr<Generator> sourceValue;
+
+	Value operator++() override;
 };
 
-class ListGenerator : public Generator {
+class ListStrategy : public Strategy {
 public:
-	ListGenerator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::pair<std::string, std::string> const& id, std::shared_ptr<List> sourceValue) : Generator(outerContext, targetExpression), id(id), sourceValue(sourceValue) {}
-	~ListGenerator() = default;
-	Value operator++() override;
+	ListStrategy(std::shared_ptr<List> sourceValue) : sourceValue(std::move(sourceValue)) {}
+	ListStrategy(ListStrategy&&) = default;
+	~ListStrategy() = default;
 
 private:
-	std::pair<std::string, std::string> const& id;
 	std::shared_ptr<List> sourceValue;
 	int index = -1; // Use an index since an iterator might become invalid if the list changes.
+
+	Value operator++() override;
 };
 
-class StringGenerator : public Generator {
+class SetStrategy : public ListStrategy {
 public:
-	StringGenerator(std::shared_ptr<Context> outerContext, std::unique_ptr<Expression> const& targetExpression, std::pair<std::string, std::string> const& id, std::string sourceValue) : Generator(outerContext, targetExpression), id(id), sourceValue(std::move(sourceValue)) {}
-	~StringGenerator() = default;
-	Value operator++() override;
+	SetStrategy(std::shared_ptr<Set> sourceValue) : ListStrategy(ConvertToList(sourceValue)) {}
+	SetStrategy(SetStrategy&&) = default;
+	~SetStrategy() = default;
 
 private:
-	std::pair<std::string, std::string> const& id;
+	static std::shared_ptr<List> ConvertToList(std::shared_ptr<Set> sourceValue);
+};
+
+class StringStrategy : public Strategy {
+public:
+	StringStrategy(std::string sourceValue) : sourceValue(std::move(sourceValue)) {}
+	StringStrategy(StringStrategy&&) = default;
+	~StringStrategy() = default;
+
+private:
 	std::string sourceValue;
-	std::string::const_iterator it = std::string::const_iterator{};
+	std::optional<std::string::const_iterator> it;
+
+	Value operator++() override;
 };
