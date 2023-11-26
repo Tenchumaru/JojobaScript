@@ -136,7 +136,7 @@ Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
-	return std::make_shared<Generator>(context, std::ref(targetExpression), std::cref(ids), sourceExpression->GetValue(context));
+	return Generator::Create(context, targetExpression, ids, sourceExpression->GetValue(context));
 }
 
 Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
