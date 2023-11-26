@@ -143,7 +143,7 @@ Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
-	// The only indexable types are dictionaries and lists.
+	// The only indexable types are dictionaries, lists, and strings.
 	auto indexedValue = indexedExpression->GetValue(context);
 	if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
 		auto indexingValue = indexingExpression->GetValue(context);
@@ -157,6 +157,14 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		auto indexingValue = indexingExpression->GetValue(context);
 		auto&& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
 		return dictionary[indexingValue];
+	} else if (std::holds_alternative<std::string>(indexedValue)) {
+		auto indexingValue = indexingExpression->GetValue(context);
+		if (std::holds_alternative<std::int64_t>(indexingValue)) {
+			auto&& string = std::get<std::string>(indexedValue);
+			std::int64_t index = std::get<std::int64_t>(indexingValue);
+			string, index; throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
+		}
+		throw std::runtime_error("cannot index string with non-integral value");
 	}
 	throw std::runtime_error("cannot index non-indexable");
 }
