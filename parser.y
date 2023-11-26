@@ -26,7 +26,6 @@ static void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* id
 	bool boolean;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
-	InvocationExpression* fexpr;
 	Statement::Clause* for_clause;
 	std::vector<std::unique_ptr<Statement::Clause>>* for_clauses;
 	std::string* id;
@@ -63,7 +62,6 @@ static void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* id
 %type<boolean> di uw
 %type<expr> bexpr iexpr cexpr lexpr expr
 %type<expr_list> expr_list oexpr_list
-%type<fexpr> fexpr
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
 %type<id> otype otype_list type type_list
@@ -317,13 +315,9 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 ;
 
 iexpr:
-fexpr { $$ = $1; }
+iexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
 | '(' expr ')' { $$ = $2; }
 | lexpr
-;
-
-fexpr:
-iexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
 ;
 
 lexpr:
