@@ -8,6 +8,7 @@
 
 class Dictionary;
 class List;
+class Generator;
 
 #include "Value.h.g.inl"
 

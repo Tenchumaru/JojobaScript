@@ -5,6 +5,7 @@
 #include <ranges>
 #include <stdexcept>
 #include "JojobaScript.h"
+#include "Generator.h"
 #include "parser.h"
 
 namespace {
@@ -135,9 +136,7 @@ Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a generator type.
-	context;
-	return Value();
+	return std::make_shared<Generator>(context, std::ref(targetExpression), std::cref(ids), sourceExpression->GetValue(context));
 }
 
 Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {

@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="Context.cc" />
     <ClCompile Include="Expression.cc" />
+    <ClCompile Include="Generator.cc" />
     <ClCompile Include="JojobaScript.cc" />
     <ClCompile Include="parser.cc" />
     <ClCompile Include="scanner.cc" />
@@ -98,6 +99,7 @@
   <ItemGroup>
     <ClInclude Include="Context.h" />
     <ClInclude Include="Expression.h" />
+    <ClInclude Include="Generator.h" />
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="scanner.h" />

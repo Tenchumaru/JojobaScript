@@ -20,6 +20,7 @@
     <ClCompile Include="Statement.cc" />
     <ClCompile Include="Expression.cc" />
     <ClCompile Include="Context.cc" />
+    <ClCompile Include="Generator.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -30,6 +31,7 @@
     <ClInclude Include="Statement.h" />
     <ClInclude Include="Expression.h" />
     <ClInclude Include="Context.h" />
+    <ClInclude Include="Generator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">
