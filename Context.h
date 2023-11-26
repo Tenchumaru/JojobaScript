@@ -6,9 +6,12 @@
 #include <variant>
 #include <vector>
 
+class Dictionary;
 class List;
 
-using Value = std::variant<nullptr_t, bool, std::int64_t, double, std::string, std::shared_ptr<List>>;
+using Value = std::variant<nullptr_t, bool, std::int64_t, double, std::string, std::shared_ptr<List>, std::shared_ptr<Dictionary>>;
+
+class Dictionary : public std::unordered_map<Value, Value> {};
 
 class List : public std::vector<Value> {};
 

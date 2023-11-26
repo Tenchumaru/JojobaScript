@@ -109,13 +109,14 @@ Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value DictionaryExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a dictionary.
-	context;
-	return 0;
+	Dictionary values;
+	std::ranges::transform(keyValuePairs, std::inserter(values, values.end()), [&context](auto&& p) {
+		return std::make_pair(p.first->GetValue(context), p.second->GetValue(context)); });
+	return std::make_shared<Dictionary>(std::move(values));
 }
 
 Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a dictionary.
+	// TODO
 	context;
 	return 0;
 }
@@ -142,16 +143,20 @@ Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
-	// TODO:  this supports only lists.
+	// The only indexable types are dictionaries and lists.
 	auto indexedValue = indexedExpression->GetValue(context);
-	if (indexedValue.index() == 5) {
+	if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
 		auto indexingValue = indexingExpression->GetValue(context);
-		if (indexingValue.index() == 2) {
-			auto&& list = *std::get<5>(indexedValue);
-			std::int64_t index = std::get<2>(indexingValue);
+		if (std::holds_alternative<std::int64_t>(indexingValue)) {
+			auto&& list = *std::get<std::shared_ptr<List>>(indexedValue);
+			std::int64_t index = std::get<std::int64_t>(indexingValue);
 			return list[index];
 		}
 		throw std::runtime_error("cannot index list with non-integral value");
+	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
+		auto indexingValue = indexingExpression->GetValue(context);
+		auto&& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
+		return dictionary[indexingValue];
 	}
 	throw std::runtime_error("cannot index non-indexable");
 }

@@ -15,6 +15,8 @@ bool AsBoolean(Value const& value) {
 		return !std::get<4>(value).empty();
 	case 5: // std::shared_ptr<List>
 		return !std::get<5>(value)->empty();
+	case 6: // std::shared_ptr<Dictionary>
+		return !std::get<6>(value)->empty();
 	default:
 		throw std::logic_error("unexpected value index");
 	}
