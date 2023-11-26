@@ -274,6 +274,10 @@ cexpr:
 	CheckUniqueness($4);
 	$$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4;
 }
+| '(' expr FOR id_list IN expr ')' {
+	CheckUniqueness($4);
+	$$ = new GeneratorExpression($2, std::move(*$4), $6); delete $4;
+}
 | '{' expr ':' expr FOR id_list IN expr '}' {
 	CheckUniqueness($6);
 	$$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6;

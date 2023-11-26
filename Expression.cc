@@ -134,6 +134,12 @@ Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 	return 0;
 }
 
+Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
+	// TODO:  Value does not yet contain a generator type.
+	context;
+	return Value();
+}
+
 Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
 	return context->GetReference(id);
 }

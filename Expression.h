@@ -81,6 +81,19 @@ private:
 	std::string id;
 };
 
+class GeneratorExpression : public Expression {
+public:
+	GeneratorExpression(Expression* targetExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : targetExpression(targetExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
+	GeneratorExpression(GeneratorExpression&&) = default;
+	~GeneratorExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
+
+private:
+	std::unique_ptr<Expression> targetExpression;
+	std::vector<std::pair<std::string, std::string>> ids;
+	std::unique_ptr<Expression> sourceExpression;
+};
+
 class IdentifierExpression : public Expression {
 public:
 	IdentifierExpression(std::string&& id) : id(std::move(id)) {}
