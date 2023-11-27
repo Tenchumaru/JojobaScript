@@ -1,8 +1,8 @@
 nullptr_t	throw std::runtime_error("cannot use empty value");
-bool	return std::get<1>(value);
-std::int64_t	return std::get<2>(value) != 0;
-double	return std::get<3>(value) != 0.0;
-std::string	return !std::get<4>(value).empty();
-std::shared_ptr<List>	return !std::get<5>(value)->empty();
-std::shared_ptr<Dictionary>	return !std::get<6>(value)->empty();
+bool	return std::get<$>(value);
+std::int64_t	return std::get<$>(value) != 0;
+double	return std::get<$>(value) != 0.0;
+std::string	return !std::get<$>(value).empty();
+std::shared_ptr<List>	return !std::get<$>(value)->empty();
+std::shared_ptr<Dictionary>	return !std::get<$>(value)->empty();
 std::shared_ptr<Generator>	return true;
