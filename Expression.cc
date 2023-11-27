@@ -94,6 +94,9 @@ Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
 	case '>':
 		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a > b; }, [](auto a, auto b) { return a > b; });
 	case '+':
+		if (std::holds_alternative<std::string>(leftValue) && std::holds_alternative<std::string>(rightValue)) {
+			return std::get<std::string>(leftValue) + std::get<std::string>(rightValue);
+		}
 		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a + b; }, [](auto a, auto b) { return a + b; });
 	case '-':
 		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a - b; }, [](auto a, auto b) { return a - b; });
