@@ -38,6 +38,7 @@ void Context::SetValue(std::string const& key, Value const& value) {
 		it->second = value;
 	} else if (outerContext) {
 		return outerContext->SetValue(key, value);
+	} else {
+		throw std::runtime_error("cannot find key");
 	}
-	throw std::runtime_error("cannot find key");
 }

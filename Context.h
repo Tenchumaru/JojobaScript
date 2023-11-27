@@ -3,11 +3,13 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
 class Dictionary;
 class List;
+class Set;
 class Generator;
 
 #include "Value.h.g.inl"
@@ -15,6 +17,8 @@ class Generator;
 class Dictionary : public std::unordered_map<Value, Value> {};
 
 class List : public std::vector<Value> {};
+
+class Set : public std::unordered_set<Value> {};
 
 bool AsBoolean(Value const& value);
 
