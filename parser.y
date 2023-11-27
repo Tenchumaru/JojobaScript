@@ -282,6 +282,10 @@ cexpr:
 	CheckUniqueness($6);
 	$$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6;
 }
+| '{' expr FOR id_list IN expr '}' {
+	CheckUniqueness($4);
+	$$ = new SetComprehensionExpression($2, std::move(*$4), $6); delete $4;
+}
 | '{' expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
 | '{' okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 ;
