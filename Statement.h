@@ -208,6 +208,7 @@ private:
 
 class ReturnStatement : public Statement {
 public:
+	ReturnStatement() = default;
 	ReturnStatement(Expression* expression) : expression(expression) {}
 	ReturnStatement(ReturnStatement&&) = default;
 	~ReturnStatement() = default;

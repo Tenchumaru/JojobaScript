@@ -111,6 +111,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$$ = new IfStatement(std::move(*$6), std::move(*$7)); delete $6; delete $7;
 }
 | RETURN expr { $$ = new ReturnStatement($2); }
+| RETURN { $$ = new ReturnStatement; }
 | SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
 | YIELD expr { $$ = new YieldStatement($2); }
