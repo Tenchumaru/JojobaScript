@@ -90,7 +90,7 @@ block:
 statement:
 FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$$ = new FunctionStatement(std::move(*$2), std::move(*$6), std::move(*$4), std::move(*$8));
-	delete $8;
+	delete $2; delete $4; delete $6; delete $8;
 }
 | VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
 | obreaks BREAK { $$ = new BreakStatement($1); }
@@ -102,8 +102,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 }
 | FOR id_list IN expr '{' block '}' {
 	CheckUniqueness($2);
-	$$ = new RangeForStatement(std::move(*$2), $4, std::move(*$6));
-	delete $2; delete $6;
+	$$ = new RangeForStatement(std::move(*$2), $4, std::move(*$6)); delete $2; delete $6;
 }
 | IF condition_list '{' block '}' oelseif_statements oelse {
 	auto p = std::make_unique<IfStatement::Fragment>(std::move(*$2), std::move(*$4)); delete $2; delete $4;
@@ -263,8 +262,8 @@ DEC { $$ = false; }
 ;
 
 expr:
-':' '(' id_list ')' '{' block '}' { $$ = new LambdaExpression(std::move(*$3), std::move(*$6)); }
-| ':' '(' id_list ')' ARROW expr { $$ = new LambdaExpression(std::move(*$3), $6); }
+':' '(' id_list ')' otype '{' block '}' { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$7)); delete $3; delete $5; delete $7; }
+| ':' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
 | bexpr
 | cexpr
 ;

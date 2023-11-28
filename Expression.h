@@ -128,14 +128,15 @@ private:
 
 class LambdaExpression : public Expression {
 public:
-	LambdaExpression(std::vector<std::pair<std::string, std::string>>&& ids, std::vector<std::unique_ptr<Statement>>&& statements) : ids(std::move(ids)), statements(std::move(statements)) {}
-	LambdaExpression(std::vector<std::pair<std::string, std::string>>&& ids, Expression* expression) : ids(std::move(ids)), expression(expression) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : type(type), parameters(std::move(parameters)), statements(std::move(statements)) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, Expression* expression) : type(type), parameters(std::move(parameters)), expression(expression) {}
 	LambdaExpression(LambdaExpression&&) = default;
 	~LambdaExpression() = default;
 	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:
-	std::vector<std::pair<std::string, std::string>> ids;
+	std::string type;
+	std::vector<std::pair<std::string, std::string>> parameters;
 	std::vector<std::unique_ptr<Statement>> statements;
 	std::unique_ptr<Expression> expression;
 };
