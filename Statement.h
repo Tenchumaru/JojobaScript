@@ -150,15 +150,14 @@ private:
 
 class IfStatement : public BlockStatement {
 public:
-	class Fragment {
+	class Fragment : public BlockStatement {
 	public:
-		Fragment(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements) : initializerClauses(std::move(initializerClauses)), statements(std::move(statements)) {}
+		Fragment(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)) {}
 		Fragment(Fragment&&) = default;
 		~Fragment() = default;
 
 	private:
 		std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
-		std::vector<std::unique_ptr<Statement>> statements;
 	};
 
 	IfStatement(std::vector<std::unique_ptr<Fragment>>&& fragments, std::vector<std::unique_ptr<Statement>>&& elseStatements) : BlockStatement(std::move(elseStatements)), fragments(std::move(fragments)) {}
@@ -227,7 +226,7 @@ public:
 		std::unique_ptr<Expression> expression;
 	};
 
-	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& cases) : initializerClauses(std::move(initializerClauses)), BlockStatement(std::move(cases)) {}
+	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& cases) : BlockStatement(std::move(cases)), initializerClauses(std::move(initializerClauses)) {}
 	SwitchStatement(SwitchStatement&&) = default;
 	~SwitchStatement() = default;
 
