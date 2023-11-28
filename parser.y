@@ -5,7 +5,8 @@
 #include <iterator>
 #include <stdexcept>
 #include <unordered_set>
-#include "JojobaScript.h"
+#include "Expression.h"
+#include "Statement.h"
 #include "scanner.h"
 
 #pragma warning(push)

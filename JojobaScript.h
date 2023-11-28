@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Context.h"
-#include "Expression.h"
-#include "Statement.h"
+class Context;
 
 class Type {
 public:

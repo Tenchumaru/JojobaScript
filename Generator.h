@@ -1,6 +1,8 @@
 #pragma once
 
-#include "JojobaScript.h"
+#include "Context.h"
+
+class Expression;
 
 class Strategy {
 public:
