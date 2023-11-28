@@ -95,6 +95,7 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 | VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
 | obreaks BREAK { $$ = new BreakStatement($1); }
 | obreaks CONTINUE { $$ = new ContinueStatement($1); }
+/* TODO:  consider adding a "fallthrough" keyword. */
 | DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
 | FOR ofor_initializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
 	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));
@@ -243,7 +244,7 @@ case { $$ = new std::vector<std::unique_ptr<Statement>>; $$->emplace_back($1); }
 
 case:
 CASE expr ':' block { $$ = new SwitchStatement::Case($2, std::move(*$4)); delete $4; }
-| DEFAULT ':' block { $$ = new SwitchStatement::Case(nullptr, std::move(*$3)); delete $3; }
+| DEFAULT ':' block { $$ = new SwitchStatement::DefaultCase(std::move(*$3)); delete $3; }
 ;
 
 imports:

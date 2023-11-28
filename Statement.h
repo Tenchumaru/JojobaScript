@@ -218,9 +218,16 @@ private:
 
 class SwitchStatement : public BlockStatement {
 public:
-	class Case : public BlockStatement {
+	class DefaultCase : public BlockStatement {
 	public:
-		Case(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), expression(expression) {}
+		DefaultCase(std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)) {}
+		DefaultCase(DefaultCase&&) = default;
+		~DefaultCase() = default;
+	};
+
+	class Case : public DefaultCase {
+	public:
+		Case(Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : DefaultCase(std::move(statements)), expression(expression) {}
 		Case(Case&&) = default;
 		~Case() = default;
 
