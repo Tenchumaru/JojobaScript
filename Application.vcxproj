@@ -61,6 +61,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -78,6 +80,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,6 +97,10 @@
     <ClCompile Include="Generator.cc" />
     <ClCompile Include="JojobaScript.cc" />
     <ClCompile Include="parser.cc" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="scanner.cc" />
     <ClCompile Include="Statement.cc" />
   </ItemGroup>
@@ -102,13 +110,16 @@
     <ClInclude Include="Generator.h" />
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="scanner.h" />
     <ClInclude Include="Statement.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="parser.inl" />
     <None Include="parser.output" />
-    <None Include="Value.cc.g.inl" />
-    <None Include="Value.h.g.inl" />
+    <None Include="scanner.inl" />
+    <None Include="Value.cc.inl" />
+    <None Include="Value.h.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

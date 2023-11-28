@@ -1,11 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 enum class Assignment { AA = 1, ASRA, DA, SLA, LSRA, MA, OA, PA, SA, TA, XA };
 
 enum class FunctionType { Unspecified, Standard, Asynchronous, Generator };

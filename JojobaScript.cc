@@ -1,6 +1,4 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include "pch.h"
 #include "JojobaScript.h"
 
 int yyparse();

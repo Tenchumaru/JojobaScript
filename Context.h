@@ -1,12 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <variant>
-#include <vector>
-#include "Value.h.g.inl"
+#include "Value.h.inl"
 
 bool AsBoolean(Value const& value);
 

@@ -1,9 +1,4 @@
-#include <algorithm>
-#include <functional>
-#include <iterator>
-#include <numeric>
-#include <ranges>
-#include <stdexcept>
+#include "pch.h"
 #include "JojobaScript.h"
 #include "Generator.h"
 #include "parser.h"

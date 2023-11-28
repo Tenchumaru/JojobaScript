@@ -1,20 +1,20 @@
-all: Value.cc.g.inl Value.h.g.inl parser.cc scanner.cc
+all: Value.cc.inl Value.h.inl parser.inl scanner.inl
 
 clean:
-	DEL Value.cc.g.inl
-	DEL Value.h.g.inl
-	DEL parser.cc
+	DEL Value.cc.inl
+	DEL Value.h.inl
+	DEL parser.inl
 	DEL parser.h
-	DEL scanner.cc
+	DEL scanner.inl
 
-Value.cc.g.inl: Value.cc.tt Value.txt
+Value.cc.inl: Value.cc.tt Value.txt
 	TextTransform Value.cc.tt
 
-Value.h.g.inl: Value.h.tt Value.txt
+Value.h.inl: Value.h.tt Value.txt
 	TextTransform Value.h.tt
 
-parser.cc: parser.y
-	win_bison --verbose --defines=parser.h --output=parser.cc -Wcounterexamples parser.y
+parser.inl: parser.y
+	win_bison --verbose --defines=parser.h --output=parser.inl -Wcounterexamples parser.y
 
-scanner.cc: scanner.l parser.cc
-	win_flex --fast --wincompat --outfile=scanner.cc scanner.l
+scanner.inl: scanner.l parser.inl
+	win_flex --fast --wincompat --outfile=scanner.inl scanner.l

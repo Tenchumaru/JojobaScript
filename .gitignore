@@ -6,7 +6,5 @@
 x64/
 
 # Ignore generated files.
-*.g.*
-parser.cc
+*.inl
 parser.h
-scanner.cc

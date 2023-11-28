@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "JojobaScript.h"
 
 std::unique_ptr<FunctionStatement> FunctionStatement::program;

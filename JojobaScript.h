@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
 #include "Context.h"
 #include "Expression.h"
 #include "Statement.h"

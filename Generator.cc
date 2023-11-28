@@ -1,6 +1,4 @@
-#include <algorithm>
-#include <iterator>
-#include <stdexcept>
+#include "pch.h"
 #include "Generator.h"
 
 Strategy::~Strategy() {}
