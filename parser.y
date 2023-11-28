@@ -264,8 +264,8 @@ DEC { $$ = false; }
 ;
 
 expr:
-':' '(' id_list ')' otype '{' block '}' { $$ = new StatementLambdaExpression(std::move(*$5), std::move(*$3), std::move(*$7)); delete $3; delete $5; delete $7; }
-| ':' '(' id_list ')' otype ARROW expr { $$ = new ExpressionLambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
+':' '(' id_list ')' otype '{' block '}' { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$7)); delete $3; delete $5; delete $7; }
+| ':' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
 | bexpr
 | cexpr
 ;

@@ -128,35 +128,18 @@ private:
 
 class LambdaExpression : public Expression {
 public:
-	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters) : type(std::move(type)), parameters(std::move(parameters)) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, Expression* expression) : LambdaExpression(std::move(type), std::move(parameters), std::move(Convert(expression))) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
 	LambdaExpression(LambdaExpression&&) = default;
-	~LambdaExpression() = 0;
+	~LambdaExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:
 	std::string type;
 	std::vector<std::pair<std::string, std::string>> parameters;
-};
-
-class ExpressionLambdaExpression : public LambdaExpression {
-public:
-	ExpressionLambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, Expression* expression) : LambdaExpression(std::move(type), std::move(parameters)), expression(expression) {}
-	ExpressionLambdaExpression(ExpressionLambdaExpression&&) = default;
-	~ExpressionLambdaExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
-	std::unique_ptr<Expression> expression;
-};
-
-class StatementLambdaExpression : public LambdaExpression {
-public:
-	StatementLambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : LambdaExpression(std::move(type), std::move(parameters)), statements(std::move(statements)) {}
-	StatementLambdaExpression(StatementLambdaExpression&&) = default;
-	~StatementLambdaExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
 	std::vector<std::unique_ptr<Statement>> statements;
+
+	static std::vector<std::unique_ptr<Statement>> Convert(Expression* expression);
 };
 
 class ListExpression : public Expression {

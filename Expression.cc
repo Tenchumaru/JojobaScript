@@ -57,8 +57,6 @@ namespace {
 }
 Expression::~Expression() {}
 
-LambdaExpression::~LambdaExpression() {}
-
 Value& Expression::GetReference(std::shared_ptr<Context> context) {
 	throw std::runtime_error("cannot get a reference to an r-value expression");
 }
@@ -238,16 +236,17 @@ Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
 	return 0;
 }
 
-Value ExpressionLambdaExpression::GetValue(std::shared_ptr<Context> context) {
+Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
 	// TODO:  Value does not yet contain an invocable type.
 	context;
 	return 0;
 }
 
-Value StatementLambdaExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain an invocable type.
-	context;
-	return 0;
+std::vector<std::unique_ptr<Statement>> LambdaExpression::Convert(Expression* expression) {
+	std::vector<std::unique_ptr<Statement>> statements;
+	auto p = std::make_unique<ReturnStatement>(expression);
+	statements.emplace_back(std::move(p));
+	return statements;
 }
 
 Value ListExpression::GetValue(std::shared_ptr<Context> context) {
