@@ -3,7 +3,7 @@ bool	return std::get<$>(value);
 std::int64_t	return std::get<$>(value) != 0;
 double	return std::get<$>(value) != 0.0;
 std::string	return !std::get<$>(value).empty();
-std::shared_ptr<List>	return !std::get<$>(value)->empty();
-std::shared_ptr<Dictionary>	return !std::get<$>(value)->empty();
-std::shared_ptr<Set>	return !std::get<$>(value)->empty();
-std::shared_ptr<Generator>	return true;
+@Dictionary	return !std::get<$>(value)->empty();	std::unordered_map<Value, Value>
+@Generator	return true;
+@List	return !std::get<$>(value)->empty();	std::vector<Value>
+@Set	return !std::get<$>(value)->empty();	std::unordered_set<Value>

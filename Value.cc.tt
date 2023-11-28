@@ -10,7 +10,7 @@ bool AsBoolean(Value const& value) {
 <#
 string[] lines = File.ReadAllLines("Value.txt");
 foreach ((int index, string typeName, string code) in lines.Select((s) => s.Split('\t')).Select((a, i) => (i, a[0], a[1].Replace("$", i.ToString())))) {
-#>	case <#= index #>: // <#= typeName #>
+#>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
 		<#= code #>
 <#
 }

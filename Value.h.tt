@@ -6,6 +6,24 @@
 // This file is auto-generated; do not edit.
 <#
 string[] lines = File.ReadAllLines("Value.txt");
-string typeNames = string.Join(", ", lines.Select((s) => s.Split('\t').First()));
+string[][] parts = lines.Select((s) => s.Split('\t')).ToArray();
+var q = from a in parts
+		where a[0][0] == '@'
+		select "class " + a[0].Substring(1) + ";";
+string typeDeclarations = string.Join(Environment.NewLine, q);
+#>
+<#= typeDeclarations #>
+<#
+q = from a in parts
+	let t = a[0][0] == '@' ? "std::shared_ptr<" + a[0].Substring(1) + ">" : a[0]
+	select t;
+string typeNames = string.Join(", ", q);
 #>
 using Value = std::variant<<#= typeNames #>>;
+<#
+q = from a in parts
+	where a.Length == 3
+	select "class " + a[0].Substring(1) + " : public " + a[2] + " {};";
+string typeDefinitions = string.Join(Environment.NewLine, q);
+#>
+<#= typeDefinitions #>
