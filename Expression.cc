@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Expression.h"
+#include "Function.h"
 #include "Generator.h"
 #include "Statement.h"
 #include "parser.h"
@@ -231,15 +232,18 @@ Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain an invocable type.
-	context;
-	return 0;
+	auto value = expression->GetValue(context);
+	if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
+		std::vector<Value> values;
+		std::ranges::transform(arguments, std::back_inserter(values), [&context](auto const& argument) {
+			return argument->GetValue(context); });
+		return std::get<std::shared_ptr<Function>>(value)->Invoke(std::move(values));
+	}
+	throw std::runtime_error("cannot invoke non-invocable");
 }
 
 Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain an invocable type.
-	context;
-	return 0;
+	return std::make_shared<Function>(parameters, statements, context);
 }
 
 std::vector<std::unique_ptr<Statement>> LambdaExpression::Convert(Expression* expression) {

@@ -18,6 +18,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="parser.cc" />
     <ClCompile Include="scanner.cc" />
+    <ClCompile Include="Function.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -30,6 +31,7 @@
     <ClInclude Include="Context.h" />
     <ClInclude Include="Generator.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Function.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">

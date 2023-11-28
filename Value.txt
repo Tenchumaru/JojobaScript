@@ -4,6 +4,7 @@ std::int64_t	return std::get<$>(value) != 0;
 double	return std::get<$>(value) != 0.0;
 std::string	return !std::get<$>(value).empty();
 @Dictionary	return !std::get<$>(value)->empty();	std::unordered_map<Value, Value>
+@Function	return true;
 @Generator	return true;
 @List	return !std::get<$>(value)->empty();	std::vector<Value>
 @Set	return !std::get<$>(value)->empty();	std::unordered_set<Value>

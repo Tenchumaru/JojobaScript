@@ -94,6 +94,7 @@
   <ItemGroup>
     <ClCompile Include="Context.cc" />
     <ClCompile Include="Expression.cc" />
+    <ClCompile Include="Function.cc" />
     <ClCompile Include="Generator.cc" />
     <ClCompile Include="JojobaScript.cc" />
     <ClCompile Include="parser.cc" />
@@ -107,6 +108,7 @@
   <ItemGroup>
     <ClInclude Include="Context.h" />
     <ClInclude Include="Expression.h" />
+    <ClInclude Include="Function.h" />
     <ClInclude Include="Generator.h" />
     <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="parser.h" />
