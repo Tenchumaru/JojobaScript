@@ -4,7 +4,9 @@
 #include "Generator.h"
 #include "Statement.h"
 
-Value Function::Invoke(std::vector<Value>&& arguments) {
+Function::~Function() {}
+
+Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 	// Ensure the number of arguments matches the number of parameters.
 	if (arguments.size() != parameters.size()) {
 		throw std::runtime_error("invalid number of arguments");

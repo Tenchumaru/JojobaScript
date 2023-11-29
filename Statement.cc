@@ -175,7 +175,7 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 RunResult FunctionStatement::Run(std::shared_ptr<Context> context) const {
 	// Create a named function for this function statement.
-	Value function = std::make_shared<Function>(parameters, statements, context, yielding);
+	Value function = std::make_shared<ScriptFunction>(parameters, statements, context, yielding);
 
 	// Add it to the context.
 	context->AddValue(name, function);

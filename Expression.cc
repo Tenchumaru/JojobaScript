@@ -218,13 +218,13 @@ Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
 		std::vector<Value> values;
 		std::ranges::transform(arguments, std::back_inserter(values), [&context](auto const& argument) {
 			return argument->GetValue(context); });
-		return std::get<std::shared_ptr<Function>>(value)->Invoke(std::move(values));
+		return std::get<std::shared_ptr<Function>>(value)->Invoke(values);
 	}
 	throw std::runtime_error("cannot invoke non-invocable");
 }
 
 Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
-	return std::make_shared<Function>(parameters, statements, context, yielding);
+	return std::make_shared<ScriptFunction>(parameters, statements, context, yielding);
 }
 
 std::vector<std::unique_ptr<Statement>> LambdaExpression::Convert(Expression* expression) {
