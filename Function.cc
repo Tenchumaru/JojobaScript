@@ -18,6 +18,13 @@ Value Function::Invoke(std::vector<Value>&& arguments) {
 	}
 
 	// Run the statements.
-	// TODO
+	for (auto const& statement : statements) {
+		auto runResult = statement->Run(context);
+		if (runResult.first == Statement::RunResult::Return) {
+			return std::get<Value>(runResult.second);
+		} else if (runResult.first != Statement::RunResult::Next) {
+			throw std::runtime_error("unexpected break or continue statement");
+		}
+	}
 	return {};
 }

@@ -30,14 +30,14 @@ do {
 		var b: dict = {}
 	}
 } while a < 1
-for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; --a, @fn(a) {
+for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; ++a, @fn(a) {
 	@b -= fn(b)
 }
 for ;; {
 	switch var b = 1, a - 1 {
 		// Although "case" statements have no braces, they create contexts.
 		case 1:
-			@a = 2
+			@a = 1
 			break
 
 			function fn(b: int): int {
@@ -59,9 +59,9 @@ for ;; {
 			}
 	}
 }
-while var a = 1, a == 1 {
-	++a
+while var b = 1, a < 3 {
+	@a += b
 }
 @a.b /= b.a
-@a[b] *= b[a]
+@d[a - 1] *= b[a - 2]
 @print(fn(2))

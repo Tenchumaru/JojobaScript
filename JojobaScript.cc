@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Context.h"
+#include "Function.h"
+#include "Statement.h"
 
 int yyparse();
 
@@ -55,5 +57,12 @@ int main(int argc, char* argv[]) {
 
 	// TODO:  define the globals.
 
+	// Run the entry point.
+	FunctionStatement::program->Run(globalContext);
+	auto value = globalContext->GetValue("");
+	if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
+		auto&& function = std::get<std::shared_ptr<Function>>(value);
+		function->Invoke({});
+	}
 	return 0;
 }
