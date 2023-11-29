@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Context.h"
 #include "Function.h"
+#include "Generator.h"
 #include "Statement.h"
 
 Value Function::Invoke(std::vector<Value>&& arguments) {
@@ -17,13 +18,22 @@ Value Function::Invoke(std::vector<Value>&& arguments) {
 		context->AddValue(parameters[i].first, arguments[i]);
 	}
 
-	// Run the statements.
-	for (auto const& statement : statements) {
-		auto runResult = statement->Run(context);
-		if (runResult.first == Statement::RunResult::Return) {
-			return std::get<Value>(runResult.second);
-		} else if (runResult.first != Statement::RunResult::Next) {
-			throw std::runtime_error("unexpected break or continue statement");
+	if (yielding) {
+		return std::make_shared<FunctionGenerator>(context, statements);
+	} else {
+		// Run the statements.
+		for (auto const& statement : statements) {
+			auto runResult = statement->Run(context);
+			switch (runResult.first) {
+			case Statement::RunResult::Return:
+				return std::get<Value>(runResult.second);
+			case Statement::RunResult::Yield:
+				throw std::logic_error("not implemented");
+			case Statement::RunResult::Next:
+				break;
+			default:
+				throw std::runtime_error("unexpected break or continue statement");
+			}
 		}
 	}
 	return {};

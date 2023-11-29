@@ -10,7 +10,7 @@ namespace {
 	template<typename T>
 	std::shared_ptr<T> EvaluateComprehensionExpression(std::shared_ptr<Context> context, std::unique_ptr<Expression> const& targetExpression, std::vector<std::pair<std::string, std::string>> const& ids, std::unique_ptr<Expression> const& sourceExpression, std::function<void(T&, Value&&)> fn) {
 		// Create a generator from the source expression.
-		auto generator = Generator(context, targetExpression, ids, sourceExpression);
+		auto generator = IteratorGenerator(context, targetExpression, ids, sourceExpression);
 
 		// Fill a collection of target values from the generator.
 		T targetValues{};
@@ -158,7 +158,7 @@ Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
-	return std::make_shared<Generator>(context, targetExpression, ids, sourceExpression);
+	return std::make_shared<IteratorGenerator>(context, targetExpression, ids, sourceExpression);
 }
 
 Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
@@ -177,6 +177,9 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			auto&& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
+			if (index < 0) {
+				index += list.size();
+			}
 			if (static_cast<std::uint64_t>(index) >= list.size()) {
 				throw std::runtime_error("index out of range");
 			}
@@ -193,9 +196,12 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	} else if (std::holds_alternative<std::string>(indexedValue)) {
 		auto indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
-			auto&& string = std::get<std::string>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			string, index; throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
+			if (index < 0) {
+				auto&& string = std::get<std::string>(indexedValue);
+				index += string.size();
+			}
+			throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
 		}
 		throw std::runtime_error("cannot index string with non-integral value");
 	}
@@ -218,7 +224,7 @@ Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value LambdaExpression::GetValue(std::shared_ptr<Context> context) {
-	return std::make_shared<Function>(parameters, statements, context);
+	return std::make_shared<Function>(parameters, statements, context, yielding);
 }
 
 std::vector<std::unique_ptr<Statement>> LambdaExpression::Convert(Expression* expression) {

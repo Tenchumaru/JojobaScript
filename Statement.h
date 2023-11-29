@@ -10,7 +10,7 @@ class Expression;
 
 class Statement {
 public:
-	enum class RunResult { Next, Break, Continue, Return };
+	enum class RunResult { Next, Break, Continue, Return, Yield };
 
 	using RunResultValue = std::variant<int, Value>;
 

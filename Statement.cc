@@ -56,6 +56,7 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 		}
 		return false;
 	case RunResult::Return:
+	case RunResult::Yield:
 		return true;
 	default:
 		throw std::logic_error("unexpected RunResult value");
@@ -174,7 +175,7 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 RunResult FunctionStatement::Run(std::shared_ptr<Context> context) const {
 	// Create a named function for this function statement.
-	Value function = std::make_shared<Function>(parameters, statements, context);
+	Value function = std::make_shared<Function>(parameters, statements, context, yielding);
 
 	// Add it to the context.
 	context->AddValue(name, function);
@@ -324,6 +325,6 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 }
 
 RunResult YieldStatement::Run(std::shared_ptr<Context> context) const {
-	context; // TODO:  this requires a higher-level iterator concept.
-	return { RunResult::Next, 0 };
+	auto value = expression->GetValue(context);
+	return { RunResult::Yield, value };
 }
