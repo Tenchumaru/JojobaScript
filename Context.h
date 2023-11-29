@@ -12,7 +12,6 @@ public:
 	void AddValue(std::string const& key, Value const& value);
 	Value& GetReference(std::string const& key);
 	Value GetValue(std::string const& key);
-	void SetValue(std::string const& key, Value const& value);
 
 private:
 	std::unordered_map<std::string, Value> values;

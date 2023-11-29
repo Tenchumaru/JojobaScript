@@ -3,6 +3,7 @@
 #include "Value.cc.inl"
 
 void Context::AddValue(std::string const& key, Value const& value) {
+	// TODO:  add the "const" concept and refuse to set such values.
 	auto it = values.find(key);
 	if (it == values.end()) {
 		values.insert({ key, value });
@@ -29,16 +30,4 @@ Value Context::GetValue(std::string const& key) {
 		return outerContext->GetValue(key);
 	}
 	throw std::runtime_error("cannot find value");
-}
-
-void Context::SetValue(std::string const& key, Value const& value) {
-	// TODO:  add the "const" concept and refuse to set such values.
-	auto it = values.find(key);
-	if (it != values.end()) {
-		it->second = value;
-	} else if (outerContext) {
-		return outerContext->SetValue(key, value);
-	} else {
-		throw std::runtime_error("cannot find key");
-	}
 }
