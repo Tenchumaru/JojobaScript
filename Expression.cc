@@ -147,14 +147,14 @@ Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> outer
 Value& DotExpression::GetReference(std::shared_ptr<Context> context) {
 	// TODO:  Value does not yet contain a type with fields.
 	context;
-	static Value n;
+	static Value n = 1;
 	return n;
 }
 
 Value DotExpression::GetValue(std::shared_ptr<Context> context) {
 	// TODO:  Value does not yet contain a type with fields.
 	context;
-	return 0;
+	return 1;
 }
 
 Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
@@ -177,12 +177,18 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			auto&& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
+			if (static_cast<std::uint64_t>(index) >= list.size()) {
+				throw std::runtime_error("index out of range");
+			}
 			return list[index];
 		}
 		throw std::runtime_error("cannot index list with non-integral value");
 	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
 		auto indexingValue = indexingExpression->GetValue(context);
 		auto&& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
+		if (dictionary.find(indexingValue) == dictionary.end()) {
+			throw std::runtime_error("indexing value not found in dictionary");
+		}
 		return dictionary[indexingValue];
 	} else if (std::holds_alternative<std::string>(indexedValue)) {
 		auto indexingValue = indexingExpression->GetValue(context);
@@ -239,9 +245,9 @@ Value LiteralExpression::GetValue(std::shared_ptr<Context> /*context*/) {
 }
 
 Value SetExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a set.
-	context;
-	return 0;
+	Set values;
+	std::ranges::transform(expressions, std::inserter(values, values.end()), [&context](auto&& p) { return p->GetValue(context); });
+	return std::make_shared<Set>(std::move(values));
 }
 
 Value SetComprehensionExpression::GetValue(std::shared_ptr<Context> context) {
