@@ -59,6 +59,15 @@ for ;; {
 			}
 	}
 }
+for var a = 0;; ++a {
+	for ; a < 2; {
+		if a == 0 {
+			break, continue
+		} else if a == 1 {
+			break, break
+		}
+	}
+}
 while var b = 1, a < 3 {
 	@a += b
 }

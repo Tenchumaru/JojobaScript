@@ -90,6 +90,7 @@ public:
 	BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) : statements(std::move(statements)) {}
 	virtual ~BlockStatement() = 0;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
+	bool Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult) const;
 
 protected:
 	std::vector<std::unique_ptr<Statement>> statements;

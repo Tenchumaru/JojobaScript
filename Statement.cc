@@ -37,6 +37,31 @@ RunResult BlockStatement::Run(std::shared_ptr<Context> context) const {
 	return { Statement::RunResult::Next, 0 };
 }
 
+bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult) const {
+	runResult = BlockStatement::Run(context);
+	switch (runResult.first) {
+	case RunResult::Next:
+		return false;
+	case RunResult::Break:
+		if (std::get<int>(runResult.second)) {
+			--std::get<int>(runResult.second);
+		} else {
+			runResult = { RunResult::Next, 0 };
+		}
+		return true;
+	case RunResult::Continue:
+		if (std::get<int>(runResult.second)) {
+			--std::get<int>(runResult.second);
+			return true;
+		}
+		return false;
+	case RunResult::Return:
+		return true;
+	default:
+		throw std::logic_error("unexpected RunResult value");
+	}
+}
+
 ForStatement::Clause::~Clause() {}
 
 Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
@@ -102,24 +127,9 @@ RunResult DoStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 	// Run the statements until the condition is met.
 	do {
-		auto runResult = BlockStatement::Run(context);
-		switch (runResult.first) {
-		case RunResult::Next:
-			break;
-		case RunResult::Break:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-			}
-			return { RunResult::Next, 0 };
-		case RunResult::Continue:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-			}
-			break;
-		case RunResult::Return:
+		std::pair<RunResult, RunResultValue> runResult;
+		if (BlockStatement::Run(context, runResult)) {
 			return runResult;
-		default:
-			throw std::logic_error("unexpected RunResult value");
 		}
 	} while (isWhile == AsBoolean(expression->GetValue(context)));
 	return { RunResult::Next, 0 };
@@ -149,24 +159,9 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 		}
 
 		// Run the statements in the body of the "for" loop.
-		auto runResult = BlockStatement::Run(context);
-		switch (runResult.first) {
-		case RunResult::Next:
-			break;
-		case RunResult::Break:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-			}
-			return { RunResult::Next, 0 };
-		case RunResult::Continue:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-			}
-			break;
-		case RunResult::Return:
+		std::pair<RunResult, RunResultValue> runResult;
+		if (BlockStatement::Run(context, runResult)) {
 			return runResult;
-		default:
-			throw std::logic_error("unexpected RunResult value");
 		}
 
 		// Run updater clauses.
@@ -234,24 +229,9 @@ RunResult RangeForStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 	// Run the statements in the body of the "for" loop.
 	for (std::shared_ptr<Context> context; context = ++iterator, context;) {
-		auto runResult = BlockStatement::Run(context);
-		switch (runResult.first) {
-		case RunResult::Next:
-			break;
-		case RunResult::Break:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-			}
-			return { RunResult::Next, 0 };
-		case RunResult::Continue:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-			}
-			break;
-		case RunResult::Return:
+		std::pair<RunResult, RunResultValue> runResult;
+		if (BlockStatement::Run(context, runResult)) {
 			return runResult;
-		default:
-			throw std::logic_error("unexpected RunResult value");
 		}
 	}
 	return { RunResult::Next, 0 };
@@ -278,24 +258,11 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 		auto const* p = dynamic_cast<SwitchStatement::Case const*>(it->get());
 		if (p) {
 			if (p->IsMatch(finalValue, context)) {
-				auto runResult = p->Run(context);
-				switch (runResult.first) {
-				case RunResult::Next:
-					break;
-				case RunResult::Break:
-					if (std::get<int>(runResult.second)) {
-						return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-					}
-					return { RunResult::Next, 0 };
-				case RunResult::Continue:
-					if (std::get<int>(runResult.second)) {
-						return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-					}
-					throw std::runtime_error("unexpected continue in switch case");
-				case RunResult::Return:
+				std::pair<RunResult, RunResultValue> runResult;
+				if (p->BlockStatement::Run(context, runResult)) {
 					return runResult;
-				default:
-					throw std::logic_error("unexpected RunResult value");
+				} else if (runResult.first == RunResult::Continue) {
+					throw std::runtime_error("unexpected continue in switch case");
 				}
 				return { RunResult::Next, 0 };
 			}
@@ -306,25 +273,13 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 	// Run the "default" clause if any since no case matched.
 	if (defaultCase != statements.end()) {
-		auto runResult = (*defaultCase)->Run(context);
-		switch (runResult.first) {
-		case RunResult::Next:
-			break;
-		case RunResult::Break:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-			}
-			break;
-		case RunResult::Continue:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-			}
-			throw std::runtime_error("unexpected continue in switch default case");
-		case RunResult::Return:
+		std::pair<RunResult, RunResultValue> runResult;
+		if (static_cast<BlockStatement*>((*defaultCase).get())->BlockStatement::Run(context, runResult)) {
 			return runResult;
-		default:
-			throw std::logic_error("unexpected RunResult value");
+		} else if (runResult.first == RunResult::Continue) {
+			throw std::runtime_error("unexpected continue in switch case");
 		}
+		return { RunResult::Next, 0 };
 	}
 	return { RunResult::Next, 0 };
 }
@@ -360,24 +315,9 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 		}
 
 		// Run the statements.
-		auto runResult = BlockStatement::Run(context);
-		switch (runResult.first) {
-		case RunResult::Next:
-			break;
-		case RunResult::Break:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Break, std::get<int>(runResult.second) - 1 };
-			}
-			return { RunResult::Next, 0 };
-		case RunResult::Continue:
-			if (std::get<int>(runResult.second)) {
-				return { RunResult::Continue, std::get<int>(runResult.second) - 1 };
-			}
-			break;
-		case RunResult::Return:
+		std::pair<RunResult, RunResultValue> runResult;
+		if (BlockStatement::Run(context, runResult)) {
 			return runResult;
-		default:
-			throw std::logic_error("unexpected RunResult value");
 		}
 	}
 	return { RunResult::Next, 0 };
