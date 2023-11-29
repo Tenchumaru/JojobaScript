@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include <array>
+#include <format>
 #include <functional>
 #include <iterator>
 #include <memory>

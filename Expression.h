@@ -9,9 +9,6 @@ public:
 	virtual ~Expression() = 0;
 	virtual Value& GetReference(std::shared_ptr<Context> context);
 	virtual Value GetValue(std::shared_ptr<Context> context) = 0;
-
-private:
-
 };
 
 class AwaitExpression : public Expression {
@@ -128,8 +125,8 @@ private:
 
 class LambdaExpression : public Expression {
 public:
-	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, Expression* expression) : LambdaExpression(std::move(type), std::move(parameters), std::move(Convert(expression))) {}
-	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, Expression* expression) : LambdaExpression(std::move(type), std::move(parameters), std::move(Convert(expression)), false) {}
+	LambdaExpression(std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements, bool yielding) : type(std::move(type)), parameters(std::move(parameters)), statements(std::move(statements)), yielding(yielding) {}
 	LambdaExpression(LambdaExpression&&) = default;
 	~LambdaExpression() = default;
 	Value GetValue(std::shared_ptr<Context> context) override;
@@ -138,6 +135,7 @@ private:
 	std::string type;
 	std::vector<std::pair<std::string, std::string>> parameters;
 	std::vector<std::unique_ptr<Statement>> statements;
+	bool yielding;
 
 	static std::vector<std::unique_ptr<Statement>> Convert(Expression* expression);
 };

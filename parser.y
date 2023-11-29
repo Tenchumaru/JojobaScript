@@ -1,10 +1,4 @@
 %{
-#include <cstdio>
-#include <algorithm>
-#include <format>
-#include <iterator>
-#include <stdexcept>
-#include <unordered_set>
 #include "Expression.h"
 #include "Statement.h"
 #include "scanner.h"
@@ -12,11 +6,19 @@
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)
 
-static void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* ids) {
-	std::unordered_set<std::string> set;
-	std::transform(ids->begin(), ids->end(), std::inserter(set, set.end()), [](auto&& pair) { return pair.first; });
-	if (ids->size() != set.size()) {
-		throw std::runtime_error("ids are not unique");
+namespace {
+	enum class ReturnType { Unspecified, Return, Yield };
+
+	std::vector<ReturnType> returnTypeStack{ ReturnType::Unspecified };
+
+	bool Yielding() { return returnTypeStack.back() == ReturnType::Yield; }
+
+	void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* ids) {
+		std::unordered_set<std::string> set;
+		std::transform(ids->begin(), ids->end(), std::inserter(set, set.end()), [](auto&& pair) { return pair.first; });
+		if (ids->size() != set.size()) {
+			throw std::runtime_error("ids are not unique");
+		}
 	}
 }
 %}
@@ -61,7 +63,7 @@ static void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* id
 %right ARROW
 %type<block> block cases oelse
 %type<boolean> di uw
-%type<expr> bexpr iexpr cexpr lexpr expr
+%type<expr> bexpr cexpr expr iexpr lexpr oexpr
 %type<expr_list> expr_list oexpr_list
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
@@ -79,7 +81,12 @@ static void CheckUniqueness(std::vector<std::pair<std::string, std::string>>* id
 %%
 
 program:
-block { FunctionStatement::program.reset(new FunctionStatement("", "", {}, std::move(*$1))); delete $1; }
+block {
+	if (Yielding()) {
+		throw std::runtime_error("cannot yield at the top level");
+	}
+	FunctionStatement::program.reset(new FunctionStatement("", "", {}, std::move(*$1), false)); delete $1;
+}
 ;
 
 block:
@@ -88,9 +95,10 @@ block:
 ;
 
 statement:
-FUNCTION ID '(' oid_list ')' otype '{' block '}' {
-	$$ = new FunctionStatement(std::move(*$2), std::move(*$6), std::move(*$4), std::move(*$8));
-	delete $2; delete $4; delete $6; delete $8;
+FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block '}' {
+	$$ = new FunctionStatement(std::move(*$2), std::move(*$7), std::move(*$5), std::move(*$9), Yielding());
+	returnTypeStack.pop_back();
+	delete $2; delete $5; delete $7; delete $9;
 }
 | VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
 | obreaks BREAK { $$ = new BreakStatement($1); }
@@ -110,11 +118,22 @@ FUNCTION ID '(' oid_list ')' otype '{' block '}' {
 	$6->emplace($6->begin(), std::move(p));
 	$$ = new IfStatement(std::move(*$6), std::move(*$7)); delete $6; delete $7;
 }
-| RETURN expr { $$ = new ReturnStatement($2); }
-| RETURN { $$ = new ReturnStatement; }
+| RETURN oexpr {
+	if (Yielding()) {
+		throw std::runtime_error("cannot return and yield in the same function");
+	}
+	returnTypeStack.back() = ReturnType::Return;
+	$$ = new ReturnStatement($2);
+}
 | SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
-| YIELD expr { $$ = new YieldStatement($2); }
+| YIELD expr {
+	if (returnTypeStack.back() == ReturnType::Return) {
+		throw std::runtime_error("cannot return and yield in the same function");
+	}
+	returnTypeStack.back() = ReturnType::Yield;
+	$$ = new YieldStatement($2);
+}
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
@@ -224,6 +243,11 @@ bexpr {
 | for_initializers ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
+oexpr:
+%empty { $$ = nullptr; }
+| expr
+;
+
 oelseif_statements:
 %empty { $$ = new std::vector<std::unique_ptr<IfStatement::Fragment>>; }
 | oelseif_statements elseif_statement { $1->emplace_back($2); $$ = $1; }
@@ -264,7 +288,10 @@ DEC { $$ = false; }
 ;
 
 expr:
-':' '(' id_list ')' otype '{' block '}' { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$7)); delete $3; delete $5; delete $7; }
+':' '(' id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
+	$$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$8), Yielding());
+	delete $3; delete $5; delete $8;
+}
 | ':' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
 | bexpr
 | cexpr

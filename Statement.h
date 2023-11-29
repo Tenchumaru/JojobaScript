@@ -158,7 +158,7 @@ class FunctionStatement : public BlockStatement {
 public:
 	static std::unique_ptr<FunctionStatement> program;
 
-	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)) {}
+	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements, bool yielding) : BlockStatement(std::move(statements)), name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), yielding(yielding) {}
 	FunctionStatement(FunctionStatement&&) = default;
 	~FunctionStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
@@ -167,6 +167,7 @@ private:
 	std::string name;
 	std::string type;
 	std::vector<std::pair<std::string, std::string>> parameters;
+	bool yielding;
 };
 
 class IfStatement : public BlockStatement {
@@ -232,7 +233,6 @@ private:
 
 class ReturnStatement : public Statement {
 public:
-	ReturnStatement() = default;
 	ReturnStatement(Expression* expression) : expression(expression) {}
 	ReturnStatement(ReturnStatement&&) = default;
 	~ReturnStatement() = default;
