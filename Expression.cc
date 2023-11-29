@@ -2,6 +2,7 @@
 #include "Expression.h"
 #include "Function.h"
 #include "Generator.h"
+#include "Iterator.h"
 #include "Statement.h"
 #include "parser.h"
 
@@ -130,48 +131,16 @@ Value DictionaryExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> outerContext) {
-	std::unique_ptr<Expression> targetExpression;
-	if (ids.size() == 1) {
-		// Create a target identifier expression for the identifier.
-		targetExpression = std::unique_ptr<Expression>(std::make_unique<IdentifierExpression>(std::string(ids.back().first)));
-	} else {
-		// Create a target list expression for the identifiers.
-		std::vector<std::unique_ptr<Expression>> idExpressions;
-		std::ranges::transform(ids, std::back_inserter(idExpressions), [](std::pair<std::string, std::string> const& id) {
-			return std::unique_ptr<Expression>(std::make_unique<IdentifierExpression>(std::string(id.first))); });
-		targetExpression = std::unique_ptr<Expression>(std::make_unique<ListExpression>(std::move(idExpressions)));
-	}
-
-	// Create a generator to use the target expression.
-	auto generator = Generator(outerContext, targetExpression, ids, sourceExpression);
-
-	// Fill a list of target values from the generator.
-	List targetValues;
-	for (Value targetValue; targetValue = ++generator, !std::holds_alternative<nullptr_t>(targetValue);) {
-		targetValues.emplace_back(std::move(targetValue));
-	}
+	// Create an iterator to produce contexts that contain values for the targets.
+	auto iterator = Iterator(outerContext, ids, sourceExpression);
 
 	// Construct and return a dictionary using the target values to generate the key-value pairs.
 	Dictionary rv;
-	auto context = std::make_shared<Context>(outerContext);
-	for (auto const& id : ids) {
-		context->AddValue(id.first, Value());
-	}
-	std::ranges::transform(targetValues, std::inserter(rv, rv.end()), [this, context](Value const& value) {
-		if (ids.size() == 1) {
-			context->SetValue(ids.back().first, value);
-		} else if (!std::holds_alternative<std::shared_ptr<List>>(value)) {
-			throw std::runtime_error("source result has only one value");
-		} else if (ids.size() != std::get<std::shared_ptr<List>>(value)->size()) {
-			throw std::runtime_error("id-source count mismatch");
-		} else {
-			for (size_t i = 0; i < ids.size(); ++i) {
-				context->SetValue(ids[i].first, (*std::get<std::shared_ptr<List>>(value))[i]);
-			}
-		}
+	for (std::shared_ptr<Context> context; context = ++iterator, context;) {
 		auto keyValue = keyExpression->GetValue(context);
 		auto valueValue = valueExpression->GetValue(context);
-		return std::make_pair(std::move(keyValue), std::move(valueValue)); });
+		rv.insert(std::make_pair(std::move(keyValue), std::move(valueValue)));
+	}
 	return std::make_shared<Dictionary>(std::move(rv));
 }
 
