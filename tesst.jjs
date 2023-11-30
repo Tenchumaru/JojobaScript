@@ -1,3 +1,5 @@
+var t = "jooby"
+@t += "y"
 var g = (v + 1 for v in [0, 1, 2])
 var l = [v - 1 for v in g]
 var l2 = [v - 1 for v in g]
@@ -80,4 +82,4 @@ while var b = 1, a < 3 {
 }
 @a.b /= b.a
 @d[a - 1] *= b[a - 2]
-@print(fn(2), b, d, s)
+@print(fn(2), b, d, s, t)

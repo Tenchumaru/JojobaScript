@@ -108,6 +108,8 @@ RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
 		reference = value;
 	} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
 		map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
+	} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
+		std::get<std::string>(reference) += std::get<std::string>(value);
 	} else {
 		throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
 	}
