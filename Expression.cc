@@ -70,14 +70,14 @@ Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {
 
 Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
 	if (operation == AND) {
-		auto leftValue = leftExpression->GetValue(context);
+		Value leftValue = leftExpression->GetValue(context);
 		return AsBoolean(leftValue) ? rightExpression->GetValue(context) : leftValue;
 	} else if (operation == OR) {
-		auto leftValue = leftExpression->GetValue(context);
+		Value leftValue = leftExpression->GetValue(context);
 		return AsBoolean(leftValue) ? leftValue : rightExpression->GetValue(context);
 	}
-	auto leftValue = leftExpression->GetValue(context);
-	auto rightValue = rightExpression->GetValue(context);
+	Value leftValue = leftExpression->GetValue(context);
+	Value rightValue = rightExpression->GetValue(context);
 	switch (operation) {
 	case EQ:
 		return PerformNumericBinaryOperation(leftValue, rightValue, [](auto a, auto b) { return a == b; }, [](auto a, auto b) { return a == b; });
@@ -137,8 +137,8 @@ Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> outer
 	// Construct and return a dictionary using the target values to generate the key-value pairs.
 	Dictionary rv;
 	for (std::shared_ptr<Context> context; context = ++iterator, context;) {
-		auto keyValue = keyExpression->GetValue(context);
-		auto valueValue = valueExpression->GetValue(context);
+		Value keyValue = keyExpression->GetValue(context);
+		Value valueValue = valueExpression->GetValue(context);
 		rv.insert(std::make_pair(std::move(keyValue), std::move(valueValue)));
 	}
 	return std::make_shared<Dictionary>(std::move(rv));
@@ -171,11 +171,11 @@ Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 
 Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	// The only indexable types are dictionaries, lists, and strings.
-	auto indexedValue = indexedExpression->GetValue(context);
+	Value indexedValue = indexedExpression->GetValue(context);
 	if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
-		auto indexingValue = indexingExpression->GetValue(context);
+		Value indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
-			auto&& list = *std::get<std::shared_ptr<List>>(indexedValue);
+			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
 			if (index < 0) {
 				index += list.size();
@@ -187,18 +187,18 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		}
 		throw std::runtime_error("cannot index list with non-integral value");
 	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
-		auto indexingValue = indexingExpression->GetValue(context);
-		auto&& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
+		Value indexingValue = indexingExpression->GetValue(context);
+		Dictionary& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
 		if (dictionary.find(indexingValue) == dictionary.end()) {
 			throw std::runtime_error("indexing value not found in dictionary");
 		}
 		return dictionary[indexingValue];
 	} else if (std::holds_alternative<std::string>(indexedValue)) {
-		auto indexingValue = indexingExpression->GetValue(context);
+		Value indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
 			if (index < 0) {
-				auto&& string = std::get<std::string>(indexedValue);
+				auto const& string = std::get<std::string>(indexedValue);
 				index += string.size();
 			}
 			throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
@@ -213,7 +213,7 @@ Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
-	auto value = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 	if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
 		std::vector<Value> values;
 		std::ranges::transform(arguments, std::back_inserter(values), [&context](auto const& argument) {
@@ -266,7 +266,7 @@ Value TernaryExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
-	auto value = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 	switch (operation) {
 	case '-':
 		return PerformNumericUnaryOperation(value, [](auto v) { return -v; }, [](auto v) { return -v; });

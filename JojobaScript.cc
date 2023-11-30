@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
 	// Run the entry point.
 	FunctionStatement::program->Run(globalContext);
-	auto value = globalContext->GetValue("");
+	Value value = globalContext->GetValue("");
 	if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
 		auto&& function = std::get<std::shared_ptr<Function>>(value);
 		function->Invoke({});

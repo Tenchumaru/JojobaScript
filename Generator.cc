@@ -20,7 +20,7 @@ Value FunctionGenerator::operator++() {
 }
 
 Value IteratorGenerator::operator++() {
-	auto context = ++iterator;
+	std::shared_ptr<Context> context = ++iterator;
 	if (!context) {
 		return nullptr;
 	}

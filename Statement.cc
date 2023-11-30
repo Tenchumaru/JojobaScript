@@ -8,7 +8,7 @@ using RunResult = std::pair<Statement::RunResult, Statement::RunResultValue>;
 
 namespace {
 	Value Di(std::unique_ptr<Expression> const& expression, bool isIncrement, std::shared_ptr<Context> context) {
-		auto& reference = expression->GetReference(context);
+		Value& reference = expression->GetReference(context);
 		if (std::holds_alternative<std::int64_t>(reference)) {
 			if (isIncrement) {
 				++std::get<std::int64_t>(reference);
@@ -28,13 +28,13 @@ Statement::~Statement() {}
 BlockStatement::~BlockStatement() {}
 
 RunResult BlockStatement::Run(std::shared_ptr<Context> context) const {
-	for (auto const& statement : statements) {
-		auto runResult = statement->Run(context);
-		if (runResult.first != Statement::RunResult::Next) {
+	for (std::unique_ptr<Statement> const& statement : statements) {
+		::RunResult runResult = statement->Run(context);
+		if (runResult.first != RunResult::Next) {
 			return runResult;
 		}
 	}
-	return { Statement::RunResult::Next, 0 };
+	return { RunResult::Next, 0 };
 }
 
 bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult) const {
@@ -66,8 +66,8 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 ForStatement::Clause::~Clause() {}
 
 Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
-	auto value = sourceExpression->GetValue(context);
-	auto& reference = targetExpression->GetReference(context);
+	Value value = sourceExpression->GetValue(context);
+	Value& reference = targetExpression->GetReference(context);
 	reference = value;
 	return value;
 }
@@ -82,7 +82,7 @@ Value Statement::ExpressionClause::Run(std::shared_ptr<Context> context) const {
 
 Value Statement::VarClause::Run(std::shared_ptr<Context> context) const {
 	auto&& [name, _, expression] = initializer;
-	auto value = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 	context->AddValue(name, value);
 	return value;
 }
@@ -148,13 +148,13 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 	auto context = std::make_shared<Context>(outerContext);
 
 	// Run initializer clauses.
-	for (auto const& initializerClause : initializerClauses) {
+	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
 		initializerClause->Run(context);
 	}
 	for (;;) {
 		// Run expression clauses, checking the value of the last one.
 		Value finalValue = -1;
-		for (auto const& expressionClause : expressionClauses) {
+		for (std::unique_ptr<Statement::Clause> const& expressionClause : expressionClauses) {
 			finalValue = expressionClause->Run(context);
 		}
 		if (!AsBoolean(finalValue)) {
@@ -168,7 +168,7 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 		}
 
 		// Run updater clauses.
-		for (auto const& updaterClause : updaterClauses) {
+		for (std::unique_ptr<Statement::Clause> const& updaterClause : updaterClauses) {
 			updaterClause->Run(context);
 		}
 	}
@@ -186,8 +186,8 @@ RunResult FunctionStatement::Run(std::shared_ptr<Context> context) const {
 
 RunResult IfStatement::Run(std::shared_ptr<Context> outerContext) const {
 	// Check "if" and "else if" fragments, exiting if any runs.
-	for (auto const& fragment : fragments) {
-		auto context = fragment->IsMatch(outerContext);
+	for (std::unique_ptr<IfStatement::Fragment> const& fragment : fragments) {
+		std::shared_ptr<Context> context = fragment->IsMatch(outerContext);
 		if (context) {
 			return fragment->Run(context);
 		}
@@ -208,7 +208,7 @@ std::shared_ptr<Context> IfStatement::Fragment::IsMatch(std::shared_ptr<Context>
 
 	// Run initializer clauses, checking the value of the last one.
 	Value finalValue = -1;
-	for (auto const& initializerClause : initializerClauses) {
+	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
 		finalValue = initializerClause->Run(context);
 	}
 
@@ -241,7 +241,7 @@ RunResult RangeForStatement::Run(std::shared_ptr<Context> outerContext) const {
 }
 
 RunResult ReturnStatement::Run(std::shared_ptr<Context> context) const {
-	auto value = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 	return { RunResult::Return, value };
 }
 
@@ -251,7 +251,7 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 	// Run initializer clauses, keeping the value of the last one.
 	Value finalValue = -1;
-	for (auto const& initializerClause : initializerClauses) {
+	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
 		finalValue = initializerClause->Run(context);
 	}
 
@@ -289,7 +289,7 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 bool SwitchStatement::Case::IsMatch(Value value, std::shared_ptr<Context> outerContext) const {
 	auto context = std::make_shared<Context>(outerContext);
-	auto expressionValue = expression->GetValue(context);
+	Value expressionValue = expression->GetValue(context);
 	return expressionValue == value;
 }
 
@@ -308,7 +308,7 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 		// Run initializer clauses, keeping the value of the last one.
 		Value finalValue = -1;
-		for (auto const& initializerClause : initializerClauses) {
+		for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
 			finalValue = initializerClause->Run(context);
 		}
 
@@ -327,6 +327,6 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 }
 
 RunResult YieldStatement::Run(std::shared_ptr<Context> context) const {
-	auto value = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 	return { RunResult::Yield, value };
 }

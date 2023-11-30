@@ -95,7 +95,7 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 		return std::make_shared<FunctionGenerator>(context, statements);
 	} else {
 		// Run the statements.
-		for (auto const& statement : statements) {
+		for (std::unique_ptr<Statement> const& statement : statements) {
 			auto runResult = statement->Run(context);
 			switch (runResult.first) {
 			case Statement::RunResult::Return:
@@ -114,7 +114,7 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 
 Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
-	for (auto const& argument : arguments) {
+	for (Value const& argument : arguments) {
 		if (isNext) {
 			std::cout << ' ';
 		}

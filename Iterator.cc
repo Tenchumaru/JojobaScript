@@ -32,7 +32,7 @@ std::shared_ptr<Context> Iterator::operator++() {
 	if (ids.size() == 1) {
 		context->AddValue(ids.back().first, nextValue);
 	} else if (std::holds_alternative<std::shared_ptr<List>>(nextValue)) {
-		auto&& list = *std::get<std::shared_ptr<List>>(nextValue);
+		auto const& list = *std::get<std::shared_ptr<List>>(nextValue);
 		if (ids.size() != list.size()) {
 			throw std::runtime_error("incorrect number of comprehension identifiers");
 		}
@@ -81,7 +81,7 @@ Value Iterator::ListStrategy::operator++() {
 }
 
 std::shared_ptr<List> Iterator::SetStrategy::ConvertToList(std::shared_ptr<Set> sourceValue) {
-	auto&& set = *sourceValue;
+	Set const& set = *sourceValue;
 	std::vector<Value> values(set.begin(), set.end());
 	return std::make_shared<List>(std::move(values));
 }
