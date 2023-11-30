@@ -7,6 +7,7 @@
 #include <array>
 #include <format>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <numeric>

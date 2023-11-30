@@ -80,4 +80,4 @@ while var b = 1, a < 3 {
 }
 @a.b /= b.a
 @d[a - 1] *= b[a - 2]
-@print(fn(2))
+@print(fn(2), b, d, s)
