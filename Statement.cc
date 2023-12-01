@@ -83,7 +83,7 @@ Value Statement::ExpressionClause::Run(std::shared_ptr<Context> context) const {
 Value Statement::VarClause::Run(std::shared_ptr<Context> context) const {
 	auto&& [name, _, expression] = initializer;
 	Value value = expression->GetValue(context);
-	context->AddValue(name, value);
+	context->AddValue(name, value, isConstant);
 	return value;
 }
 
@@ -102,6 +102,15 @@ RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
 		/* *=   */ [](std::int64_t& a, std::int64_t b) { a *= b; },
 		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
 	};
+
+	// Check identifier assignments for constancy.
+	auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
+	if (identifierExpression && identifierExpression->IsConstant(context)) {
+		throw std::runtime_error("cannot assign constant");
+	}
+
+	// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
+	// also apply to string arguments.
 	Value value = sourceExpression->GetValue(context);
 	Value& reference = targetExpression->GetReference(context);
 	if (assignment == Assignment()) {
@@ -180,7 +189,7 @@ RunResult FunctionStatement::Run(std::shared_ptr<Context> context) const {
 	Value function = std::make_shared<ScriptFunction>(parameters, statements, context, yielding);
 
 	// Add it to the context.
-	context->AddValue(name, function);
+	context->AddValue(name, function, true);
 	return { RunResult::Next, 0 };
 }
 
@@ -296,7 +305,7 @@ bool SwitchStatement::Case::IsMatch(Value value, std::shared_ptr<Context> outerC
 RunResult VarStatement::Run(std::shared_ptr<Context> context) const {
 	for (auto const& initializer : initializers) {
 		auto&& [name, _, expression] = initializer;
-		context->AddValue(name, expression->GetValue(context));
+		context->AddValue(name, expression->GetValue(context), isConstant);
 	}
 	return { RunResult::Next, 0 };
 }

@@ -58,13 +58,14 @@ public:
 
 	class VarClause : public Clause {
 	public:
-		VarClause(std::tuple<std::string, std::string, std::unique_ptr<Expression>>&& initializer) : initializer(std::move(initializer)) {}
+		VarClause(std::tuple<std::string, std::string, std::unique_ptr<Expression>>&& initializer, bool isConstant) : initializer(std::move(initializer)), isConstant(isConstant) {}
 		VarClause(VarClause&&) = default;
 		~VarClause() = default;
 		Value Run(std::shared_ptr<Context> context) const override;
 
 	private:
 		std::tuple<std::string, std::string, std::unique_ptr<Expression>> initializer;
+		bool isConstant;
 	};
 
 	Statement() = default;
@@ -273,13 +274,14 @@ private:
 
 class VarStatement : public Statement {
 public:
-	VarStatement(std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>&& initializers) : initializers(std::move(initializers)) {}
+	VarStatement(std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>&& initializers, bool isConstant) : initializers(std::move(initializers)), isConstant(isConstant) {}
 	VarStatement(VarStatement&&) = default;
 	~VarStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 
 private:
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>> initializers;
+	bool isConstant;
 };
 
 class WhileStatement : public BlockStatement {

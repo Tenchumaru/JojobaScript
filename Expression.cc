@@ -169,6 +169,10 @@ Value IdentifierExpression::GetValue(std::shared_ptr<Context> context) {
 	return context->GetValue(id);
 }
 
+bool IdentifierExpression::IsConstant(std::shared_ptr<Context> context) const {
+	return context->IsConstant(id);
+}
+
 Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	// The only indexable types are dictionaries, lists, and strings.
 	Value indexedValue = indexedExpression->GetValue(context);

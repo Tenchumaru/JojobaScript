@@ -88,7 +88,7 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 
 	// Add the arguments to the context using the parameters as their names.
 	for (size_t i = 0; i < arguments.size(); ++i) {
-		context->AddValue(parameters[i].first, arguments[i]);
+		context->AddValue(parameters[i].first, arguments[i], false);
 	}
 
 	if (yielding) {

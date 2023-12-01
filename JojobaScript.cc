@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 	auto globalContext = std::make_shared<Context>(std::shared_ptr<Context>());
 
 	// Define the globals.
-	globalContext->AddValue("print", std::make_shared<PrintFunction>());
+	globalContext->AddValue("print", std::make_shared<PrintFunction>(), true);
 
 	// Run the entry point.
 	FunctionStatement::program->Run(globalContext);

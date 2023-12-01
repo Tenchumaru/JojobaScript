@@ -2,11 +2,10 @@
 #include "Context.h"
 #include "Value.cc.inl"
 
-void Context::AddValue(std::string const& key, Value const& value) {
-	// TODO:  add the "const" concept and refuse to set such values.
+void Context::AddValue(std::string const& key, Value const& value, bool isConstant) {
 	auto it = values.find(key);
 	if (it == values.end()) {
-		values.insert({ key, value });
+		values.insert({ key, { value, isConstant } });
 	} else {
 		throw std::runtime_error("cannot add known value");
 	}
@@ -15,7 +14,7 @@ void Context::AddValue(std::string const& key, Value const& value) {
 Value& Context::GetReference(std::string const& key) {
 	auto it = values.find(key);
 	if (it != values.end()) {
-		return it->second;
+		return it->second.first;
 	} else if (outerContext) {
 		return outerContext->GetReference(key);
 	}
@@ -25,9 +24,19 @@ Value& Context::GetReference(std::string const& key) {
 Value Context::GetValue(std::string const& key) {
 	auto it = values.find(key);
 	if (it != values.end()) {
-		return it->second;
+		return it->second.first;
 	} else if (outerContext) {
 		return outerContext->GetValue(key);
 	}
 	throw std::runtime_error("cannot find value");
+}
+
+bool Context::IsConstant(std::string const& key) {
+	auto it = values.find(key);
+	if (it != values.end()) {
+		return it->second.second;
+	} else if (outerContext) {
+		return outerContext->IsConstant(key);
+	}
+	throw std::logic_error("cannot find value");
 }

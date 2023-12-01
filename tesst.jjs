@@ -2,18 +2,18 @@ var t = "jooby"
 @t += "y"
 var g = (v + 1 for v in [0, 1, 2])
 var l = [v - 1 for v in g]
-var l2 = [v - 1 for v in g]
+const l2 = [v - 1 for v in g]
 @g = (v + 1 for v in [0, 1, 2])
-var d = {v - 1: v + 1 for v in g}
-var d2 = {k + 1: v - 1 for k, v in d}
+const d = {v - 1: v + 1 for v in g}
+const d2 = {k + 1: v - 1 for k, v in d}
 @g = (v + 1 for v in [0, 1, 2])
 var s = {v - 1 for v in g}
-var s2 = {v + 1 for v in s}
+const s2 = {v + 1 for v in s}
 @s = {c + c for c in "jooby"}
 
 var a: int = 1
-var b = [1, 2]
-var c = {1, 2}
+const b = [1, 2]
+const c = {1, 2}
 @a = b.size >= 1 ? 2 : 1
 
 function fn(b: int): int {
@@ -36,14 +36,14 @@ do {
 	} else if a < 1 {
 		@a += 1
 	} else {
-		var b: dict = {}
+		const b: dict = {}
 	}
 } while a < 1
 for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; ++a, @fn(a) {
 	@b -= fn(b)
 }
 for ;; {
-	switch var b = 1, a - 1 {
+	switch const b = 1, a - 1 {
 		// Although "case" statements have no braces, they create contexts.
 		case 1:
 			@a = 1
@@ -77,7 +77,7 @@ for var a = 0;; ++a {
 		}
 	}
 }
-while var b = 1, a < 3 {
+while const b = 1, a < 3 {
 	@a += b
 }
 @a.b /= b.a

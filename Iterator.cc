@@ -30,14 +30,14 @@ std::shared_ptr<Context> Iterator::operator++() {
 	}
 	auto context = std::make_shared<Context>(outerContext);
 	if (ids.size() == 1) {
-		context->AddValue(ids.back().first, nextValue);
+		context->AddValue(ids.back().first, nextValue, true);
 	} else if (std::holds_alternative<std::shared_ptr<List>>(nextValue)) {
 		auto const& list = *std::get<std::shared_ptr<List>>(nextValue);
 		if (ids.size() != list.size()) {
 			throw std::runtime_error("incorrect number of comprehension identifiers");
 		}
 		for (size_t i = 0; i < ids.size(); ++i) {
-			context->AddValue(ids[i].first, list[i]);
+			context->AddValue(ids[i].first, list[i], true);
 		}
 	} else {
 		throw std::runtime_error("incorrect number of comprehension identifiers");

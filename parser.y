@@ -44,9 +44,9 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL VAR WHILE YIELD
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
-%token <boolean> BOOLEAN
+%token <boolean> BOOLEAN VAR
 %token <number> NUMBER
 %token <id> ID STRING
 %nonassoc '?' ':'
@@ -100,7 +100,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	returnTypeStack.pop_back();
 	delete $2; delete $5; delete $7; delete $9;
 }
-| VAR initializers { $$ = new VarStatement(std::move(*$2)); delete $2; }
+| VAR initializers { $$ = new VarStatement(std::move(*$2), $1); delete $2; }
 | obreaks BREAK { $$ = new BreakStatement($1); }
 | obreaks CONTINUE { $$ = new ContinueStatement($1); }
 /* TODO:  consider adding a "fallthrough" keyword. */
@@ -137,6 +137,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
+/* TODO:  consider multi-valued assignment to perform swapping. */
 | '@' lexpr ASSIGNMENT expr { $$ = new AssignmentStatement($2, $3, $4); }
 | '@' expr { $$ = new ExpressionStatement($2); }
 | di lexpr { $$ = new IncrementStatement($2, $1); }
@@ -199,7 +200,7 @@ for_initializer { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->
 
 for_initializer:
 for_clause
-| VAR initializer { $$ = new Statement::VarClause(std::move(*$2)); delete $2; }
+| VAR initializer { $$ = new Statement::VarClause(std::move(*$2), $1); delete $2; }
 ;
 
 ofor_clauses:

@@ -40,6 +40,7 @@ return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }
 await    { RETURN_(AWAIT); }
 break    { RETURN_(BREAK); }
+const    { yylval.boolean = true; RETURN_(VAR); }
 false    { yylval.boolean = false; RETURN_(BOOLEAN); }
 until    { RETURN_(UNTIL); }
 while    { RETURN_(WHILE); }
@@ -49,7 +50,7 @@ else     { RETURN_(ELSE); }
 from     { RETURN_(FROM); }
 true     { yylval.boolean = true; RETURN_(BOOLEAN); }
 for      { RETURN_(FOR); }
-var      { RETURN_(VAR); }
+var      { yylval.boolean = false; RETURN_(VAR); }
 as       { RETURN_(AS); }
 do       { RETURN_(DO); }
 if       { RETURN_(IF); }

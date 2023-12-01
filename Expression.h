@@ -93,6 +93,7 @@ public:
 	~IdentifierExpression() = default;
 	Value& GetReference(std::shared_ptr<Context> context) override;
 	Value GetValue(std::shared_ptr<Context> context) override;
+	bool IsConstant(std::shared_ptr<Context> context) const;
 
 private:
 	std::string id;
