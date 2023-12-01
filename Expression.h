@@ -2,6 +2,17 @@
 
 #include "Context.h"
 
+template<typename T>
+std::int64_t AdjustIndex(std::int64_t index, T container) {
+	if (index < 0) {
+		index += container.size();
+	}
+	if (static_cast<std::uint64_t>(index) >= container.size()) {
+		throw std::runtime_error("index out of range");
+	}
+	return index;
+}
+
 class Statement;
 
 class Expression {

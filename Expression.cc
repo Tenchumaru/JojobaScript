@@ -181,12 +181,7 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			if (index < 0) {
-				index += list.size();
-			}
-			if (static_cast<std::uint64_t>(index) >= list.size()) {
-				throw std::runtime_error("index out of range");
-			}
+			index = AdjustIndex(index, list);
 			return list[index];
 		}
 		throw std::runtime_error("cannot index list with non-integral value");
@@ -201,10 +196,8 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		Value indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			if (index < 0) {
-				auto const& string = std::get<std::string>(indexedValue);
-				index += string.size();
-			}
+			auto const& string = std::get<std::string>(indexedValue);
+			index = AdjustIndex(index, string);
 			throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
 		}
 		throw std::runtime_error("cannot index string with non-integral value");
