@@ -4,6 +4,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".inl" #>
 // This file is auto-generated; do not edit.
+#pragma once
 <#
 string[] lines = File.ReadAllLines("Value.txt");
 string[][] parts = lines.Select((s) => s.Split('\t')).ToArray();

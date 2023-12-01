@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Context.h"
+#include "ValueReference.h"
+
+class Context;
 
 template<typename T>
 std::int64_t AdjustIndex(std::int64_t index, T container) {
@@ -18,7 +20,7 @@ class Statement;
 class Expression {
 public:
 	virtual ~Expression() = 0;
-	virtual Value& GetReference(std::shared_ptr<Context> context);
+	virtual ValueReference GetReference(std::shared_ptr<Context> context);
 	virtual Value GetValue(std::shared_ptr<Context> context) = 0;
 };
 
@@ -76,7 +78,7 @@ public:
 	DotExpression(Expression* expression, std::string&& id) : expression(expression), id(std::move(id)) {}
 	DotExpression(DotExpression&&) = default;
 	~DotExpression() = default;
-	Value& GetReference(std::shared_ptr<Context> context) override;
+	ValueReference GetReference(std::shared_ptr<Context> context) override;
 	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:
@@ -102,7 +104,7 @@ public:
 	IdentifierExpression(std::string&& id) : id(std::move(id)) {}
 	IdentifierExpression(IdentifierExpression&&) = default;
 	~IdentifierExpression() = default;
-	Value& GetReference(std::shared_ptr<Context> context) override;
+	ValueReference GetReference(std::shared_ptr<Context> context) override;
 	Value GetValue(std::shared_ptr<Context> context) override;
 	bool IsConstant(std::shared_ptr<Context> context) const;
 
@@ -115,7 +117,7 @@ public:
 	IndexExpression(Expression* indexedExpression, Expression* indexingExpression) : indexedExpression(indexedExpression), indexingExpression(indexingExpression) {}
 	IndexExpression(IndexExpression&&) = default;
 	~IndexExpression() = default;
-	Value& GetReference(std::shared_ptr<Context> context) override;
+	ValueReference GetReference(std::shared_ptr<Context> context) override;
 	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:

@@ -8,7 +8,7 @@ using RunResult = std::pair<Statement::RunResult, Statement::RunResultValue>;
 
 namespace {
 	Value Di(std::unique_ptr<Expression> const& expression, bool isIncrement, std::shared_ptr<Context> context) {
-		Value& reference = expression->GetReference(context);
+		ValueReference reference = expression->GetReference(context);
 		if (std::holds_alternative<std::int64_t>(reference)) {
 			if (isIncrement) {
 				++std::get<std::int64_t>(reference);
@@ -67,7 +67,7 @@ ForStatement::Clause::~Clause() {}
 
 Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
 	Value value = sourceExpression->GetValue(context);
-	Value& reference = targetExpression->GetReference(context);
+	ValueReference reference = targetExpression->GetReference(context);
 	reference = value;
 	return value;
 }
@@ -112,7 +112,7 @@ RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
 	// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
 	// also apply to string arguments.
 	Value value = sourceExpression->GetValue(context);
-	Value& reference = targetExpression->GetReference(context);
+	ValueReference reference = targetExpression->GetReference(context);
 	if (assignment == Assignment()) {
 		reference = value;
 	} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {

@@ -1,5 +1,6 @@
 var t = "jooby"
 @t += "y"
+@t[2] = t[-1]
 var g = (v + 1 for v in [0, 1, 2])
 var l = [v - 1 for v in g]
 const l2 = [v - 1 for v in g]
@@ -15,6 +16,8 @@ var a: int = 1
 const b = [1, 2]
 const c = {1, 2}
 @a = b.size >= 1 ? 2 : 1
+@b[0] = -2
+++b[0]
 
 function fn(b: int): int {
 	return a + b

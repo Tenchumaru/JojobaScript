@@ -59,7 +59,7 @@ namespace {
 }
 Expression::~Expression() {}
 
-Value& Expression::GetReference(std::shared_ptr<Context> context) {
+ValueReference Expression::GetReference(std::shared_ptr<Context> context) {
 	throw std::runtime_error("cannot get a reference to an r-value expression");
 }
 
@@ -144,7 +144,7 @@ Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> outer
 	return std::make_shared<Dictionary>(std::move(rv));
 }
 
-Value& DotExpression::GetReference(std::shared_ptr<Context> context) {
+ValueReference DotExpression::GetReference(std::shared_ptr<Context> context) {
 	// TODO:  Value does not yet contain a type with fields.
 	context;
 	static Value n = 1;
@@ -161,7 +161,7 @@ Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
 	return std::make_shared<IteratorGenerator>(context, targetExpression, ids, sourceExpression);
 }
 
-Value& IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
+ValueReference IdentifierExpression::GetReference(std::shared_ptr<Context> context) {
 	return context->GetReference(id);
 }
 
@@ -173,14 +173,14 @@ bool IdentifierExpression::IsConstant(std::shared_ptr<Context> context) const {
 	return context->IsConstant(id);
 }
 
-Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
+ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	// The only indexable types are dictionaries, lists, and strings.
-	Value indexedValue = indexedExpression->GetValue(context);
+	ValueReference indexedValue = indexedExpression->GetReference(context);
 	if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
 		Value indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
-			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
+			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
 			index = AdjustIndex(index, list);
 			return list[index];
 		}
@@ -196,9 +196,9 @@ Value& IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		Value indexingValue = indexingExpression->GetValue(context);
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			auto const& string = std::get<std::string>(indexedValue);
+			auto& string = std::get<std::string>(indexedValue);
 			index = AdjustIndex(index, string);
-			throw std::logic_error("not implemented"); // TODO:  I need a sub-string reference type.
+			return ValueReference(string, index);
 		}
 		throw std::runtime_error("cannot index string with non-integral value");
 	}

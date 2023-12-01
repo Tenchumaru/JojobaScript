@@ -20,6 +20,7 @@
     <ClCompile Include="scanner.cc" />
     <ClCompile Include="Function.cc" />
     <ClCompile Include="Iterator.cc" />
+    <ClCompile Include="ValueReference.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -34,6 +35,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="Iterator.h" />
+    <ClInclude Include="ValueReference.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">

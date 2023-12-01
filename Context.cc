@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Context.h"
-#include "Value.cc.inl"
 
 void Context::AddValue(std::string const& key, Value const& value, bool isConstant) {
 	auto it = values.find(key);
