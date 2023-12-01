@@ -22,14 +22,15 @@ public:
 
 	class AssignmentClause : public Clause {
 	public:
-		AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
+		AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression);
+		AssignmentClause(std::vector<std::unique_ptr<Expression>>&& targetExpressions, Assignment assignment, std::vector<std::unique_ptr<Expression>>&& sourceExpressions) : targetExpressions(std::move(targetExpressions)), sourceExpressions(std::move(sourceExpressions)), assignment(assignment) {}
 		AssignmentClause(AssignmentClause&&) = default;
 		~AssignmentClause() = default;
 		Value Run(std::shared_ptr<Context> context) const override;
 
 	private:
-		std::unique_ptr<Expression> targetExpression;
-		std::unique_ptr<Expression> sourceExpression;
+		std::vector<std::unique_ptr<Expression>> targetExpressions;
+		std::vector<std::unique_ptr<Expression>> sourceExpressions;
 		Assignment assignment;
 	};
 
@@ -75,14 +76,14 @@ public:
 
 class AssignmentStatement : public Statement {
 public:
-	AssignmentStatement(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : targetExpression(targetExpression), sourceExpression(sourceExpression), assignment(assignment) {}
+	AssignmentStatement(std::vector<std::unique_ptr<Expression>>&& targetExpressions, Assignment assignment, std::vector<std::unique_ptr<Expression>>&& sourceExpressions) : targetExpressions(std::move(targetExpressions)), sourceExpressions(std::move(sourceExpressions)), assignment(assignment) {}
 	AssignmentStatement(AssignmentStatement&&) = default;
 	~AssignmentStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 
 private:
-	std::unique_ptr<Expression> targetExpression;
-	std::unique_ptr<Expression> sourceExpression;
+	std::vector<std::unique_ptr<Expression>> targetExpressions;
+	std::vector<std::unique_ptr<Expression>> sourceExpressions;
 	Assignment assignment;
 };
 

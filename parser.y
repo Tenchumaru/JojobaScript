@@ -64,7 +64,7 @@ namespace {
 %type<block> block cases oelse
 %type<boolean> di uw
 %type<expr> bexpr cexpr expr iexpr lexpr oexpr
-%type<expr_list> expr_list oexpr_list
+%type<expr_list> expr_list lexpr_list oexpr_list
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
 %type<id> otype otype_list type type_list
@@ -137,8 +137,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
-/* TODO:  consider multi-valued assignment to perform swapping. */
-| '@' lexpr ASSIGNMENT expr { $$ = new AssignmentStatement($2, $3, $4); }
+| '@' lexpr_list ASSIGNMENT expr_list { $$ = new AssignmentStatement(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4; }
 | '@' expr { $$ = new ExpressionStatement($2); }
 | di lexpr { $$ = new IncrementStatement($2, $1); }
 ;
@@ -215,6 +214,7 @@ for_clause { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->empla
 
 for_clause:
 '@' lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($2, $3, $4); }
+| '(' lexpr_list ASSIGNMENT expr_list ')' { $$ = new Statement::AssignmentClause(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4; }
 | di lexpr { $$ = new Statement::DiClause($2, $1); }
 | '@' expr { $$ = new Statement::ExpressionClause($2); }
 ;
@@ -363,6 +363,11 @@ iexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
 | cexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
 | iexpr '[' expr ']' { $$ = new IndexExpression($1, $3); }
 | ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
+;
+
+lexpr_list:
+lexpr { $$ = new std::vector<std::unique_ptr<Expression>>; $$->emplace_back($1); }
+| lexpr_list ',' lexpr { $1->emplace_back($3); $$ = $1; }
 ;
 
 oexpr_list:

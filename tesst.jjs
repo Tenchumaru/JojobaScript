@@ -11,6 +11,7 @@ const d2 = {k + 1: v - 1 for k, v in d}
 var s = {v - 1 for v in g}
 const s2 = {v + 1 for v in s}
 @s = {c + c for c in "jooby"}
+@s, t = t, s
 
 var a: int = 1
 const b = [1, 2]

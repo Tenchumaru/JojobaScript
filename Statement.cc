@@ -22,27 +22,43 @@ namespace {
 		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
 	};
 
-	Value Assign(std::unique_ptr<Expression> const& targetExpression, Assignment assignment, std::unique_ptr<Expression> const& sourceExpression, std::shared_ptr<Context> context) {
-		// Check identifier assignments for constancy.
-		auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
-		if (identifierExpression && identifierExpression->IsConstant(context)) {
-			throw std::runtime_error("cannot assign constant");
+	Value Assign(std::vector<std::unique_ptr<Expression>> const& targetExpressions, Assignment assignment, std::vector<std::unique_ptr<Expression>> const& sourceExpressions, std::shared_ptr<Context> context) {
+		// Check if the number of sources and targets match.
+		if (sourceExpressions.size() != targetExpressions.size()) {
+			throw std::runtime_error("the number of sources and targets does not match");
 		}
 
-		// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
-		// also apply to string arguments.
-		Value value = sourceExpression->GetValue(context);
-		ValueReference reference = targetExpression->GetReference(context);
-		if (assignment == Assignment()) {
-			reference = value;
-		} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
-			map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
-		} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
-			std::get<std::string>(reference) += std::get<std::string>(value);
-		} else {
-			throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+		// Collect the source values.
+		std::vector<Value> sourceValues;
+		for (std::unique_ptr<Expression> const& sourceExpression : sourceExpressions) {
+			sourceValues.emplace_back(sourceExpression->GetValue(context));
 		}
-		return value;
+
+		// Assign the target values.
+		for (size_t i = 0; i < sourceExpressions.size(); ++i) {
+			Value const& value = sourceValues[i];
+			std::unique_ptr<Expression> const& targetExpression = targetExpressions[i];
+
+			// Check identifier assignments for constancy.
+			auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
+			if (identifierExpression && identifierExpression->IsConstant(context)) {
+				throw std::runtime_error("cannot assign constant");
+			}
+
+			// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
+			// also apply to string arguments.
+			ValueReference reference = targetExpression->GetReference(context);
+			if (assignment == Assignment()) {
+				reference = value;
+			} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
+				map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
+			} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
+				std::get<std::string>(reference) += std::get<std::string>(value);
+			} else {
+				throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+			}
+		}
+		return sourceValues.back();
 	}
 
 	Value Di(std::unique_ptr<Expression> const& expression, bool isIncrement, std::shared_ptr<Context> context) {
@@ -103,8 +119,13 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 
 ForStatement::Clause::~Clause() {}
 
+Statement::AssignmentClause::AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : assignment(assignment) {
+	targetExpressions.emplace_back(std::unique_ptr<Expression>(targetExpression));
+	sourceExpressions.emplace_back(std::unique_ptr<Expression>(sourceExpression));
+}
+
 Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
-	return Assign(targetExpression, assignment, sourceExpression, context);
+	return Assign(targetExpressions, assignment, sourceExpressions, context);
 }
 
 Value Statement::DiClause::Run(std::shared_ptr<Context> context) const {
@@ -123,7 +144,7 @@ Value Statement::VarClause::Run(std::shared_ptr<Context> context) const {
 }
 
 RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
-	Assign(targetExpression, assignment, sourceExpression, context);
+	Assign(targetExpressions, assignment, sourceExpressions, context);
 	return { RunResult::Next, 0 };
 }
 
