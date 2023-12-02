@@ -7,6 +7,44 @@
 using RunResult = std::pair<Statement::RunResult, Statement::RunResultValue>;
 
 namespace {
+	std::array<std::function<void(std::int64_t&, std::int64_t)>, static_cast<int>(Assignment::Size)> map = {
+		/* =    */ std::function<void(std::int64_t&, std::int64_t)>{},
+		/* &=   */ [](std::int64_t& a, std::int64_t b) { a &= b; },
+		/* >>>= */ [](std::int64_t& a, std::int64_t b) { a = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) >> b); },
+		/* /=   */ [](std::int64_t& a, std::int64_t b) { if (b == 0) throw std::runtime_error("integer division by zero"); a /= b; },
+		/* <<=  */ [](std::int64_t& a, std::int64_t b) { a <<= b; },
+		/* >>=  */ [](std::int64_t& a, std::int64_t b) { a >>= b; },
+		/* %=   */ [](std::int64_t& a, std::int64_t b) { a %= b; },
+		/* |=   */ [](std::int64_t& a, std::int64_t b) { a |= b; },
+		/* +=   */ [](std::int64_t& a, std::int64_t b) { a += b; },
+		/* -=   */ [](std::int64_t& a, std::int64_t b) { a -= b; },
+		/* *=   */ [](std::int64_t& a, std::int64_t b) { a *= b; },
+		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
+	};
+
+	Value Assign(std::unique_ptr<Expression> const& targetExpression, Assignment assignment, std::unique_ptr<Expression> const& sourceExpression, std::shared_ptr<Context> context) {
+		// Check identifier assignments for constancy.
+		auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
+		if (identifierExpression && identifierExpression->IsConstant(context)) {
+			throw std::runtime_error("cannot assign constant");
+		}
+
+		// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
+		// also apply to string arguments.
+		Value value = sourceExpression->GetValue(context);
+		ValueReference reference = targetExpression->GetReference(context);
+		if (assignment == Assignment()) {
+			reference = value;
+		} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
+			map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
+		} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
+			std::get<std::string>(reference) += std::get<std::string>(value);
+		} else {
+			throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+		}
+		return value;
+	}
+
 	Value Di(std::unique_ptr<Expression> const& expression, bool isIncrement, std::shared_ptr<Context> context) {
 		ValueReference reference = expression->GetReference(context);
 		if (std::holds_alternative<std::int64_t>(reference)) {
@@ -66,10 +104,7 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 ForStatement::Clause::~Clause() {}
 
 Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
-	Value value = sourceExpression->GetValue(context);
-	ValueReference reference = targetExpression->GetReference(context);
-	reference = value;
-	return value;
+	return Assign(targetExpression, assignment, sourceExpression, context);
 }
 
 Value Statement::DiClause::Run(std::shared_ptr<Context> context) const {
@@ -88,40 +123,7 @@ Value Statement::VarClause::Run(std::shared_ptr<Context> context) const {
 }
 
 RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
-	static std::array<std::function<void(std::int64_t&, std::int64_t)>, static_cast<int>(Assignment::Size)> map = {
-		/* =    */ std::function<void(std::int64_t&, std::int64_t)>{},
-		/* &=   */ [](std::int64_t& a, std::int64_t b) { a &= b; },
-		/* >>>= */ [](std::int64_t& a, std::int64_t b) { a = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) >> b); },
-		/* /=   */ [](std::int64_t& a, std::int64_t b) { if (b == 0) throw std::runtime_error("integer division by zero"); a /= b; },
-		/* <<=  */ [](std::int64_t& a, std::int64_t b) { a <<= b; },
-		/* >>=  */ [](std::int64_t& a, std::int64_t b) { a >>= b; },
-		/* %=   */ [](std::int64_t& a, std::int64_t b) { a %= b; },
-		/* |=   */ [](std::int64_t& a, std::int64_t b) { a |= b; },
-		/* +=   */ [](std::int64_t& a, std::int64_t b) { a += b; },
-		/* -=   */ [](std::int64_t& a, std::int64_t b) { a -= b; },
-		/* *=   */ [](std::int64_t& a, std::int64_t b) { a *= b; },
-		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
-	};
-
-	// Check identifier assignments for constancy.
-	auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
-	if (identifierExpression && identifierExpression->IsConstant(context)) {
-		throw std::runtime_error("cannot assign constant");
-	}
-
-	// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
-	// also apply to string arguments.
-	Value value = sourceExpression->GetValue(context);
-	ValueReference reference = targetExpression->GetReference(context);
-	if (assignment == Assignment()) {
-		reference = value;
-	} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
-		map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
-	} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
-		std::get<std::string>(reference) += std::get<std::string>(value);
-	} else {
-		throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
-	}
+	Assign(targetExpression, assignment, sourceExpression, context);
 	return { RunResult::Next, 0 };
 }
 
