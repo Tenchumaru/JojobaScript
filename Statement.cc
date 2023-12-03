@@ -22,43 +22,84 @@ namespace {
 		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
 	};
 
+	void Assign(ValueReference& targetReference, Assignment assignment, Value const& sourceValue) {
+		if (assignment == Assignment()) {
+			targetReference = sourceValue;
+		} else if (std::holds_alternative<std::int64_t>(targetReference) && std::holds_alternative<std::int64_t>(sourceValue)) {
+			map[static_cast<int>(assignment)](std::get<std::int64_t>(targetReference), std::get<std::int64_t>(sourceValue));
+		} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(targetReference) && std::holds_alternative<std::string>(sourceValue)) {
+			std::get<std::string>(targetReference) += std::get<std::string>(sourceValue);
+		} else {
+			throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+		}
+	}
+
 	Value Assign(std::vector<std::unique_ptr<Expression>> const& targetExpressions, Assignment assignment, std::vector<std::unique_ptr<Expression>> const& sourceExpressions, std::shared_ptr<Context> context) {
-		// Check if the number of sources and targets match.
-		if (sourceExpressions.size() != targetExpressions.size()) {
-			throw std::runtime_error("the number of sources and targets does not match");
-		}
-
-		// Collect the source values.
-		std::vector<Value> sourceValues;
-		for (std::unique_ptr<Expression> const& sourceExpression : sourceExpressions) {
-			sourceValues.emplace_back(sourceExpression->GetValue(context));
-		}
-
-		// Assign the target values.
-		for (size_t i = 0; i < sourceExpressions.size(); ++i) {
-			Value const& value = sourceValues[i];
-			std::unique_ptr<Expression> const& targetExpression = targetExpressions[i];
-
+		// Check if the number of sources matches the number of targets.
+		size_t nsourceExpressions = sourceExpressions.size();
+		if (nsourceExpressions == targetExpressions.size()) {
 			// Check identifier assignments for constancy.
-			auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
-			if (identifierExpression && identifierExpression->IsConstant(context)) {
-				throw std::runtime_error("cannot assign constant");
+			for (std::unique_ptr<Expression> const& targetExpression : targetExpressions) {
+				auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpression.get());
+				if (identifierExpression && identifierExpression->IsConstant(context)) {
+					throw std::runtime_error("cannot assign constant");
+				}
 			}
 
-			// Perform the assignment, ensuring compound assignments apply to only integer arguments except for plus-assignment, which may
-			// also apply to string arguments.
-			ValueReference reference = targetExpression->GetReference(context);
-			if (assignment == Assignment()) {
-				reference = value;
-			} else if (std::holds_alternative<std::int64_t>(reference) && std::holds_alternative<std::int64_t>(value)) {
-				map[static_cast<int>(assignment)](std::get<std::int64_t>(reference), std::get<std::int64_t>(value));
-			} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(reference) && std::holds_alternative<std::string>(value)) {
-				std::get<std::string>(reference) += std::get<std::string>(value);
-			} else {
-				throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+			// Collect the source values.  Performing this first in its own loop enables the "swap" paradigm.
+			std::vector<Value> sourceValues;
+			for (std::unique_ptr<Expression> const& sourceExpression : sourceExpressions) {
+				sourceValues.emplace_back(sourceExpression->GetValue(context));
+			}
+
+			// Assign the sources to the targets.
+			for (size_t i = 0; i < nsourceExpressions; ++i) {
+				Value const& sourceValue = sourceValues[i];
+				ValueReference targetReference = targetExpressions[i]->GetReference(context);
+				Assign(targetReference, assignment, sourceValue);
+			}
+			return sourceValues.back();
+		} else if (targetExpressions.size() == 1) {
+			// There are multiple sources and one target.  Ensure this is a non-compound assignment.
+			if (assignment == Assignment{}) {
+				// Check identifier assignment for constancy.
+				auto const* identifierExpression = dynamic_cast<IdentifierExpression const*>(targetExpressions.back().get());
+				if (identifierExpression && identifierExpression->IsConstant(context)) {
+					throw std::runtime_error("cannot assign constant");
+				}
+
+				// Create a list of source values.
+				auto list = std::make_shared<List>();
+				for (std::unique_ptr<Expression> const& sourceExpression : sourceExpressions) {
+					list->emplace_back(sourceExpression->GetValue(context));
+				}
+
+				// Assign that list to the target.
+				ValueReference targetReference = targetExpressions.back()->GetReference(context);
+				targetReference = list;
+				return targetReference;
+			}
+			throw std::runtime_error("cannot perform compound assignment on a list");
+		} else if (nsourceExpressions == 1) {
+			// There are one source and multiple targets.  Check if the source is a list.
+			Value const& sourceValue = sourceExpressions.back()->GetValue(context);
+			if (std::holds_alternative<std::shared_ptr<List>>(sourceValue)) {
+				// Create a copy of the list to ensure an element in both the source and target collections does not inadvertently cause an
+				// unexpected update.
+				List list = *std::get<std::shared_ptr<List>>(sourceValue);
+
+				// Check if the number of source elements matches the number of targets.
+				if (list.size() == targetExpressions.size()) {
+					// Assign the source elements to the targets.
+					for (size_t i = 0, n = targetExpressions.size(); i < n; ++i) {
+						ValueReference targetReference = targetExpressions[i]->GetReference(context);
+						Assign(targetReference, assignment, list[i]);
+					}
+					return list.back();
+				}
 			}
 		}
-		return sourceValues.back();
+		throw std::runtime_error("the number of sources and targets does not match");
 	}
 
 	Value Di(std::unique_ptr<Expression> const& expression, bool isIncrement, std::shared_ptr<Context> context) {
