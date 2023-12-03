@@ -4,16 +4,7 @@
 
 class Context;
 
-template<typename T>
-std::int64_t AdjustIndex(std::int64_t index, T container) {
-	if (index < 0) {
-		index += container.size();
-	}
-	if (static_cast<std::uint64_t>(index) >= container.size()) {
-		throw std::runtime_error("index out of range");
-	}
-	return index;
-}
+std::int64_t AdjustIndex(std::int64_t index, size_t size);
 
 class Statement;
 

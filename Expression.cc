@@ -57,6 +57,17 @@ namespace {
 		}
 	}
 }
+
+std::int64_t AdjustIndex(std::int64_t index, size_t size) {
+	if (index < 0) {
+		index += size;
+	}
+	if (static_cast<std::uint64_t>(index) >= size) {
+		throw std::runtime_error("index out of range");
+	}
+	return index;
+}
+
 Expression::~Expression() {}
 
 ValueReference Expression::GetReference(std::shared_ptr<Context> context) {
@@ -181,7 +192,7 @@ ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
 			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
-			index = AdjustIndex(index, list);
+			index = AdjustIndex(index, list.size());
 			return list[index];
 		}
 		throw std::runtime_error("cannot index list with non-integral value");
@@ -197,7 +208,7 @@ ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context) {
 		if (std::holds_alternative<std::int64_t>(indexingValue)) {
 			std::int64_t index = std::get<std::int64_t>(indexingValue);
 			auto& string = std::get<std::string>(indexedValue);
-			index = AdjustIndex(index, string);
+			index = AdjustIndex(index, string.size());
 			return ValueReference(string, index);
 		}
 		throw std::runtime_error("cannot index string with non-integral value");
