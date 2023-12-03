@@ -289,11 +289,11 @@ DEC { $$ = false; }
 ;
 
 expr:
-':' '(' id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
+'#' '(' id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
 	$$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$8), Yielding());
 	delete $3; delete $5; delete $8;
 }
-| ':' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
+| '#' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
 | bexpr
 | cexpr
 ;
@@ -362,6 +362,9 @@ lexpr:
 iexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
 | cexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
 | iexpr '[' expr ']' { $$ = new IndexExpression($1, $3); }
+| iexpr '[' ':' expr ']' { $$ = new IndexExpression($1, new LiteralExpression(0), $4); }
+| iexpr '[' expr ':' ']' { $$ = new IndexExpression($1, $3, nullptr); }
+| iexpr '[' expr ':' expr ']' { $$ = new IndexExpression($1, $3, $5); }
 | ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
 ;
 

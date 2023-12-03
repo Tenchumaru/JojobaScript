@@ -105,7 +105,8 @@ private:
 
 class IndexExpression : public Expression {
 public:
-	IndexExpression(Expression* indexedExpression, Expression* indexingExpression) : indexedExpression(indexedExpression), indexingExpression(indexingExpression) {}
+	IndexExpression(Expression* indexedExpression, Expression* indexingExpression) : indexedExpression(indexedExpression), indexingExpression(indexingExpression), isRange(false) {}
+	IndexExpression(Expression* indexedExpression, Expression* indexingExpression, Expression* indexingEndExpression) : indexedExpression(indexedExpression), indexingExpression(indexingExpression), indexingEndExpression(indexingEndExpression), isRange(true) {}
 	IndexExpression(IndexExpression&&) = default;
 	~IndexExpression() = default;
 	ValueReference GetReference(std::shared_ptr<Context> context) override;
@@ -114,6 +115,10 @@ public:
 private:
 	std::unique_ptr<Expression> indexedExpression;
 	std::unique_ptr<Expression> indexingExpression;
+	std::unique_ptr<Expression> indexingEndExpression;
+	bool isRange;
+
+	std::pair<std::int64_t, std::int64_t> GetIndices(size_t size, std::shared_ptr<Context> context);
 };
 
 class InvocationExpression : public Expression {

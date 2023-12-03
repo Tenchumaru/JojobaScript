@@ -36,13 +36,12 @@ namespace {
 			throw std::runtime_error("cannot use non-numeric in a numeric operation");
 		} else if (std::holds_alternative<std::int64_t>(leftValue) && std::holds_alternative<std::int64_t>(rightValue)) {
 			return integralOperation(std::get<std::int64_t>(leftValue), std::get<std::int64_t>(rightValue));
-		} else if (!realOperation) {
-			throw std::runtime_error("cannot use non-integer in an integral operation");
-		} else {
+		} else if (realOperation) {
 			auto leftReal = std::holds_alternative<double>(leftValue) ? std::get<double>(leftValue) : static_cast<double>(std::get<std::int64_t>(leftValue));
 			auto rightReal = std::holds_alternative<double>(rightValue) ? std::get<double>(rightValue) : static_cast<double>(std::get<std::int64_t>(rightValue));
 			return realOperation(leftReal, rightReal);
 		}
+		throw std::runtime_error("cannot use non-integer in an integral operation");
 	}
 
 	Value PerformNumericUnaryOperation(Value const& value, std::function<std::int64_t(std::int64_t)> integralOperation, std::function<double(double)> realOperation) {
@@ -50,11 +49,10 @@ namespace {
 			return integralOperation(std::get<std::int64_t>(value));
 		} else if (!std::holds_alternative<double>(value)) {
 			throw std::runtime_error("cannot use non-numeric in a numeric operation");
-		} else if (!realOperation) {
-			throw std::runtime_error("cannot use non-integer in an integral operation");
-		} else {
+		} else if (realOperation) {
 			return realOperation(std::get<double>(value));
 		}
+		throw std::runtime_error("cannot use non-integer in an integral operation");
 	}
 }
 
@@ -62,10 +60,10 @@ std::int64_t AdjustIndex(std::int64_t index, size_t size) {
 	if (index < 0) {
 		index += size;
 	}
-	if (static_cast<std::uint64_t>(index) >= size) {
-		throw std::runtime_error("index out of range");
+	if (static_cast<std::uint64_t>(index) < size) {
+		return index;
 	}
-	return index;
+	throw std::runtime_error("index out of range");
 }
 
 Expression::~Expression() {}
@@ -187,37 +185,60 @@ bool IdentifierExpression::IsConstant(std::shared_ptr<Context> context) const {
 ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context) {
 	// The only indexable types are dictionaries, lists, and strings.
 	ValueReference indexedValue = indexedExpression->GetReference(context);
-	if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
-		Value indexingValue = indexingExpression->GetValue(context);
-		if (std::holds_alternative<std::int64_t>(indexingValue)) {
-			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			List& list = *std::get<std::shared_ptr<List>>(indexedValue);
-			index = AdjustIndex(index, list.size());
+	if (indexedValue.IsIndexed) {
+		size_t size = indexedValue.Size;
+		auto [index, endIndex] = GetIndices(size, context);
+		indexedValue.AdjustIndices(index, endIndex);
+		return indexedValue;
+	} else if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
+		List& list = *std::get<std::shared_ptr<List>>(indexedValue);
+		auto [index, endIndex] = GetIndices(list.size(), context);
+		if (isRange) {
+			return ValueReference(list, index, endIndex);
+		} else {
 			return list[index];
 		}
-		throw std::runtime_error("cannot index list with non-integral value");
 	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
 		Value indexingValue = indexingExpression->GetValue(context);
 		Dictionary& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
-		if (dictionary.find(indexingValue) == dictionary.end()) {
-			throw std::runtime_error("indexing value not found in dictionary");
+		if (dictionary.find(indexingValue) != dictionary.end()) {
+			return dictionary[indexingValue];
 		}
-		return dictionary[indexingValue];
+		throw std::runtime_error("indexing value not found in dictionary");
 	} else if (std::holds_alternative<std::string>(indexedValue)) {
-		Value indexingValue = indexingExpression->GetValue(context);
-		if (std::holds_alternative<std::int64_t>(indexingValue)) {
-			std::int64_t index = std::get<std::int64_t>(indexingValue);
-			auto& string = std::get<std::string>(indexedValue);
-			index = AdjustIndex(index, string.size());
-			return ValueReference(string, index);
-		}
-		throw std::runtime_error("cannot index string with non-integral value");
+		auto& string = std::get<std::string>(indexedValue);
+		auto [index, endIndex] = GetIndices(string.size(), context);
+		return ValueReference(string, index, endIndex);
 	}
-	throw std::runtime_error("cannot index non-indexable");
+	throw std::runtime_error("cannot reference-index non-reference-indexable");
 }
 
 Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
 	return GetReference(context);
+}
+
+std::pair<std::int64_t, std::int64_t> IndexExpression::GetIndices(size_t size, std::shared_ptr<Context> context) {
+	Value indexingValue = indexingExpression->GetValue(context);
+	if (std::holds_alternative<std::int64_t>(indexingValue)) {
+		auto index = std::get<std::int64_t>(indexingValue);
+		index = AdjustIndex(index, size);
+		if (!isRange) {
+			return { index, index + 1 };
+		} else if (indexingEndExpression) {
+			Value indexingEndValue = indexingEndExpression->GetValue(context);
+			if (std::holds_alternative<std::int64_t>(indexingEndValue)) {
+				auto endIndex = std::get<std::int64_t>(indexingEndValue);
+				endIndex = AdjustIndex(endIndex, size + 1);
+				if (endIndex >= index) {
+					return { index, endIndex };
+				}
+				throw std::runtime_error("ending index may not be less than beginning index");
+			}
+		} else {
+			return { index, size };
+		}
+	}
+	throw std::runtime_error("cannot index with non-integral value");
 }
 
 Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
