@@ -4,12 +4,15 @@
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".inl" #>
 // This file is auto-generated; do not edit.
-
+#if PART == __BOOL_DEFINED
+<#
+string[] lines = File.ReadAllLines("Value.txt");
+string[][] parts = lines.Select((s) => s.Split('|').Select((t) => t.Trim()).ToArray()).ToArray();
+#>
 bool AsBoolean(Value const& value) {
 	switch (value.index()) {
 <#
-string[] lines = File.ReadAllLines("Value.txt");
-foreach ((int index, string typeName, string code) in lines.Select((s) => s.Split('\t')).Select((a, i) => (i, a[0], a[1].Replace("$", i.ToString())))) {
+foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i, a[0], a[1].Replace("$", $"std::get<{i}>(value)")))) {
 #>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
 		<#= code #>
 <#
@@ -18,3 +21,20 @@ foreach ((int index, string typeName, string code) in lines.Select((s) => s.Spli
 		throw std::logic_error("unexpected value index");
 	}
 }
+#elif PART == _CRT_INTERNAL_PRINTF_STANDARD_ROUNDING
+void PrintValue(Value const& value) {
+	switch (value.index()) {
+<#
+foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i, a[0], a[2].Replace("$", $"std::get<{i}>(value)")))) {
+#>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
+		<#= code #>
+		break;
+<#
+}
+#>	default:
+		throw std::logic_error("unexpected value index");
+	}
+}
+#else
+# error no part
+#endif

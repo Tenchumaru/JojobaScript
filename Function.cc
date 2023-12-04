@@ -48,51 +48,24 @@ namespace {
 		std::cout << '}';
 	}
 
-	void PrintValue(Value const& value) {
-		switch (value.index()) {
-		case 0: // nullptr_t
-			throw std::runtime_error("cannot use empty value");
-		case 1: // bool
-			std::cout << std::boolalpha << std::get<1>(value);
-			break;
-		case 2: // std::int64_t
-			std::cout << std::get<2>(value);
-			break;
-		case 3: // double
-			std::cout << std::get<3>(value);
-			break;
-		case 4: // std::string
-			std::cout << '"' << std::get<4>(value) << '"';
-			break;
-		case 5: // std::shared_ptr<Dictionary>
-			PrintDictionary(*std::get<5>(value));
-			break;
-		case 6: // std::shared_ptr<Function>
-			std::cout << "function";
-			break;
-		case 7: // std::shared_ptr<Generator>
-			std::cout << "generator";
-			break;
-		case 8: // std::shared_ptr<List>
-			std::cout << '[';
-			PrintCollection(*std::get<8>(value));
-			std::cout << ']';
-			break;
-		case 9: // std::shared_ptr<Object>
-			PrintObject(*std::get<9>(value));
-			break;
-		case 10: // std::shared_ptr<Set>
-			std::cout << '{';
-			PrintCollection(*std::get<10>(value));
-			std::cout << '}';
-			break;
-		default:
-			throw std::logic_error("unexpected value index");
-		}
-	}
+#define PART _CRT_INTERNAL_PRINTF_STANDARD_ROUNDING
+#include "Value.cc.inl"
 }
 
 Function::~Function() {}
+
+Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
+	bool isNext = false;
+	for (Value const& argument : arguments) {
+		if (isNext) {
+			std::cout << ' ';
+		}
+		PrintValue(argument);
+		isNext = true;
+	}
+	std::cout << std::endl;
+	return nullptr;
+}
 
 Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 	// Ensure the number of arguments matches the number of parameters.
@@ -127,17 +100,4 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 		}
 	}
 	return {};
-}
-
-Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
-	bool isNext = false;
-	for (Value const& argument : arguments) {
-		if (isNext) {
-			std::cout << ' ';
-		}
-		PrintValue(argument);
-		isNext = true;
-	}
-	std::cout << std::endl;
-	return nullptr;
 }

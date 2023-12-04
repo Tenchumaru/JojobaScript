@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ValueReference.h"
+#define PART __BOOL_DEFINED
 #include "Value.cc.inl"
 
 ValueReference::operator Value() {

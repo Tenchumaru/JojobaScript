@@ -1,11 +1,11 @@
-nullptr_t	throw std::runtime_error("cannot use empty value");
-bool	return std::get<$>(value);
-std::int64_t	return std::get<$>(value) != 0;
-double	return std::get<$>(value) != 0.0;
-std::string	return !std::get<$>(value).empty();
-@Dictionary	return !std::get<$>(value)->empty();	std::unordered_map<Value, Value>
-@Function	return true;
-@Generator	return true;
-@List	return !std::get<$>(value)->empty();	std::vector<Value>
-@Object	return !std::get<$>(value)->empty();	std::unordered_map<std::string, Value>
-@Set	return !std::get<$>(value)->empty();	std::unordered_set<Value>
+nullptr_t    | throw std::runtime_error("cannot use empty value"); | throw std::runtime_error("cannot use empty value");      |
+bool         | return $;                                           | std::cout << std::boolalpha << $;                        |
+std::int64_t | return $ != 0;                                      | std::cout << $;                                          |
+double       | return $ != 0.0;                                    | std::cout << $;                                          |
+std::string  | return !$.empty();                                  | std::cout << '"' << $ << '"';                            |
+@Dictionary  | return !$->empty();                                 | PrintDictionary(*$);                                     | std::unordered_map<Value, Value>
+@Function    | return true;                                        | std::cout << "function";                                 |
+@Generator   | return true;                                        | std::cout << "generator";                                |
+@List        | return !$->empty();                                 | std::cout << '['; PrintCollection(*$); std::cout << ']'; | std::vector<Value>
+@Object      | return !$->empty();                                 | PrintObject(*$);                                         | std::unordered_map<std::string, Value>
+@Set         | return !$->empty();                                 | std::cout << '{'; PrintCollection(*$); std::cout << '}'; | std::unordered_set<Value>
