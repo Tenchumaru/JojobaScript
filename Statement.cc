@@ -7,67 +7,31 @@
 using RunResult = std::pair<Statement::RunResult, Statement::RunResultValue>;
 
 namespace {
-	using IntegerFunction = std::function<void(std::int64_t&, std::int64_t)>;
-	using RealFunction = std::function<void(double&, double)>;
-
-	std::array<IntegerFunction, static_cast<int>(Assignment::Size)> integerFunctions = {
-		/* =    */ IntegerFunction{},
-		/* &=   */ [](std::int64_t& a, std::int64_t b) { a &= b; },
-		/* >>>= */ [](std::int64_t& a, std::int64_t b) { a = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) >> b); },
-		/* /=   */ [](std::int64_t& a, std::int64_t b) { if (b == 0) throw std::runtime_error("integer division by zero"); a /= b; },
-		/* <<=  */ [](std::int64_t& a, std::int64_t b) { a <<= b; },
-		/* >>=  */ [](std::int64_t& a, std::int64_t b) { a >>= b; },
-		/* %=   */ [](std::int64_t& a, std::int64_t b) { a %= b; },
-		/* |=   */ [](std::int64_t& a, std::int64_t b) { a |= b; },
-		/* +=   */ [](std::int64_t& a, std::int64_t b) { a += b; },
-		/* -=   */ [](std::int64_t& a, std::int64_t b) { a -= b; },
-		/* *=   */ [](std::int64_t& a, std::int64_t b) { a *= b; },
-		/* ^=   */ [](std::int64_t& a, std::int64_t b) { a ^= b; },
-	};
-
-	std::array<RealFunction, static_cast<int>(Assignment::Size)> realFunctions = {
-		/* =    */ RealFunction{},
-		/* &=   */ RealFunction{},
-		/* >>>= */ RealFunction{},
-		/* /=   */ [](double& a, double b) { if (b == 0) throw std::runtime_error("real division by zero"); a /= b; },
-		/* <<=  */ RealFunction{},
-		/* >>=  */ RealFunction{},
-		/* %=   */ RealFunction{},
-		/* |=   */ RealFunction{},
-		/* +=   */ [](double& a, double b) { a += b; },
-		/* -=   */ [](double& a, double b) { a -= b; },
-		/* *=   */ [](double& a, double b) { a *= b; },
-		/* ^=   */ RealFunction{},
+	std::array<std::function<void(ValueReference&, Value const&)>, static_cast<int>(Assignment::Size)> map = {
+		/* =    */ [](ValueReference& a, Value const& b) { a = b; },
+		/* &=   */ [](ValueReference& a, Value const& b) { a &= b; },
+		/* >>>= */ std::function<void(ValueReference&, Value const&)>{},
+		/* /=   */ [](ValueReference& a, Value const& b) { a /= b; },
+		/* <<=  */ [](ValueReference& a, Value const& b) { a <<= b; },
+		/* >>=  */ [](ValueReference& a, Value const& b) { a >>= b; },
+		/* %=   */ [](ValueReference& a, Value const& b) { a %= b; },
+		/* |=   */ [](ValueReference& a, Value const& b) { a |= b; },
+		/* +=   */ [](ValueReference& a, Value const& b) { a += b; },
+		/* -=   */ [](ValueReference& a, Value const& b) { a -= b; },
+		/* *=   */ [](ValueReference& a, Value const& b) { a *= b; },
+		/* ^=   */ [](ValueReference& a, Value const& b) { a ^= b; },
 	};
 
 	void Assign(ValueReference& targetReference, Assignment assignment, Value const& sourceValue) {
-		if (assignment == Assignment()) {
-			targetReference = sourceValue;
-		} else if (std::holds_alternative<std::int64_t>(targetReference) && std::holds_alternative<std::int64_t>(sourceValue)) {
-			integerFunctions[static_cast<int>(assignment)](std::get<std::int64_t>(targetReference), std::get<std::int64_t>(sourceValue));
-		} else if (std::holds_alternative<double>(targetReference) && std::holds_alternative<double>(sourceValue) && realFunctions[static_cast<int>(assignment)]) {
-			realFunctions[static_cast<int>(assignment)](std::get<double>(targetReference), std::get<double>(sourceValue));
-		} else if (assignment == Assignment::PA && std::holds_alternative<std::string>(targetReference) && std::holds_alternative<std::string>(sourceValue)) {
-			std::get<std::string>(targetReference) += std::get<std::string>(sourceValue);
-		} else if (assignment == Assignment::PA && std::holds_alternative<std::shared_ptr<List>>(targetReference) && std::holds_alternative<std::shared_ptr<List>>(sourceValue)) {
-			List const& sourceList = *std::get<std::shared_ptr<List>>(sourceValue);
-			List& targetList = *std::get<std::shared_ptr<List>>(targetReference);
-			targetList.insert(targetList.end(), sourceList.begin(), sourceList.end());
-		} else if (assignment == Assignment::TA && std::holds_alternative<std::shared_ptr<List>>(targetReference) && std::holds_alternative<std::int64_t>(sourceValue)) {
-			List sourceList = *std::get<std::shared_ptr<List>>(targetReference);
-			std::int64_t n = std::get<std::int64_t>(sourceValue);
-			List& targetList = *std::get<std::shared_ptr<List>>(targetReference);
-			if (n < 0) {
-				throw std::runtime_error("cannot multiply list by negative value");
-			} else if (n == 0) {
-				targetList.clear();
-			} else {
-				while (--n) {
-					targetList.insert(targetList.end(), sourceList.begin(), sourceList.end());
-				}
-			}
+		if (assignment != Assignment::LSRA) {
+			map[static_cast<int>(assignment)](targetReference, sourceValue);
 		} else {
-			throw std::runtime_error("cannot perform integral operation assignment on a non-integral value");
+			if (std::holds_alternative<std::int64_t>(targetReference) && std::holds_alternative<std::int64_t>(sourceValue)) {
+				auto& targetValue = std::get<std::int64_t>(targetReference);
+				targetValue = static_cast<std::int64_t>(static_cast<std::uint64_t>(targetValue) >> std::get<std::int64_t>(sourceValue));
+			} else {
+				throw std::runtime_error("cannot perform integral compound assignment on a non-integral value");
+			}
 		}
 	}
 

@@ -14,20 +14,29 @@ public:
 	~ValueReference() = default;
 	operator Value();
 	void operator=(Value const& value);
-	template<typename T>
-	bool holds_alternative() const { return internal_holds_alternative<T>(); }
-	template<>
-	bool holds_alternative<std::shared_ptr<List>>() const { return list || internal_holds_alternative<std::shared_ptr<List>>(); }
-	template<>
-	bool holds_alternative<std::string>() const { return string || internal_holds_alternative<std::string>(); }
-	template<typename T>
-	T& get() { return std::get<T>(*reference); }
-	template<>
-	std::string& get<std::string>() { return string ? *string : std::get<std::string>(*reference); }
+	void operator&=(Value const& value);
+	void operator>>=(Value const& value);
+	void operator/=(Value const& value);
+	void operator<<=(Value const& value);
+	void operator%=(Value const& value);
+	void operator|=(Value const& value);
+	void operator+=(Value const& value);
+	void operator-=(Value const& value);
+	void operator*=(Value const& value);
+	void operator^=(Value const& value);
 	void AdjustIndices(std::int64_t adjustingIndex, std::int64_t adjustingEndIndex);
+	template<typename T>
+	T& get() {
+		if (!reference) {
+			throw std::logic_error("unexpected null reference");
+		}
+		return std::get<T>(*reference);
+	}
 	bool get_IsIndexed() const;
-	__declspec(property(get = get_IsIndexed)) bool IsIndexed;
 	size_t get_Size() const;
+	template<typename T>
+	bool holds_alternative() const { return reference && std::holds_alternative<T>(*reference); }
+	__declspec(property(get = get_IsIndexed)) bool IsIndexed;
 	__declspec(property(get = get_Size)) size_t Size;
 
 private:
@@ -36,14 +45,6 @@ private:
 	std::string* string = nullptr;
 	std::int64_t index = 0;
 	std::int64_t endIndex = 0;
-
-	template<typename T>
-	bool internal_holds_alternative() const {
-		if (!reference) {
-			throw std::logic_error("unexpected null reference");
-		}
-		return std::holds_alternative<T>(*reference);
-	}
 };
 
 namespace std {
