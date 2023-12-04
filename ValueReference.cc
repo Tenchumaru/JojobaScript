@@ -251,3 +251,8 @@ size_t ValueReference::get_Size() const {
 	}
 	throw std::logic_error("unexpected ValueReference::Size invocation");
 }
+
+Value Awaitable::Await() {
+	// TODO
+	return nullptr;
+}

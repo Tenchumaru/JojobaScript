@@ -73,8 +73,12 @@ ValueReference Expression::GetReference(std::shared_ptr<Context> context) {
 }
 
 Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain any awaitable value.
-	return expression->GetValue(context);
+	Value value = expression->GetValue(context);
+	if (std::holds_alternative<std::shared_ptr<Awaitable>>(value)) {
+		auto&& awaitable = std::get<std::shared_ptr<Awaitable>>(value);
+		return awaitable->Await();
+	}
+	return value;
 }
 
 Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {

@@ -3,6 +3,7 @@ bool         | return $;                                           | std::cout <
 std::int64_t | return $ != 0;                                      | std::cout << $;                                          |
 double       | return $ != 0.0;                                    | std::cout << $;                                          |
 std::string  | return !$.empty();                                  | std::cout << '"' << $ << '"';                            |
+@Awaitable   | return true;                                        | std::cout << "awaitable";                                |
 @Dictionary  | return !$->empty();                                 | PrintDictionary(*$);                                     | std::unordered_map<Value, Value>
 @Function    | return true;                                        | std::cout << "function";                                 |
 @Generator   | return true;                                        | std::cout << "generator";                                |

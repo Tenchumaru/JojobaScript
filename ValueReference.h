@@ -53,3 +53,14 @@ namespace std {
 	template<typename T>
 	T& get(ValueReference& reference) { return reference.get<T>(); }
 }
+
+class Awaitable {
+public:
+	Awaitable() = default;
+	Awaitable(Awaitable&&) = default;
+	~Awaitable() = default;
+	Value Await();
+
+private:
+
+};
