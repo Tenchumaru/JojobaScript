@@ -28,7 +28,7 @@ real    ({num}?\.{num}|{num}\.{num}?)([Ee][-+]?{num})?
 {rem}    ;
 "infinity" | 
 "NaN"    |
-{real}   { yylval.number = new Value(std::strtod(yytext + 1, nullptr)); RETURN_(NUMBER); }
+{real}   { yylval.number = new Value(std::strtod(yytext, nullptr)); RETURN_(NUMBER); }
 {hex}    { yylval.number = new Value(std::strtoll(yytext + 1, nullptr, 16)); RETURN_(NUMBER); }
 {num}    { yylval.number = new Value(std::strtoll(yytext, nullptr, 10)); RETURN_(NUMBER); }
 {str}    { yylval.id = new std::string(yytext + 1); yylval.id->resize(yylval.id->size() - 1); RETURN_(STRING); }
