@@ -154,16 +154,31 @@ Value DictionaryComprehensionExpression::GetValue(std::shared_ptr<Context> outer
 }
 
 ValueReference DotExpression::GetReference(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a type with fields.
-	context;
-	static Value n = 1;
-	return n;
+	Value value = expression->GetValue(context);
+	if (std::holds_alternative<std::shared_ptr<Object>>(value)) {
+		auto const& object = std::get<std::shared_ptr<Object>>(value);
+		auto it = object->find(id);
+		if (it != object->end()) {
+			return it->second;
+		}
+		throw std::runtime_error("cannot find field");
+	}
+	throw std::runtime_error("cannot access field of non-object");
 }
 
 Value DotExpression::GetValue(std::shared_ptr<Context> context) {
-	// TODO:  Value does not yet contain a type with fields.
-	context;
-	return 1;
+	try {
+		return GetReference(context);
+	} catch (std::runtime_error const&) {
+		// Return a reference to a built-in for the appropriate expression and id.
+		if (id == "size") {
+			Value value = expression->GetValue(context);
+			if (std::holds_alternative<std::shared_ptr<List>>(value)) {
+				return static_cast<std::int64_t>(std::get<std::shared_ptr<List>>(value)->size());
+			}
+		}
+	}
+	throw std::runtime_error("cannot access field of non-object");
 }
 
 Value GeneratorExpression::GetValue(std::shared_ptr<Context> context) {
@@ -306,4 +321,11 @@ Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
 	default:
 		throw std::logic_error("unexpected unary operation");
 	}
+}
+
+Value ObjectExpression::GetValue(std::shared_ptr<Context> context) {
+	Object object;
+	std::ranges::transform(fields, std::inserter(object, object.end()), [&context](auto&& p) {
+		return std::make_pair(p.first, p.second->GetValue(context)); });
+	return std::make_shared<Object>(std::move(object));
 }

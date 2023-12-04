@@ -7,6 +7,18 @@
 namespace {
 	void PrintValue(Value const& value);
 
+	template<typename T>
+	void PrintCollection(T const& collection) {
+		bool isNext = false;
+		for (auto const& value : collection) {
+			if (isNext) {
+				std::cout << ", ";
+			}
+			PrintValue(value);
+			isNext = true;
+		}
+	}
+
 	void PrintDictionary(Dictionary const& dictionary) {
 		std::cout << '{';
 		bool isNext = false;
@@ -22,16 +34,18 @@ namespace {
 		std::cout << '}';
 	}
 
-	template<typename T>
-	void PrintCollection(T const& collection) {
+	void PrintObject(Object const& object) {
+		std::cout << "#{";
 		bool isNext = false;
-		for (auto const& value : collection) {
+		for (auto const& pair : object) {
 			if (isNext) {
 				std::cout << ", ";
 			}
-			PrintValue(value);
+			std::cout << pair.first << ": ";
+			PrintValue(pair.second);
 			isNext = true;
 		}
+		std::cout << '}';
 	}
 
 	void PrintValue(Value const& value) {
@@ -64,9 +78,12 @@ namespace {
 			PrintCollection(*std::get<8>(value));
 			std::cout << ']';
 			break;
-		case 9: // std::shared_ptr<Set>
+		case 9: // std::shared_ptr<Object>
+			PrintObject(*std::get<9>(value));
+			break;
+		case 10: // std::shared_ptr<Set>
 			std::cout << '{';
-			PrintCollection(*std::get<9>(value));
+			PrintCollection(*std::get<10>(value));
 			std::cout << '}';
 			break;
 		default:

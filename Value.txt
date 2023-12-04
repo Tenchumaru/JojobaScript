@@ -7,4 +7,5 @@ std::string	return !std::get<$>(value).empty();
 @Function	return true;
 @Generator	return true;
 @List	return !std::get<$>(value)->empty();	std::vector<Value>
+@Object	return !std::get<$>(value)->empty();	std::unordered_map<std::string, Value>
 @Set	return !std::get<$>(value)->empty();	std::unordered_set<Value>
