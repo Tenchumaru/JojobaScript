@@ -78,14 +78,12 @@ Value AwaitExpression::GetValue(std::shared_ptr<Context> context) {
 }
 
 Value BinaryExpression::GetValue(std::shared_ptr<Context> context) {
+	Value leftValue = leftExpression->GetValue(context);
 	if (operation == AND) {
-		Value leftValue = leftExpression->GetValue(context);
 		return AsBoolean(leftValue) ? rightExpression->GetValue(context) : leftValue;
 	} else if (operation == OR) {
-		Value leftValue = leftExpression->GetValue(context);
 		return AsBoolean(leftValue) ? leftValue : rightExpression->GetValue(context);
 	}
-	Value leftValue = leftExpression->GetValue(context);
 	Value rightValue = rightExpression->GetValue(context);
 	switch (operation) {
 	case EQ:
