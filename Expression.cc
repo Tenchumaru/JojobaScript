@@ -326,6 +326,6 @@ Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
 Value ObjectExpression::GetValue(std::shared_ptr<Context> context) {
 	Object object;
 	std::ranges::transform(fields, std::inserter(object, object.end()), [&context](auto&& p) {
-		return std::make_pair(p.first, p.second->GetValue(context)); });
+		return std::make_pair(p.first, p.second.first->GetValue(context)); });
 	return std::make_shared<Object>(std::move(object));
 }

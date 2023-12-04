@@ -33,7 +33,7 @@ namespace {
 	std::vector<std::unique_ptr<Statement::Clause>>* for_clauses;
 	std::string* id;
 	std::vector<std::pair<std::string, std::string>>* id_list;
-	std::unordered_map<std::string, std::unique_ptr<Expression>>* idv_list;
+	std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>* idv_list;
 	IfStatement::Fragment* if_fragment;
 	std::vector<std::unique_ptr<IfStatement::Fragment>>* if_fragments;
 	std::pair<std::string, std::string>* import;
@@ -413,19 +413,17 @@ ID otype {
 ;
 
 oidv_list:
-%empty { $$ = new std::unordered_map<std::string, std::unique_ptr<Expression>>; }
+%empty { $$ = new std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>; }
 | idv_list
 ;
 
 idv_list:
 ID ':' expr otype {
-	// TODO:  make use of otype.
-	$$ = new std::unordered_map<std::string, std::unique_ptr<Expression>>;
-	(*$$)[*$1] = std::unique_ptr<Expression>($3); delete $1;
+	$$ = new std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>;
+	(*$$)[*$1] = std::make_pair(std::unique_ptr<Expression>($3), std::move(*$4)); delete $1; delete $4;
 }
 | idv_list ',' ID ':' expr otype {
-	// TODO:  make use of otype.
-	(*$1)[*$3] = std::unique_ptr<Expression>($5); delete $3; $$ = $1;
+	(*$1)[*$3] = std::make_pair(std::unique_ptr<Expression>($5), std::move(*$6)); delete $3; delete $6; $$ = $1;
 }
 ;
 

@@ -198,13 +198,13 @@ private:
 
 class ObjectExpression : public Expression {
 public:
-	ObjectExpression(std::unordered_map<std::string, std::unique_ptr<Expression>>&& fields) : fields(std::move(fields)) {}
+	ObjectExpression(std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>&& fields) : fields(std::move(fields)) {}
 	ObjectExpression(ObjectExpression&&) = default;
 	~ObjectExpression() = default;
 	Value GetValue(std::shared_ptr<Context> context) override;
 
 private:
-	std::unordered_map<std::string, std::unique_ptr<Expression>> fields;
+	std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>> fields;
 };
 
 class SetComprehensionExpression : public Expression {
