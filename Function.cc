@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <Windows.h>
 #include "Context.h"
 #include "Function.h"
 #include "Generator.h"
@@ -100,4 +101,32 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 		}
 	}
 	return {};
+}
+
+Value ThePassageOfTimeFunction::Invoke(std::vector<Value> const& arguments) {
+	// Ensure there is one integral argument.
+	if (arguments.size() != 1) {
+		throw std::runtime_error("invalid number of arguments");
+	} else if (!std::holds_alternative<double>(arguments.back()) && !std::holds_alternative<std::int64_t>(arguments.back())) {
+		throw std::runtime_error("incorrect argument type");
+	}
+
+	// Set a timer for the desired time.  I invoke CloseHandle in the Awaitable::Await method.
+	auto timer = CreateWaitableTimer(nullptr, FALSE, nullptr);
+	if (timer) {
+		LARGE_INTEGER time{};
+		if (std::holds_alternative<double>(arguments.back())) {
+			auto nseconds = std::get<double>(arguments.back());
+			time.QuadPart = static_cast<decltype(time.QuadPart)>(-10'000'000.0 * nseconds);
+		} else {
+			auto nseconds = std::get<std::int64_t>(arguments.back());
+			time.QuadPart = -10'000'000LL * nseconds;
+		}
+		if (SetWaitableTimer(timer, &time, 0, nullptr, nullptr, TRUE)) {
+			return std::make_shared<Awaitable>(timer, [](void* handle) {
+				CloseHandle(handle);
+				return nullptr; });
+		}
+	}
+	throw std::runtime_error("unexpected system failure");
 }

@@ -56,11 +56,12 @@ namespace std {
 
 class Awaitable {
 public:
-	Awaitable() = default;
+	Awaitable(void* handle, std::function<Value(void*)> fn) : handle(handle), fn(fn) {}
 	Awaitable(Awaitable&&) = default;
 	~Awaitable() = default;
 	Value Await();
 
 private:
-
+	void* handle;
+	std::function<Value(void*)> fn;
 };

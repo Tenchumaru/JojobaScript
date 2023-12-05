@@ -33,3 +33,11 @@ private:
 	std::shared_ptr<Context> outerContext;
 	bool yielding;
 };
+
+class ThePassageOfTimeFunction : public NativeFunction {
+public:
+	ThePassageOfTimeFunction() = default;
+	ThePassageOfTimeFunction(ThePassageOfTimeFunction&&) = default;
+	~ThePassageOfTimeFunction() = default;
+	Value Invoke(std::vector<Value> const& arguments) override;
+};

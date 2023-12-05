@@ -26,6 +26,9 @@ const s2 = {v + 1 for v in s}
 @s, t = l
 @l[1] = s, t
 
+@print("waiting")
+@await the_passage_of_time(1)
+
 var a: int = 1
 const b = [1, 2]
 const c = {1, 2}

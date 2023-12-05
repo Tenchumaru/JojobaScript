@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ValueReference.h"
+#include "FiberRunner.h"
 #define PART __BOOL_DEFINED
 #include "Value.cc.inl"
 
@@ -253,6 +254,6 @@ size_t ValueReference::get_Size() const {
 }
 
 Value Awaitable::Await() {
-	// TODO
-	return nullptr;
+	FiberRunner::get_Instance().Await(handle);
+	return fn(handle);
 }

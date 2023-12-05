@@ -21,6 +21,7 @@
     <ClCompile Include="Function.cc" />
     <ClCompile Include="Iterator.cc" />
     <ClCompile Include="ValueReference.cc" />
+    <ClCompile Include="FiberRunner.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser.h">
@@ -36,6 +37,7 @@
     <ClInclude Include="Function.h" />
     <ClInclude Include="Iterator.h" />
     <ClInclude Include="ValueReference.h" />
+    <ClInclude Include="FiberRunner.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">
