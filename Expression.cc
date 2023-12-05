@@ -4,7 +4,7 @@
 #include "Generator.h"
 #include "Iterator.h"
 #include "Statement.h"
-#include "parser.h"
+#include "yy.h"
 
 namespace {
 	template<typename T>

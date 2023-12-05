@@ -3,15 +3,12 @@
 #include "FiberRunner.h"
 #include "Function.h"
 #include "Statement.h"
+#include "parser.h"
 
 int yyparse();
 
-extern FILE* yyin;
-extern FILE* yyout;
-
-static int usage(char const* prog) {
+static void usage(char const* prog) {
 	fprintf(stderr, "usage: %s [input.s [output.hex]]\n", prog);
-	return 2;
 }
 
 int main(int argc, char* argv[]) {
@@ -23,38 +20,36 @@ int main(int argc, char* argv[]) {
 		prog = argv[0];
 
 	// Collect the options.
-	while (argc > 1 && argv[1][0] == '-' && argv[1][1] != '\0') {
+	char const* outputFilePath = nullptr;
+	while (argc > 1 && argv[1][0] == '-') {
 		switch (argv[1][1]) {
-		case 'x': // TODO
+		case 'h':
+			return usage(prog), 0;
+		case 'o':
+			--argc, ++argv;
+			outputFilePath = argv[1];
 			break;
 		default:
-			return usage(prog);
+			return usage(prog), 2;
 		}
 		--argc, ++argv;
-	}
-
-	// Set the input and output files.
-	if (argc > 1) {
-		if (strcmp("-", argv[1]) && fopen_s(&yyin, argv[1], "rt")) {
-			fprintf(stderr, "%s: cannot open '%s' for reading\n", prog, argv[1]);
-			return 1;
-		}
-		if (argc > 2) {
-			if (fopen_s(&yyout, argv[2], "wt")) {
-				fprintf(stderr, "%s: cannot open '%s' for writing\n", prog, argv[2]);
-				return 1;
-			}
+		if (argv[0][1] == '-') {
+			break;
 		}
 	}
 
 	// Parse the input.
-	int parseError = yyparse();
-	if (parseError) {
-		return parseError;
+	std::unique_ptr<FunctionStatement> program;
+	switch (ParseFile(argv[1], program)) {
+	case -1:
+		fprintf(stderr, "%s: cannot open '%s' for reading\n", prog, argv[1]);
+		__fallthrough;
+	case 1:
+		return 1;
 	}
 
 	// Run the program in a fiber.
-	auto fn = [] {
+	auto fn = [&program] {
 		// Create the global context.
 		auto globalContext = std::make_shared<Context>(std::shared_ptr<Context>());
 
@@ -65,13 +60,13 @@ int main(int argc, char* argv[]) {
 		globalContext->AddValue("the_passage_of_time", thePassageOfTimeFunction, true);
 
 		// Run the entry point.
-		FunctionStatement::program->Run(globalContext);
+		program->Run(globalContext);
 		Value value = globalContext->GetValue("");
 		if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
 			auto&& function = std::get<std::shared_ptr<Function>>(value);
 			function->Invoke({});
 		}
-	};
+		};
 	auto& fiberRunner = FiberRunner::get_Instance();
 	fiberRunner.Launch(std::move(fn));
 	fiberRunner.Run();

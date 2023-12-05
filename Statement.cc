@@ -117,8 +117,6 @@ namespace {
 	}
 }
 
-std::unique_ptr<FunctionStatement> FunctionStatement::program;
-
 Statement::~Statement() {}
 
 BlockStatement::~BlockStatement() {}

@@ -24,10 +24,6 @@
     <ClCompile Include="FiberRunner.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JojobaScript.h" />
     <ClInclude Include="scanner.h" />
     <ClInclude Include="Statement.h" />
     <ClInclude Include="Expression.h" />
@@ -38,6 +34,10 @@
     <ClInclude Include="Iterator.h" />
     <ClInclude Include="ValueReference.h" />
     <ClInclude Include="FiberRunner.h" />
+    <ClInclude Include="parser.h" />
+    <ClInclude Include="yy.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.output">

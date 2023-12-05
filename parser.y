@@ -87,7 +87,7 @@ block {
 	if (Yielding()) {
 		throw std::runtime_error("cannot yield at the top level");
 	}
-	FunctionStatement::program.reset(new FunctionStatement("", "", {}, std::move(*$1), false)); delete $1;
+	program.reset(new FunctionStatement("", "", {}, std::move(*$1), false)); delete $1;
 }
 ;
 

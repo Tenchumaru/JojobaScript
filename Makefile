@@ -4,7 +4,7 @@ clean:
 	DEL Value.cc.inl
 	DEL Value.h.inl
 	DEL parser.inl
-	DEL parser.h
+	DEL yy.h
 	DEL scanner.inl
 
 Value.cc.inl: Value.cc.tt Value.txt
@@ -14,7 +14,7 @@ Value.h.inl: Value.h.tt Value.txt
 	TextTransform Value.h.tt
 
 parser.inl: parser.y
-	win_bison --verbose --defines=parser.h --output=parser.inl -Wcounterexamples parser.y
+	win_bison --verbose --defines=yy.h --output=parser.inl -Wcounterexamples parser.y
 
 scanner.inl: scanner.l parser.inl
 	win_flex --fast --wincompat --outfile=scanner.inl scanner.l

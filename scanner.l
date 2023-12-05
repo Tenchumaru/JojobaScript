@@ -6,7 +6,7 @@
 #include "Debug.h"
 #include "Expression.h"
 #include "Statement.h"
-#include "parser.h"
+#include "yy.h"
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
 #define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.assignment = v__; return ASSIGNMENT; } while(false)

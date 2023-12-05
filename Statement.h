@@ -166,8 +166,6 @@ private:
 
 class FunctionStatement : public BlockStatement {
 public:
-	static std::unique_ptr<FunctionStatement> program;
-
 	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements, bool yielding) : BlockStatement(std::move(statements)), name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), yielding(yielding) {}
 	FunctionStatement(FunctionStatement&&) = default;
 	~FunctionStatement() = default;
