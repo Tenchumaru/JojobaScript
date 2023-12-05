@@ -10,7 +10,7 @@ class Expression;
 
 class Statement {
 public:
-	enum class RunResult { Next, Break, Continue, Return, Yield };
+	enum class RunResult { Next, Break, Continue, Fallthrough, Return, Yield };
 
 	using RunResultValue = std::variant<int, Value>;
 
@@ -92,7 +92,7 @@ public:
 	BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) : statements(std::move(statements)) {}
 	virtual ~BlockStatement() = 0;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
-	bool Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult) const;
+	bool Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult, bool allowFallthrough = false) const;
 
 protected:
 	std::vector<std::unique_ptr<Statement>> statements;
@@ -141,6 +141,14 @@ public:
 
 private:
 	std::unique_ptr<Expression> expression;
+};
+
+class FallthroughStatement : public Statement {
+public:
+	FallthroughStatement() = default;
+	FallthroughStatement(FallthroughStatement&&) = default;
+	~FallthroughStatement() = default;
+	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 };
 
 class ForStatement : public BlockStatement {

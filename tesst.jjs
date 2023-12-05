@@ -67,7 +67,7 @@ for ;; {
 		// Although "case" statements have no braces, they create contexts.
 		case 1:
 			@a = 1
-			break
+			fallthrough
 
 			function fn(b: int): int {
 				return a + b

@@ -45,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL WHILE YIELD
+%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <number> NUMBER
@@ -105,7 +105,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | VAR initializers { $$ = new VarStatement(std::move(*$2), $1); delete $2; }
 | obreaks BREAK { $$ = new BreakStatement($1); }
 | obreaks CONTINUE { $$ = new ContinueStatement($1); }
-/* TODO:  consider adding a "fallthrough" keyword. */
+| FALLTHROUGH { $$ = new FallthroughStatement(); }
 | DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
 | FOR ofor_initializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
 	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));

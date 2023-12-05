@@ -133,8 +133,11 @@ RunResult BlockStatement::Run(std::shared_ptr<Context> context) const {
 	return { RunResult::Next, 0 };
 }
 
-bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult) const {
+bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult, bool allowFallthrough /*= false*/) const {
+	// Run the block.
 	runResult = BlockStatement::Run(context);
+
+	// Return true to indicate a block-exiting condition, i.e., break, return, or yield.  Return false otherwise.
 	switch (runResult.first) {
 	case RunResult::Next:
 		return false;
@@ -149,6 +152,11 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 		if (std::get<int>(runResult.second)) {
 			--std::get<int>(runResult.second);
 			return true;
+		}
+		return false;
+	case RunResult::Fallthrough:
+		if (!allowFallthrough) {
+			throw std::runtime_error("illegal fallthrough");
 		}
 		return false;
 	case RunResult::Return:
@@ -215,6 +223,10 @@ RunResult DoStatement::Run(std::shared_ptr<Context> outerContext) const {
 RunResult ExpressionStatement::Run(std::shared_ptr<Context> context) const {
 	expression->GetValue(context);
 	return { RunResult::Next, 0 };
+}
+
+RunResult FallthroughStatement::Run(std::shared_ptr<Context> context) const {
+	return { RunResult::Fallthrough, 0 };
 }
 
 RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
@@ -329,15 +341,20 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 		finalValue = initializerClause->Run(context);
 	}
 
-	// Run the matching "case" clause.
+	// Run the matching "case" clause.  Allow falling through all the way through the default clause.
 	auto defaultCase = statements.end();
+	bool fallingThrough = false;
 	for (auto it = statements.begin(); it != statements.end(); ++it) {
 		auto const* p = dynamic_cast<SwitchStatement::Case const*>(it->get());
 		if (p) {
-			if (p->IsMatch(finalValue, context)) {
+			if (fallingThrough || p->IsMatch(finalValue, context)) {
+				fallingThrough = false;
 				std::pair<RunResult, RunResultValue> runResult;
-				if (p->BlockStatement::Run(context, runResult)) {
+				if (p->BlockStatement::Run(context, runResult, true)) {
 					return runResult;
+				} else if (runResult.first == RunResult::Fallthrough) {
+					fallingThrough = true;
+					continue;
 				} else if (runResult.first == RunResult::Continue) {
 					throw std::runtime_error("unexpected continue in switch case");
 				}
@@ -345,6 +362,9 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 			}
 		} else {
 			defaultCase = it;
+			if (fallingThrough) {
+				break;
+			}
 		}
 	}
 
