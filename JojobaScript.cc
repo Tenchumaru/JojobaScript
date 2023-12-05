@@ -8,16 +8,17 @@
 int yyparse();
 
 static void usage(char const* prog) {
-	fprintf(stderr, "usage: %s [input.s [output.hex]]\n", prog);
+	fprintf(stderr, "usage: %s [-h] [-o output.txt] [--] [input.jjs]\n", prog);
 }
 
 int main(int argc, char* argv[]) {
 	// Set the program name.
 	char const* prog = strrchr(argv[0], '\\');
-	if (prog)
+	if (prog) {
 		++prog;
-	else
+	} else {
 		prog = argv[0];
+	}
 
 	// Collect the options.
 	char const* outputFilePath = nullptr;
