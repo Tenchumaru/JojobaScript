@@ -66,7 +66,9 @@ int main(int argc, char* argv[]) {
 
 	// Parse the input.
 	std::unique_ptr<FunctionStatement> program;
-	if (!ParseFile(inputFile, program)) {
+	std::string parserError = ParseFile(inputFile, program);
+	if (!parserError.empty()) {
+		std::cerr << parserError << std::endl;
 		return 1;
 	}
 

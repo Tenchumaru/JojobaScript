@@ -12,6 +12,7 @@
     <None Include="scanner.l" />
     <None Include="Value.cc.tt" />
     <None Include="Value.h.tt" />
+    <None Include="bashrc" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Value.txt" />

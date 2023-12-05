@@ -5,16 +5,23 @@
 
 extern FILE* yyin;
 extern int yylex();
-void yyerror(char const* message);
-static std::unique_ptr<FunctionStatement> program;
+
+namespace {
+	std::unique_ptr<FunctionStatement> program;
+	std::string parserError;
+
+	void yyerror(char const* message) {
+		parserError = message;
+	}
+}
 
 #include "parser.inl"
 
-bool ParseFile(FILE* inputFile, std::unique_ptr<FunctionStatement>& program_) {
+std::string ParseFile(FILE* inputFile, std::unique_ptr<FunctionStatement>& program_) {
 	yyin = inputFile;
 	if (yyparse()) {
-		return false;
+		return std::move(parserError);
 	}
 	program_ = std::move(program);
-	return true;
+	return {};
 }

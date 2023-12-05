@@ -51,6 +51,7 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="bashrc" />
     <None Include="Makefile" />
     <None Include="parser.y" />
     <None Include="scanner.l" />
