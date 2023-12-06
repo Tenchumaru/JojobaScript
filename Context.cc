@@ -1,6 +1,21 @@
 #include "pch.h"
 #include "Context.h"
 
+std::unordered_map<std::string, std::shared_ptr<Context>> Context::modules;
+
+void Context::AddContext(std::string const& moduleName, std::shared_ptr<Context> context) {
+	// Create an object to hold its defined symbols.
+	auto object = std::make_shared<Object>();
+
+	// Add each defined symbol to the context.
+	for (auto& pair : context->values) {
+		object->insert({ pair.first, pair.second.first });
+	}
+
+	// Add the object to the context using the module name as the object name.
+	AddValue(moduleName, object, true);
+}
+
 void Context::AddValue(std::string const& key, Value const& value, bool isConstant) {
 	auto it = values.find(key);
 	if (it == values.end()) {

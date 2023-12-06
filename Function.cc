@@ -59,7 +59,7 @@ namespace {
 
 Function::~Function() {}
 
-Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
+std::pair<Value, std::shared_ptr<Context>> PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
 	for (Value const& argument : arguments) {
 		if (isNext) {
@@ -69,10 +69,10 @@ Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
 		isNext = true;
 	}
 	*PrintFunction::outputStream << std::endl;
-	return nullptr;
+	return { nullptr, {} };
 }
 
-Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
+std::pair<Value, std::shared_ptr<Context>> ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 	// Ensure the number of arguments matches the number of parameters.
 	if (arguments.size() != parameters.size()) {
 		throw std::runtime_error("invalid number of arguments");
@@ -87,14 +87,14 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 	}
 
 	if (yielding) {
-		return std::make_shared<FunctionGenerator>(context, statements);
+		return { std::make_shared<FunctionGenerator>(context, statements), context };
 	} else {
 		// Run the statements.
 		for (std::unique_ptr<Statement> const& statement : statements) {
 			auto runResult = statement->Run(context);
 			switch (runResult.first) {
 			case Statement::RunResult::Return:
-				return std::get<Value>(runResult.second);
+				return { std::get<Value>(runResult.second), context };
 			case Statement::RunResult::Yield:
 				throw std::logic_error("not implemented");
 			case Statement::RunResult::Next:
@@ -104,10 +104,10 @@ Value ScriptFunction::Invoke(std::vector<Value> const& arguments) {
 			}
 		}
 	}
-	return {};
+	return { {}, context };
 }
 
-Value ThePassageOfTimeFunction::Invoke(std::vector<Value> const& arguments) {
+std::pair<Value, std::shared_ptr<Context>> ThePassageOfTimeFunction::Invoke(std::vector<Value> const& arguments) {
 	// Ensure there is one integral argument.
 	if (arguments.size() != 1) {
 		throw std::runtime_error("invalid number of arguments");
@@ -127,9 +127,9 @@ Value ThePassageOfTimeFunction::Invoke(std::vector<Value> const& arguments) {
 			time.QuadPart = -10'000'000LL * nseconds;
 		}
 		if (SetWaitableTimer(timer, &time, 0, nullptr, nullptr, TRUE)) {
-			return std::make_shared<Awaitable>(timer, [](void* handle) {
+			return { std::make_shared<Awaitable>(timer, [](void* handle) {
 				CloseHandle(handle);
-				return nullptr; });
+				return nullptr; }), {} };
 		}
 	}
 	throw std::runtime_error("unexpected system failure");

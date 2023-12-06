@@ -1,4 +1,7 @@
-var n = 5.5
+import "tesst2"
+from "tesst2" import fn2 as fn22
+
+var n = 5.5 + tesst2.n2 + tesst2.fn2(2)
 @n += 2.25
 var o = #{ one: 1.0, two: 2.0 }
 var t = "jooby"
@@ -102,4 +105,4 @@ while const b = 1, a < 3 {
 }
 @o.one /= o.two
 @d[a - 1] *= b[a - 2]
-@print(fn(2), b, d, l, o, s, t)
+@print(fn(2), fn22(2), b, d, l, n, o, s, t)

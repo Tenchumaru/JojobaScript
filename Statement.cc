@@ -3,8 +3,11 @@
 #include "Function.h"
 #include "Iterator.h"
 #include "Generator.h"
+#include "parser.h"
 
 using RunResult = std::pair<Statement::RunResult, Statement::RunResultValue>;
+
+std::unordered_map<std::string, std::unique_ptr<FunctionStatement>> FunctionStatement::programs;
 
 namespace {
 	std::array<std::function<void(ValueReference&, Value const&)>, static_cast<int>(Assignment::Size)> map = {
@@ -268,6 +271,26 @@ RunResult FunctionStatement::Run(std::shared_ptr<Context> context) const {
 	return { RunResult::Next, 0 };
 }
 
+std::shared_ptr<Context> FunctionStatement::RunProgram() const {
+	// Create the global context.
+	auto globalContext = std::make_shared<Context>(std::shared_ptr<Context>());
+
+	// Define the globals.
+	globalContext->AddValue("print", std::make_shared<PrintFunction>(), true);
+	auto thePassageOfTimeFunction = std::make_shared<ThePassageOfTimeFunction>();
+	globalContext->AddValue("thePassageOfTime", thePassageOfTimeFunction, true);
+	globalContext->AddValue("the_passage_of_time", thePassageOfTimeFunction, true);
+
+	// Run the entry point.
+	Run(globalContext);
+	Value value = globalContext->GetValue("");
+	if (std::holds_alternative<std::shared_ptr<Function>>(value)) {
+		auto&& function = std::get<std::shared_ptr<Function>>(value);
+		return function->Invoke({}).second;
+	}
+	return {};
+}
+
 RunResult IfStatement::Run(std::shared_ptr<Context> outerContext) const {
 	// Check "if" and "else if" fragments, exiting if any runs.
 	for (std::unique_ptr<IfStatement::Fragment> const& fragment : fragments) {
@@ -301,7 +324,42 @@ std::shared_ptr<Context> IfStatement::Fragment::IsMatch(std::shared_ptr<Context>
 }
 
 RunResult ImportStatement::Run(std::shared_ptr<Context> context) const {
-	context; // TODO
+	// If this module is already loaded, skip loading but add new names.
+	std::shared_ptr<Context> moduleContext;
+	auto it = Context::modules.find(moduleName);
+	if (it == Context::modules.end()) {
+		// Open the input file.
+		FILE* inputFile;
+		std::string filePath = moduleName + ".jjs";
+		if (fopen_s(&inputFile, filePath.c_str(), "rt")) {
+			throw std::runtime_error("cannot open module for reading");
+		}
+
+		// Parse imported file.
+		std::unique_ptr<FunctionStatement> program;
+		std::string parserError = ParseFile(inputFile, program);
+		if (!parserError.empty()) {
+			throw std::runtime_error(parserError);
+		}
+
+		// Run the module as a program.
+		moduleContext = program->RunProgram();
+		Context::modules[moduleName] = moduleContext;
+		FunctionStatement::programs[moduleName] = std::move(program);
+	} else {
+		moduleContext = it->second;
+	}
+
+	// Add its defined symbols to the context.
+	if (pairs.empty()) {
+		context->AddContext(alias.empty() ? moduleName : alias, moduleContext);
+	} else {
+		// Add each defined symbol to the context.
+		for (auto& pair : pairs) {
+			std::string const& key = pair.second.empty() ? pair.first : pair.second;
+			context->AddValue(key, moduleContext->GetValue(pair.first), true);
+		}
+	}
 	return { RunResult::Next, 0 };
 }
 

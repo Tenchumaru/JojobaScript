@@ -264,7 +264,7 @@ Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {
 		std::vector<Value> values;
 		std::ranges::transform(arguments, std::back_inserter(values), [&context](auto const& argument) {
 			return argument->GetValue(context); });
-		return std::get<std::shared_ptr<Function>>(value)->Invoke(values);
+		return std::get<std::shared_ptr<Function>>(value)->Invoke(values).first;
 	}
 	throw std::runtime_error("cannot invoke non-invocable");
 }

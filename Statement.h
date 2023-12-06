@@ -166,10 +166,13 @@ private:
 
 class FunctionStatement : public BlockStatement {
 public:
+	static std::unordered_map<std::string, std::unique_ptr<FunctionStatement>> programs;
+
 	FunctionStatement(std::string&& name, std::string&& type, std::vector<std::pair<std::string, std::string>>&& parameters, std::vector<std::unique_ptr<Statement>>&& statements, bool yielding) : BlockStatement(std::move(statements)), name(std::move(name)), type(std::move(type)), parameters(std::move(parameters)), yielding(yielding) {}
 	FunctionStatement(FunctionStatement&&) = default;
 	~FunctionStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
+	std::shared_ptr<Context> RunProgram() const;
 
 private:
 	std::string name;

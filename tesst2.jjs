@@ -1,0 +1,5 @@
+var n2 = 33
+
+function fn2(a: int): int {
+	return a + 1
+}
