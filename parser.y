@@ -25,6 +25,7 @@ namespace {
 %union {
 	Assignment assignment;
 	std::vector<std::unique_ptr<Statement>>* block;
+	std::pair<std::vector<std::unique_ptr<Statement>>, std::vector<std::unique_ptr<Statement>>>* block_pair;
 	bool boolean;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
@@ -44,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH UNTIL WHILE YIELD
+%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <number> NUMBER
@@ -62,6 +63,7 @@ namespace {
 %left '.' '['
 %right ARROW
 %type<block> block cases oelse
+%type<block_pair> catch_finally
 %type<boolean> di uw
 %type<expr> bexpr cexpr expr iexpr lexpr oexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
@@ -127,6 +129,9 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	$$ = new ReturnStatement($2);
 }
 | SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
+| THROW { $$ = new ThrowStatement(nullptr); }
+| THROW expr { $$ = new ThrowStatement($2); }
+| TRY '{' block '}' catch_finally { $$ = new TryStatement(std::move(*$3), std::move($5->first), std::move($5->second)); delete $3; delete $5; }
 | uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
 | YIELD expr {
 	if (returnTypeStack.back() == ReturnType::Return) {
@@ -235,6 +240,12 @@ expr {
 	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
 }
 | for_initializers ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+;
+
+catch_finally:
+CATCH '{' block '}' { $$ = new std::pair(std::move(*$3), std::vector<std::unique_ptr<Statement>>{}); delete $3; }
+| CATCH '{' block '}' FINALLY '{' block '}' { $$ = new std::pair(std::move(*$3), std::move(*$7)); delete $3; delete $7; }
+| FINALLY '{' block '}' { $$ = new std::pair(std::vector<std::unique_ptr<Statement>>{}, std::move(*$3)); delete $3; }
 ;
 
 condition_list:

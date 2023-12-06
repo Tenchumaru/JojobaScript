@@ -122,8 +122,6 @@ namespace {
 
 Statement::~Statement() {}
 
-BlockStatement::~BlockStatement() {}
-
 RunResult BlockStatement::Run(std::shared_ptr<Context> context) const {
 	for (std::unique_ptr<Statement> const& statement : statements) {
 		::RunResult runResult = statement->Run(context);
@@ -161,6 +159,7 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 		}
 		return false;
 	case RunResult::Return:
+	case RunResult::Throw:
 	case RunResult::Yield:
 		return true;
 	default:
@@ -451,6 +450,51 @@ bool SwitchStatement::Case::IsMatch(Value value, std::shared_ptr<Context> outerC
 	auto context = std::make_shared<Context>(outerContext);
 	Value expressionValue = expression->GetValue(context);
 	return expressionValue == value;
+}
+
+RunResult ThrowStatement::Run(std::shared_ptr<Context> context) const {
+	Value value = expression->GetValue(context);
+	return { RunResult::Throw, value };
+}
+
+RunResult TryStatement::Run(std::shared_ptr<Context> outerContext) const {
+	// Create a new context for the "try" block.
+	auto context = std::make_shared<Context>(outerContext);
+
+	// Run the "try" block.
+	std::pair<RunResult, RunResultValue> runResult;
+	try {
+		runResult = BlockStatement::Run(context);
+	} catch (std::runtime_error const& ex) {
+		runResult.first = RunResult::Throw;
+		runResult.second = Value(ex.what());
+	}
+	if (runResult.first == RunResult::Throw) {
+		// Create a new context for the "catch" block.
+		auto catchContext = std::make_shared<Context>(outerContext);
+
+		// Add the throw value to the context with the name "exception".
+		catchContext->AddValue("exception", std::get<Value>(runResult.second), true);
+
+		// Run the "catch" block.
+		std::pair<RunResult, RunResultValue> catchRunResult = catchStatements.Run(catchContext);
+		if (catchRunResult.first == RunResult::Throw) {
+			if (!std::holds_alternative<nullptr_t>(std::get<Value>(catchRunResult.second))) {
+				// This is a new throw.  Replace the "try" block run result value.
+				runResult.second = catchRunResult.second;
+			}
+		} else {
+			// The "catch" block exited without throwing.  Use its run result.
+			runResult = catchRunResult;
+		}
+	}
+
+	// Create a new context for the "finally" block.
+	auto finallyContext = std::make_shared<Context>(outerContext);
+
+	// Run the "finally" block.  Use its run result if it exited early.
+	std::pair<RunResult, RunResultValue> finallyRunResult = finallyStatements.Run(finallyContext);
+	return finallyRunResult.first == RunResult::Next ? runResult : finallyRunResult;
 }
 
 RunResult VarStatement::Run(std::shared_ptr<Context> context) const {

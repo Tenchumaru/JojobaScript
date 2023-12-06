@@ -93,14 +93,12 @@ std::pair<Value, std::shared_ptr<Context>> ScriptFunction::Invoke(std::vector<Va
 		for (std::unique_ptr<Statement> const& statement : statements) {
 			auto runResult = statement->Run(context);
 			switch (runResult.first) {
-			case Statement::RunResult::Return:
-				return { std::get<Value>(runResult.second), context };
-			case Statement::RunResult::Yield:
-				throw std::logic_error("not implemented");
 			case Statement::RunResult::Next:
 				break;
+			case Statement::RunResult::Return:
+				return { std::get<Value>(runResult.second), context };
 			default:
-				throw std::runtime_error("unexpected break or continue statement");
+				throw std::runtime_error("unexpected break, continue, fallthrough, throw, or yield statement");
 			}
 		}
 	}

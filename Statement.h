@@ -10,7 +10,7 @@ class Expression;
 
 class Statement {
 public:
-	enum class RunResult { Next, Break, Continue, Fallthrough, Return, Yield };
+	enum class RunResult { Next, Break, Continue, Fallthrough, Return, Throw, Yield };
 
 	using RunResultValue = std::variant<int, Value>;
 
@@ -90,7 +90,7 @@ private:
 class BlockStatement : public Statement {
 public:
 	BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) : statements(std::move(statements)) {}
-	virtual ~BlockStatement() = 0;
+	virtual ~BlockStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 	bool Run(std::shared_ptr<Context> context, std::pair<RunResult, RunResultValue>& runResult, bool allowFallthrough = false) const;
 
@@ -282,6 +282,29 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+};
+
+class ThrowStatement : public Statement {
+public:
+	ThrowStatement(Expression* expression) : expression(expression) {}
+	ThrowStatement(ThrowStatement&&) = default;
+	~ThrowStatement() = default;
+	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
+
+private:
+	std::unique_ptr<Expression> expression;
+};
+
+class TryStatement : public BlockStatement {
+public:
+	TryStatement(std::vector<std::unique_ptr<Statement>>&& tryStatements, std::vector<std::unique_ptr<Statement>>&& catchStatements, std::vector<std::unique_ptr<Statement>>&& finallyStatements) : BlockStatement(std::move(tryStatements)), catchStatements(std::move(catchStatements)), finallyStatements(std::move(finallyStatements)) {}
+	TryStatement(TryStatement&&) = default;
+	~TryStatement() = default;
+	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> outerContext) const override;
+
+private:
+	BlockStatement catchStatements;
+	BlockStatement finallyStatements;
 };
 
 class VarStatement : public Statement {

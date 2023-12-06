@@ -36,13 +36,16 @@ fallthrough { RETURN_(FALLTHROUGH); }
 continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }
 default  { RETURN_(DEFAULT); }
+finally  { RETURN_(FINALLY); }
 import   { RETURN_(IMPORT); }
 return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }
 await    { RETURN_(AWAIT); }
 break    { RETURN_(BREAK); }
+catch    { RETURN_(CATCH); }
 const    { yylval.boolean = true; RETURN_(VAR); }
 false    { yylval.boolean = false; RETURN_(BOOLEAN); }
+throw    { RETURN_(THROW); }
 until    { RETURN_(UNTIL); }
 while    { RETURN_(WHILE); }
 yield    { RETURN_(YIELD); }
@@ -51,6 +54,7 @@ else     { RETURN_(ELSE); }
 from     { RETURN_(FROM); }
 true     { yylval.boolean = true; RETURN_(BOOLEAN); }
 for      { RETURN_(FOR); }
+try      { RETURN_(TRY); }
 var      { yylval.boolean = false; RETURN_(VAR); }
 as       { RETURN_(AS); }
 do       { RETURN_(DO); }

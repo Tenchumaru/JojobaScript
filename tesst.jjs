@@ -29,6 +29,13 @@ const s2 = {v + 1 for v in s}
 @s, t = l
 @l[1] = s, t
 
+try {
+	throw "out"
+} catch {
+	@print(exception)
+} finally {
+	@print("done")
+}
 @print("waiting")
 @await the_passage_of_time(1)
 
