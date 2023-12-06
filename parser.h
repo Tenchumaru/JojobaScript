@@ -2,4 +2,4 @@
 
 class FunctionStatement;
 
-int ParseFile(char const* filePath, std::unique_ptr<FunctionStatement>& program_);
+bool ParseFile(FILE* inputFile, std::unique_ptr<FunctionStatement>& program_);

@@ -5,6 +5,8 @@
 #include "Generator.h"
 #include "Statement.h"
 
+std::ostream* PrintFunction::outputStream;
+
 namespace {
 	void PrintValue(Value const& value);
 
@@ -13,7 +15,7 @@ namespace {
 		bool isNext = false;
 		for (auto const& value : collection) {
 			if (isNext) {
-				std::cout << ", ";
+				*PrintFunction::outputStream << ", ";
 			}
 			PrintValue(value);
 			isNext = true;
@@ -21,32 +23,32 @@ namespace {
 	}
 
 	void PrintDictionary(Dictionary const& dictionary) {
-		std::cout << '{';
+		*PrintFunction::outputStream << '{';
 		bool isNext = false;
 		for (auto const& pair : dictionary) {
 			if (isNext) {
-				std::cout << ", ";
+				*PrintFunction::outputStream << ", ";
 			}
 			PrintValue(pair.first);
-			std::cout << ": ";
+			*PrintFunction::outputStream << ": ";
 			PrintValue(pair.second);
 			isNext = true;
 		}
-		std::cout << '}';
+		*PrintFunction::outputStream << '}';
 	}
 
 	void PrintObject(Object const& object) {
-		std::cout << "#{";
+		*PrintFunction::outputStream << "#{";
 		bool isNext = false;
 		for (auto const& pair : object) {
 			if (isNext) {
-				std::cout << ", ";
+				*PrintFunction::outputStream << ", ";
 			}
-			std::cout << pair.first << ": ";
+			*PrintFunction::outputStream << pair.first << ": ";
 			PrintValue(pair.second);
 			isNext = true;
 		}
-		std::cout << '}';
+		*PrintFunction::outputStream << '}';
 	}
 
 #define PART _CRT_INTERNAL_PRINTF_STANDARD_ROUNDING
@@ -59,12 +61,12 @@ Value PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
 	for (Value const& argument : arguments) {
 		if (isNext) {
-			std::cout << ' ';
+			*PrintFunction::outputStream << ' ';
 		}
 		PrintValue(argument);
 		isNext = true;
 	}
-	std::cout << std::endl;
+	*PrintFunction::outputStream << std::endl;
 	return nullptr;
 }
 

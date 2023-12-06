@@ -8,15 +8,11 @@ static std::unique_ptr<FunctionStatement> program;
 
 #include "parser.inl"
 
-int ParseFile(char const* filePath, std::unique_ptr<FunctionStatement>& program_) {
-	if (!filePath || !strcmp("-", filePath)) {
-		yyin = stdin;
-	} else if (fopen_s(&yyin, filePath, "rt")) {
-		return -1;
-	}
+bool ParseFile(FILE* inputFile, std::unique_ptr<FunctionStatement>& program_) {
+	yyin = inputFile;
 	if (yyparse()) {
-		return 1;
+		return false;
 	}
 	program_ = std::move(program);
-	return 0;
+	return true;
 }

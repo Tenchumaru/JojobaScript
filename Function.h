@@ -14,6 +14,8 @@ class NativeFunction : public Function {};
 
 class PrintFunction : public NativeFunction {
 public:
+	static std::ostream* outputStream;
+
 	PrintFunction() = default;
 	PrintFunction(PrintFunction&&) = default;
 	~PrintFunction() = default;

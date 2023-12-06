@@ -79,7 +79,7 @@ void __stdcall FiberRunner::RunFiber(void* parameter) {
 			std::function<void()> const fn = std::move(p->fn);
 			fn();
 		} catch (std::exception const& ex) {
-			std::cout << "FiberRunner::RunFiber.InternalHandle:  " << ex.what() << std::endl;
+			std::cerr << "FiberRunner::RunFiber.InternalHandle:  " << ex.what() << std::endl;
 		}
 		p->availableFibers.push_back(GetCurrentFiber());
 		SwitchToFiber(p->launchingFiber);

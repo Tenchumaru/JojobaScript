@@ -8,7 +8,7 @@
 int yyparse();
 
 static void usage(char const* prog) {
-	fprintf(stderr, "usage: %s [-h] [-o output.txt] [--] [input.jjs]\n", prog);
+	std::cerr << "usage: " << prog << " [-h] [-o output.txt] [--] [input.jjs]" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -38,14 +38,35 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
+	char const* inputFilePath = argv[1];
+
+	// Open the input file if specified or use standard input.
+	FILE* inputFile;
+	if (inputFilePath) {
+		if (fopen_s(&inputFile, inputFilePath, "rt")) {
+			std::cerr << prog << ":  cannot open '" << inputFilePath << "' for reading" << std::endl;
+			return 1;
+		}
+	} else {
+		inputFile = stdin;
+	}
+
+	// Open the output file if specified or use standard output.
+	std::ofstream outputFile;
+	if (outputFilePath) {
+		outputFile.open(outputFilePath);
+		if (!outputFile) {
+			std::cerr << prog << ":  cannot open '" << outputFilePath << "' for writing" << std::endl;
+			return 1;
+		}
+		PrintFunction::outputStream = &outputFile;
+	} else {
+		PrintFunction::outputStream = &std::cout;
+	}
 
 	// Parse the input.
 	std::unique_ptr<FunctionStatement> program;
-	switch (ParseFile(argv[1], program)) {
-	case -1:
-		fprintf(stderr, "%s: cannot open '%s' for reading\n", prog, argv[1]);
-		__fallthrough;
-	case 1:
+	if (!ParseFile(inputFile, program)) {
 		return 1;
 	}
 
