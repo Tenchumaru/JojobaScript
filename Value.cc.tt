@@ -11,8 +11,10 @@ string[][] parts = lines.Select((s) => s.Split('|').Select((t) => t.Trim()).ToAr
 #>
 bool AsBoolean(Value const& value) {
 	switch (value.index()) {
+	case 0:
+		throw std::runtime_error("cannot use empty value");
 <#
-foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i, a[0], a[1].Replace("$", $"std::get<{i}>(value)")))) {
+foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i + 1, a[0], a[1].Replace("$", $"std::get<{i + 1}>(value)")))) {
 #>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
 		<#= code #>
 <#
@@ -24,8 +26,10 @@ foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i,
 #elif PART == _CRT_INTERNAL_PRINTF_STANDARD_ROUNDING
 void PrintValue(Value const& value) {
 	switch (value.index()) {
+	case 0:
+		throw std::runtime_error("cannot use empty value");
 <#
-foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i, a[0], a[2].Replace("@", "*PrintFunction::outputStream").Replace("$", $"std::get<{i}>(value)")))) {
+foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i + 1, a[0], a[2].Replace("@", "*PrintFunction::outputStream").Replace("$", $"std::get<{i + 1}>(value)")))) {
 #>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
 		<#= code #>
 		break;

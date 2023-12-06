@@ -22,7 +22,7 @@ q = from a in parts
 	select t;
 string typeNames = string.Join(", ", q);
 #>
-using Value = std::variant<<#= typeNames #>>;
+using Value = std::variant<nullptr_t, <#= typeNames #>>;
 <#
 q = from a in parts
 	where a.Last().Any()

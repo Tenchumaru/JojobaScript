@@ -1,12 +1,11 @@
-nullptr_t    | throw std::runtime_error("cannot use empty value"); | throw std::runtime_error("cannot use empty value"); |
-bool         | return $;                                           | @ << std::boolalpha << $;                           |
-std::int64_t | return $ != 0;                                      | @ << $;                                             |
-double       | return $ != 0.0;                                    | @ << $;                                             |
-std::string  | return !$.empty();                                  | @ << '"' << $ << '"';                               |
-@Awaitable   | return true;                                        | @ << "awaitable";                                   |
-@Dictionary  | return !$->empty();                                 | PrintDictionary(*$);                                | std::unordered_map<Value, Value>
-@Function    | return true;                                        | @ << "function";                                    |
-@Generator   | return true;                                        | @ << "generator";                                   |
-@List        | return !$->empty();                                 | @ << '['; PrintCollection(*$); @ << ']';            | std::vector<Value>
-@Object      | return !$->empty();                                 | PrintObject(*$);                                    | std::unordered_map<std::string, Value>
-@Set         | return !$->empty();                                 | @ << '{'; PrintCollection(*$); @ << '}';            | std::unordered_set<Value>
+bool         | return $;           | @ << std::boolalpha << $;                |
+std::int64_t | return $ != 0;      | @ << $;                                  |
+double       | return $ != 0.0;    | @ << $;                                  |
+std::string  | return !$.empty();  | @ << '"' << $ << '"';                    |
+@Awaitable   | return true;        | @ << "awaitable";                        |
+@Dictionary  | return !$->empty(); | PrintDictionary(*$);                     | std::unordered_map<Value, Value>
+@Function    | return true;        | @ << "function";                         |
+@Generator   | return true;        | @ << "generator";                        |
+@List        | return !$->empty(); | @ << '['; PrintCollection(*$); @ << ']'; | std::vector<Value>
+@Object      | return !$->empty(); | PrintObject(*$);                         | std::unordered_map<std::string, Value>
+@Set         | return !$->empty(); | @ << '{'; PrintCollection(*$); @ << '}'; | std::unordered_set<Value>
