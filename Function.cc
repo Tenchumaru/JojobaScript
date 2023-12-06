@@ -11,7 +11,8 @@ namespace {
 	void PrintValue(Value const& value);
 
 	template<typename T>
-	void PrintCollection(T const& collection) {
+	void PrintCollection(T const& collection, char const framing[]) {
+		*PrintFunction::outputStream << framing[0];
 		bool isNext = false;
 		for (auto const& value : collection) {
 			if (isNext) {
@@ -20,6 +21,7 @@ namespace {
 			PrintValue(value);
 			isNext = true;
 		}
+		*PrintFunction::outputStream << framing[1];
 	}
 
 	void PrintDictionary(Dictionary const& dictionary) {
