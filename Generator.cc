@@ -7,6 +7,8 @@
 Generator::~Generator() {}
 
 Value FunctionGenerator::operator++() {
+	// TODO:  The "yield" keyword applies only as a top-level statement in a generator function.  It will skip all lower-level
+	// statements.  Consider running this in a fiber and switching fibers upon reaching a "yield" keyword.
 	while (it != statements.end()) {
 		auto runResult = (*it)->Run(context);
 		++it;
