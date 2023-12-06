@@ -5,10 +5,9 @@ public:
 	~FiberRunner();
 	void AddWaitableHandle(void* handle, std::function<void(void*)> fn);
 	void Await(void* handle);
-	int Launch(std::function<void()>&& fn);
+	void* Launch(std::function<void()>&& fn);
 	int Run();
 	static FiberRunner& get_Instance();
-	__declspec(property(get = get_Instance)) FiberRunner& Instance;
 
 private:
 	struct {

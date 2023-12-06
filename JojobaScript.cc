@@ -74,7 +74,9 @@ int main(int argc, char* argv[]) {
 	// Run the program in a fiber.
 	auto fn = [] { FunctionStatement::programs[""]->RunProgram(); };
 	auto& fiberRunner = FiberRunner::get_Instance();
-	fiberRunner.Launch(std::move(fn));
+	if (!fiberRunner.Launch(std::move(fn))) {
+		return 1;
+	}
 	fiberRunner.Run();
 
 	return 0;

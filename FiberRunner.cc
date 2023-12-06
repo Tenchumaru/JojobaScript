@@ -18,13 +18,13 @@ void FiberRunner::Await(void* handle) {
 	SwitchToFiber(launchingFiber);
 }
 
-int FiberRunner::Launch(std::function<void()>&& newFn) {
+void* FiberRunner::Launch(std::function<void()>&& newFn) {
 	void* fiber;
 	if (availableFibers.empty()) {
 		fiber = CreateFiber(stackSize, &FiberRunner::RunFiber, this);
 		if (!fiber) {
 			std::cerr << "CreateFiber failed: " << errno << std::endl;
-			return GetLastError();
+			return nullptr;
 		}
 	} else {
 		fiber = availableFibers.back();
@@ -35,7 +35,7 @@ int FiberRunner::Launch(std::function<void()>&& newFn) {
 	launchingFiber = GetCurrentFiber();
 	SwitchToFiber(fiber);
 	launchingFiber = previousFiber;
-	return 0;
+	return fiber;
 }
 
 int FiberRunner::Run() {
