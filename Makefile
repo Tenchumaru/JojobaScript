@@ -1,3 +1,4 @@
+BASH="C:\Program Files\Git\usr\bin\bash.exe"
 all: Value.cc.inl Value.h.inl parser.inl scanner.inl
 
 clean:
@@ -15,7 +16,8 @@ Value.h.inl: Value.h.tt Value.txt
 
 parser.inl: parser.y
 	win_bison --verbose --defines=yy.h --output=parser.inl -Wcounterexamples parser.y
-	"C:\Program Files\Git\usr\bin\bash.exe" -c ". bashrc;sed -i -e '/yylineno/,$$d' parser.inl"
+	$(BASH) -c ". bashrc;sed -i -e '/yylineno/,$$d' parser.inl"
 
 scanner.inl: scanner.l parser.inl
 	win_flex --fast --wincompat --outfile=scanner.inl scanner.l
+	$(BASH) -c ". bashrc;sed -i -e s/TO.*DO// scanner.inl"
