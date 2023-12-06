@@ -305,6 +305,16 @@ RunResult ImportStatement::Run(std::shared_ptr<Context> context) const {
 	return { RunResult::Next, 0 };
 }
 
+std::string ImportStatement::Validate(std::string&& moduleName) {
+	if (!moduleName.empty()) {
+		if (std::filesystem::exists(moduleName + ".jjs")) {
+			return moduleName;
+		}
+		throw std::runtime_error("cannot find module");
+	}
+	throw std::runtime_error("module name cannot be empty");
+}
+
 RunResult IncrementStatement::Run(std::shared_ptr<Context> context) const {
 	Di(expression, isIncrement, context);
 	return { RunResult::Next, 0 };

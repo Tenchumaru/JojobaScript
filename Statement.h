@@ -202,9 +202,9 @@ private:
 
 class ImportStatement : public Statement {
 public:
-	ImportStatement(std::string&& moduleName) : moduleName(std::move(moduleName)) {}
-	ImportStatement(std::string&& moduleName, std::string&& alias) : moduleName(std::move(moduleName)), alias(std::move(alias)) {}
-	ImportStatement(std::string&& moduleName, std::vector<std::pair<std::string, std::string>>&& pairs) : moduleName(std::move(moduleName)), pairs(std::move(pairs)) {}
+	ImportStatement(std::string&& moduleName) : moduleName(std::move(Validate(std::move(moduleName)))) {}
+	ImportStatement(std::string&& moduleName, std::string&& alias) : moduleName(std::move(Validate(std::move(moduleName)))), alias(std::move(alias)) {}
+	ImportStatement(std::string&& moduleName, std::vector<std::pair<std::string, std::string>>&& pairs) : moduleName(std::move(Validate(std::move(moduleName)))), pairs(std::move(pairs)) {}
 	ImportStatement(ImportStatement&&) = default;
 	~ImportStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
@@ -213,6 +213,8 @@ private:
 	std::string moduleName;
 	std::string alias;
 	std::vector<std::pair<std::string, std::string>> pairs;
+
+	static std::string Validate(std::string&& moduleName);
 };
 
 class IncrementStatement : public Statement {
