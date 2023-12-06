@@ -117,7 +117,6 @@
     <ClInclude Include="Iterator.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="scanner.h" />
     <ClInclude Include="Statement.h" />
     <ClInclude Include="ValueReference.h" />
     <ClInclude Include="yy.h" />

@@ -1,7 +1,6 @@
 %{
 #include "Expression.h"
 #include "Statement.h"
-#include "scanner.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)

@@ -4,6 +4,8 @@
 #include "yy.h"
 
 extern FILE* yyin;
+extern int yylex();
+void yyerror(char const* message);
 static std::unique_ptr<FunctionStatement> program;
 
 #include "parser.inl"
