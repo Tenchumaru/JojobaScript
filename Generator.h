@@ -22,6 +22,7 @@ private:
 	std::shared_ptr<Context> context;
 	std::vector<std::unique_ptr<Statement>> const& statements;
 	std::vector<std::unique_ptr<Statement>>::const_iterator it;
+	void* fiber = nullptr;
 };
 
 class IteratorGenerator : public Generator {

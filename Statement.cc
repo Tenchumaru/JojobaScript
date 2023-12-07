@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Statement.h"
+#include "FiberRunner.h"
 #include "Function.h"
 #include "Iterator.h"
 #include "Generator.h"
@@ -532,5 +533,7 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 RunResult YieldStatement::Run(std::shared_ptr<Context> context) const {
 	Value value = expression->GetValue(context);
-	return { RunResult::Yield, value };
+	context->SetValue("$yield", value);
+	FiberRunner::SwitchToFiber(reinterpret_cast<void*>(std::get<std::int64_t>(context->GetValue("$generator"))));
+	return { RunResult::Next, 0 };
 }

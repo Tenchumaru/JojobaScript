@@ -54,3 +54,17 @@ bool Context::IsConstant(std::string const& key) {
 	}
 	throw std::logic_error("cannot find value");
 }
+
+void Context::SetValue(std::string const& key, Value const& value) {
+	auto it = values.find(key);
+	if (it != values.end()) {
+		if (it->second.second) {
+			throw std::runtime_error("cannot set constant value");
+		}
+		it->second.first = value;
+	} else if (outerContext) {
+		return outerContext->SetValue(key, value);
+	} else {
+		throw std::runtime_error("cannot find key");
+	}
+}

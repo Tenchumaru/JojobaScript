@@ -3,10 +3,11 @@
 class FiberRunner {
 public:
 	~FiberRunner();
-	void AddWaitableHandle(void* handle, std::function<void(void*)> fn);
 	void Await(void* handle);
+	static void* GetCurrentFiber();
 	void* Launch(std::function<void()>&& fn);
 	int Run();
+	static void SwitchToFiber(void* fiber);
 	static FiberRunner& get_Instance();
 
 private:

@@ -18,6 +18,10 @@ void FiberRunner::Await(void* handle) {
 	SwitchToFiber(launchingFiber);
 }
 
+void* FiberRunner::GetCurrentFiber() {
+	return ::GetCurrentFiber();
+}
+
 void* FiberRunner::Launch(std::function<void()>&& newFn) {
 	void* fiber;
 	if (availableFibers.empty()) {
@@ -59,6 +63,10 @@ int FiberRunner::Run() {
 	}
 }
 
+void FiberRunner::SwitchToFiber(void* fiber) {
+	::SwitchToFiber(fiber);
+}
+
 FiberRunner& FiberRunner::get_Instance() {
 	return instance;
 }
@@ -74,6 +82,7 @@ FiberRunner::FiberRunner() {
 void __stdcall FiberRunner::RunFiber(void* parameter) {
 	auto* const p = reinterpret_cast<FiberRunner*>(parameter);
 	for (;;) {
+		void* launchingFiber = p->launchingFiber;
 		try {
 #pragma prefast(suppress: 26800, "FiberRunner::Launch will set the function member when this loops")
 			std::function<void()> const fn = std::move(p->fn);
@@ -82,6 +91,6 @@ void __stdcall FiberRunner::RunFiber(void* parameter) {
 			std::cerr << "FiberRunner::RunFiber.InternalHandle:  " << ex.what() << std::endl;
 		}
 		p->availableFibers.push_back(GetCurrentFiber());
-		SwitchToFiber(p->launchingFiber);
+		SwitchToFiber(launchingFiber);
 	}
 }
