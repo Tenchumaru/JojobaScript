@@ -8,47 +8,55 @@
 std::ostream* PrintFunction::outputStream;
 
 namespace {
+	void QuoteString(std::stringstream& ss, std::string const& s, bool quotingString) {
+		if (quotingString) {
+			ss << '"' << s << '"';
+		} else {
+			ss << s;
+		}
+	}
+
 	template<typename T>
-	void PrintCollection(T const& collection, char const framing[]) {
-		*PrintFunction::outputStream << framing[0];
+	void CollectionAsString(std::stringstream& ss, T const& collection, char const framing[]) {
+		ss << framing[0];
 		bool isNext = false;
 		for (auto const& value : collection) {
 			if (isNext) {
-				*PrintFunction::outputStream << ", ";
+				ss << ", ";
 			}
-			PrintValue(value);
+			AsString(ss, value, true);
 			isNext = true;
 		}
-		*PrintFunction::outputStream << framing[1];
+		ss << framing[1];
 	}
 
-	void PrintDictionary(Dictionary const& dictionary) {
-		*PrintFunction::outputStream << '{';
+	void DictionaryAsString(std::stringstream& ss, Dictionary const& dictionary) {
+		ss << '{';
 		bool isNext = false;
 		for (auto const& pair : dictionary) {
 			if (isNext) {
-				*PrintFunction::outputStream << ", ";
+				ss << ", ";
 			}
-			PrintValue(pair.first);
-			*PrintFunction::outputStream << ": ";
-			PrintValue(pair.second);
+			AsString(ss, pair.first, true);
+			ss << ": ";
+			AsString(ss, pair.second, true);
 			isNext = true;
 		}
-		*PrintFunction::outputStream << '}';
+		ss << '}';
 	}
 
-	void PrintObject(Object const& object) {
-		*PrintFunction::outputStream << "#{";
+	void ObjectAsString(std::stringstream& ss, Object const& object) {
+		ss << "#{";
 		bool isNext = false;
 		for (auto const& pair : object) {
 			if (isNext) {
-				*PrintFunction::outputStream << ", ";
+				ss << ", ";
 			}
-			*PrintFunction::outputStream << pair.first << ": ";
-			PrintValue(pair.second);
+			ss << pair.first << ": ";
+			AsString(ss, pair.second, true);
 			isNext = true;
 		}
-		*PrintFunction::outputStream << '}';
+		ss << '}';
 	}
 }
 
@@ -125,7 +133,9 @@ std::pair<Value, std::shared_ptr<Context>> PrintFunction::Invoke(std::vector<Val
 		if (isNext) {
 			*PrintFunction::outputStream << ' ';
 		}
-		PrintValue(argument);
+		std::stringstream ss;
+		AsString(ss, argument, false);
+		*PrintFunction::outputStream << ss.str();
 		isNext = true;
 	}
 	*PrintFunction::outputStream << std::endl;

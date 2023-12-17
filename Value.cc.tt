@@ -22,12 +22,12 @@ foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i 
 		throw std::logic_error("unexpected value index");
 	}
 }
-void PrintValue(Value const& value) {
+void AsString(std::stringstream& ss, Value const& value, bool quotingString) {
 	switch (value.index()) {
 	case 0:
 		throw std::runtime_error("cannot use empty value");
 <#
-foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i + 1, a[0], a[2].Replace("@", "*PrintFunction::outputStream").Replace("$", $"std::get<{i + 1}>(value)")))) {
+foreach ((int index, string typeName, string code) in parts.Select((a, i) => (i + 1, a[0], a[2].Replace("@", "ss").Replace("$", $"std::get<{i + 1}>(value)")))) {
 #>	case <#= index #>: // <#= typeName[0] == '@' ? "std::shared_ptr<" + typeName.Substring(1) + ">" : typeName #>
 		<#= code #>
 		break;

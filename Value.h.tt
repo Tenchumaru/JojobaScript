@@ -31,4 +31,4 @@ string typeDefinitions = string.Join(Environment.NewLine, q);
 #>
 <#= typeDefinitions #>
 bool AsBoolean(Value const& value);
-void PrintValue(Value const& value);
+void AsString(std::stringstream& ss, Value const& value, bool quotingString);
