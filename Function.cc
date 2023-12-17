@@ -59,6 +59,37 @@ namespace {
 
 Function::~Function() {}
 
+std::pair<Value, std::shared_ptr<Context>> FloatFunction::Invoke(std::vector<Value> const& arguments) {
+	if (arguments.empty()) {
+		return { 0.0, {} };
+	} else if (arguments.size() > 1) {
+		throw std::runtime_error("invalid number of arguments");
+	}
+	Value const& value = arguments[0];
+	if (std::holds_alternative<double>(value)) {
+		return { value, {} };
+	} else if (std::holds_alternative<std::int64_t>(value)) {
+		return { static_cast<double>(std::get<std::int64_t>(value)), {} };
+	} else if (std::holds_alternative<std::string>(value)) {
+		auto&& s = std::get<std::string>(value);
+		auto end = std::find_if_not(s.rbegin(), s.rend(), [](char ch) { return std::isspace(ch); });
+		ptrdiff_t ntrailing = end - s.rbegin();
+		try {
+			size_t n;
+			double rv = std::stod(s, &n);
+			if (n + ntrailing != s.size()) {
+				throw std::runtime_error("value to convert to float has invalid characters");
+			}
+			return { rv, {} };
+		} catch (std::invalid_argument const&) {
+			throw std::runtime_error("cannot convert value to float");
+		} catch (std::out_of_range const&) {
+			throw std::runtime_error("value to convert to float is out of range");
+		}
+	}
+	throw std::runtime_error("cannot convert value to float");
+}
+
 std::pair<Value, std::shared_ptr<Context>> PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
 	for (Value const& argument : arguments) {

@@ -12,6 +12,16 @@ public:
 
 class NativeFunction : public Function {};
 
+class FloatFunction : public NativeFunction {
+public:
+	static std::ostream* outputStream;
+
+	FloatFunction() = default;
+	FloatFunction(FloatFunction&&) = default;
+	~FloatFunction() = default;
+	std::pair<Value, std::shared_ptr<Context>> Invoke(std::vector<Value> const& arguments) override;
+};
+
 class PrintFunction : public NativeFunction {
 public:
 	static std::ostream* outputStream;

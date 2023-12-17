@@ -113,4 +113,4 @@ while const b = 1, a < 3 {
 }
 @o.one /= o.two
 @d[a - 1] *= b[a - 2]
-@print(fn(2), fn22(2), b, d, l, n, o, s, t)
+@print(fn(2), fn22(2), b, d, l, n, o, s, t, float("\t3.3\r\n"))
