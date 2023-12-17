@@ -202,38 +202,11 @@ bool IdentifierExpression::IsConstant(std::shared_ptr<Context> context) const {
 }
 
 ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context) {
-	// The only indexable types are dictionaries, lists, and strings.
-	ValueReference indexedValue = indexedExpression->GetReference(context);
-	if (indexedValue.IsIndexed) {
-		size_t size = indexedValue.Size;
-		auto [index, endIndex] = GetIndices(size, context);
-		indexedValue.AdjustIndices(index, endIndex);
-		return indexedValue;
-	} else if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
-		List& list = *std::get<std::shared_ptr<List>>(indexedValue);
-		auto [index, endIndex] = GetIndices(list.size(), context);
-		if (isRange) {
-			return ValueReference(list, index, endIndex);
-		} else {
-			return list[index];
-		}
-	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
-		Value indexingValue = indexingExpression->GetValue(context);
-		Dictionary& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
-		if (dictionary.find(indexingValue) != dictionary.end()) {
-			return dictionary[indexingValue];
-		}
-		throw std::runtime_error("indexing value not found in dictionary");
-	} else if (std::holds_alternative<std::string>(indexedValue)) {
-		auto& string = std::get<std::string>(indexedValue);
-		auto [index, endIndex] = GetIndices(string.size(), context);
-		return ValueReference(string, index, endIndex);
-	}
-	throw std::runtime_error("cannot reference-index non-reference-indexable");
+	return GetReference(context, true);
 }
 
 Value IndexExpression::GetValue(std::shared_ptr<Context> context) {
-	return GetReference(context);
+	return GetReference(context, false);
 }
 
 std::pair<std::int64_t, std::int64_t> IndexExpression::GetIndices(size_t size, std::shared_ptr<Context> context) {
@@ -258,6 +231,37 @@ std::pair<std::int64_t, std::int64_t> IndexExpression::GetIndices(size_t size, s
 		}
 	}
 	throw std::runtime_error("cannot index with non-integral value");
+}
+
+ValueReference IndexExpression::GetReference(std::shared_ptr<Context> context, bool mayCreate) {
+	// The only indexable types are dictionaries, lists, and strings.
+	ValueReference indexedValue = indexedExpression->GetReference(context);
+	if (indexedValue.IsIndexed) {
+		size_t size = indexedValue.Size;
+		auto [index, endIndex] = GetIndices(size, context);
+		indexedValue.AdjustIndices(index, endIndex);
+		return indexedValue;
+	} else if (std::holds_alternative<std::shared_ptr<List>>(indexedValue)) {
+		List& list = *std::get<std::shared_ptr<List>>(indexedValue);
+		auto [index, endIndex] = GetIndices(list.size(), context);
+		if (isRange) {
+			return ValueReference(list, index, endIndex);
+		} else {
+			return list[index];
+		}
+	} else if (std::holds_alternative<std::shared_ptr<Dictionary>>(indexedValue)) {
+		Value indexingValue = indexingExpression->GetValue(context);
+		Dictionary& dictionary = *std::get<std::shared_ptr<Dictionary>>(indexedValue);
+		if (mayCreate || dictionary.find(indexingValue) != dictionary.end()) {
+			return dictionary[indexingValue];
+		}
+		throw std::runtime_error("indexing value not found in dictionary");
+	} else if (std::holds_alternative<std::string>(indexedValue)) {
+		auto& string = std::get<std::string>(indexedValue);
+		auto [index, endIndex] = GetIndices(string.size(), context);
+		return ValueReference(string, index, endIndex);
+	}
+	throw std::runtime_error("cannot reference-index non-reference-indexable");
 }
 
 Value InvocationExpression::GetValue(std::shared_ptr<Context> context) {

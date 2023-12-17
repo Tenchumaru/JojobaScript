@@ -119,6 +119,7 @@ private:
 	bool isRange;
 
 	std::pair<std::int64_t, std::int64_t> GetIndices(size_t size, std::shared_ptr<Context> context);
+	ValueReference GetReference(std::shared_ptr<Context> context, bool mayCreate);
 };
 
 class InvocationExpression : public Expression {
