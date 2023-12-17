@@ -30,3 +30,5 @@ q = from a in parts
 string typeDefinitions = string.Join(Environment.NewLine, q);
 #>
 <#= typeDefinitions #>
+bool AsBoolean(Value const& value);
+void PrintValue(Value const& value);

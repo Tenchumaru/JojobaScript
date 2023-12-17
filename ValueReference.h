@@ -2,8 +2,6 @@
 
 #include "Value.h.inl"
 
-bool AsBoolean(Value const& value);
-
 class ValueReference {
 public:
 	ValueReference(ValueReference const&) = delete;

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "ValueReference.h"
 #include "FiberRunner.h"
-#define PART __BOOL_DEFINED
-#include "Value.cc.inl"
 
 ValueReference::operator Value() {
 	if (list) {

@@ -8,8 +8,6 @@
 std::ostream* PrintFunction::outputStream;
 
 namespace {
-	void PrintValue(Value const& value);
-
 	template<typename T>
 	void PrintCollection(T const& collection, char const framing[]) {
 		*PrintFunction::outputStream << framing[0];
@@ -52,10 +50,9 @@ namespace {
 		}
 		*PrintFunction::outputStream << '}';
 	}
-
-#define PART _CRT_INTERNAL_PRINTF_STANDARD_ROUNDING
-#include "Value.cc.inl"
 }
+
+#include "Value.cc.inl"
 
 Function::~Function() {}
 

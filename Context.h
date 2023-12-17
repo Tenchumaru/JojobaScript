@@ -2,8 +2,6 @@
 
 #include "Value.h.inl"
 
-bool AsBoolean(Value const& value);
-
 class Context {
 public:
 	static std::unordered_map<std::string, std::shared_ptr<Context>> modules;
