@@ -37,7 +37,8 @@ try {
 	@print("done")
 }
 @print("waiting")
-@await the_passage_of_time(1)
+@await the_passage_of_time(.5)
+@print("\o678 \x66 \u3210 \U00103456")
 
 var a: int = 1
 const b = [1, 2]

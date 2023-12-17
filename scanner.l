@@ -10,6 +10,8 @@
 #define DWL(v) DebugWriteLine(" '%s':%d ", yytext[0] == '\n' ? "" : yytext, v) // See Project Properties for Adrezdi library reference.
 #define RETURN_(v) do { auto v__ = (v); DWL(v__); return v__; } while(false)
 #define RETURN_ASSIGNMENT(v) do { auto v__ = (v); DWL(v__); yylval.assignment = v__; return ASSIGNMENT; } while(false)
+
+static std::string* MakeString(char const* p);
 %}
 
 ws      [\r\t\v ]+
@@ -31,7 +33,7 @@ real    ({num}?\.{num}|{num}\.{num}?)([Ee][-+]?{num})?
 {real}   { yylval.number = new Value(std::strtod(yytext, nullptr)); RETURN_(NUMBER); }
 {hex}    { yylval.number = new Value(std::strtoll(yytext + 1, nullptr, 16)); RETURN_(NUMBER); }
 {num}    { yylval.number = new Value(std::strtoll(yytext, nullptr, 10)); RETURN_(NUMBER); }
-{str}    { yylval.id = new std::string(yytext + 1); yylval.id->resize(yylval.id->size() - 1); RETURN_(STRING); }
+{str}    { yylval.id = MakeString(yytext); RETURN_(STRING); }
 fallthrough { RETURN_(FALLTHROUGH); }
 continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }
