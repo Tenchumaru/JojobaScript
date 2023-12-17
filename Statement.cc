@@ -277,6 +277,7 @@ std::shared_ptr<Context> FunctionStatement::RunProgram() const {
 
 	// Define the globals.
 	globalContext->AddValue("float", std::make_shared<FloatFunction>(), true);
+	globalContext->AddValue("int", std::make_shared<IntFunction>(), true);
 	globalContext->AddValue("print", std::make_shared<PrintFunction>(), true);
 	auto thePassageOfTimeFunction = std::make_shared<ThePassageOfTimeFunction>();
 	globalContext->AddValue("thePassageOfTime", thePassageOfTimeFunction, true);

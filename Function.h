@@ -22,6 +22,16 @@ public:
 	std::pair<Value, std::shared_ptr<Context>> Invoke(std::vector<Value> const& arguments) override;
 };
 
+class IntFunction : public NativeFunction {
+public:
+	static std::ostream* outputStream;
+
+	IntFunction() = default;
+	IntFunction(IntFunction&&) = default;
+	~IntFunction() = default;
+	std::pair<Value, std::shared_ptr<Context>> Invoke(std::vector<Value> const& arguments) override;
+};
+
 class PrintFunction : public NativeFunction {
 public:
 	static std::ostream* outputStream;

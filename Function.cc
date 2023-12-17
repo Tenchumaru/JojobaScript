@@ -90,6 +90,38 @@ std::pair<Value, std::shared_ptr<Context>> FloatFunction::Invoke(std::vector<Val
 	throw std::runtime_error("cannot convert value to float");
 }
 
+std::pair<Value, std::shared_ptr<Context>> IntFunction::Invoke(std::vector<Value> const& arguments) {
+	if (arguments.empty()) {
+		return { 0.0, {} };
+	} else if (arguments.size() > 1) {
+		throw std::runtime_error("invalid number of arguments");
+	}
+	Value const& value = arguments[0];
+	if (std::holds_alternative<double>(value)) {
+		return { static_cast<std::int64_t>(std::get<double>(value)), {} };
+	} else if (std::holds_alternative<std::int64_t>(value)) {
+		return { value, {} };
+	} else if (std::holds_alternative<std::string>(value)) {
+		auto&& s = std::get<std::string>(value);
+		auto end = std::find_if_not(s.rbegin(), s.rend(), [](char ch) { return std::isspace(ch); });
+		auto decimal_point = std::find(end, s.rend(), '.');
+		ptrdiff_t ntrailing = decimal_point == s.rend() ? end - s.rbegin() : decimal_point - s.rbegin() + 1;
+		try {
+			size_t n;
+			std::int64_t rv = std::stoll(decimal_point == s.rend() ? s : s.substr(0, s.size() - ntrailing), &n);
+			if (n + ntrailing != s.size()) {
+				throw std::runtime_error("value to convert to int has invalid characters");
+			}
+			return { rv, {} };
+		} catch (std::invalid_argument const&) {
+			throw std::runtime_error("cannot convert value to int");
+		} catch (std::out_of_range const&) {
+			throw std::runtime_error("value to convert to int is out of range");
+		}
+	}
+	throw std::runtime_error("cannot convert value to int");
+}
+
 std::pair<Value, std::shared_ptr<Context>> PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
 	for (Value const& argument : arguments) {
