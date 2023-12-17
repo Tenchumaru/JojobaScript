@@ -127,6 +127,19 @@ std::pair<Value, std::shared_ptr<Context>> IntFunction::Invoke(std::vector<Value
 	throw std::runtime_error("cannot convert value to int");
 }
 
+std::pair<Value, std::shared_ptr<Context>> InputFunction::Invoke(std::vector<Value> const& arguments) {
+	if (arguments.size() > 1) {
+		throw std::runtime_error("invalid number of arguments");
+	} else if (!arguments.empty()) {
+		std::stringstream ss;
+		AsString(ss, arguments[0], false);
+		*PrintFunction::outputStream << ss.str();
+	}
+	std::string s;
+	std::getline(std::cin, s);
+	return { std::move(s), {} };
+}
+
 std::pair<Value, std::shared_ptr<Context>> PrintFunction::Invoke(std::vector<Value> const& arguments) {
 	bool isNext = false;
 	for (Value const& argument : arguments) {
