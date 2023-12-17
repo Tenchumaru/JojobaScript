@@ -175,6 +175,17 @@ std::pair<Value, std::shared_ptr<Context>> ScriptFunction::Invoke(std::vector<Va
 	return { {}, context };
 }
 
+std::pair<Value, std::shared_ptr<Context>> StringFunction::Invoke(std::vector<Value> const& arguments) {
+	if (arguments.empty()) {
+		return { std::string{}, {} };
+	} else if (arguments.size() > 1) {
+		throw std::runtime_error("invalid number of arguments");
+	}
+	std::stringstream ss;
+	AsString(ss, arguments[0], false);
+	return { ss.str(), {} };
+}
+
 std::pair<Value, std::shared_ptr<Context>> ThePassageOfTimeFunction::Invoke(std::vector<Value> const& arguments) {
 	// Ensure there is one integral argument.
 	if (arguments.size() != 1) {

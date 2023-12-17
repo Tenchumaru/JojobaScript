@@ -56,6 +56,16 @@ private:
 	bool yielding;
 };
 
+class StringFunction : public NativeFunction {
+public:
+	static std::ostream* outputStream;
+
+	StringFunction() = default;
+	StringFunction(StringFunction&&) = default;
+	~StringFunction() = default;
+	std::pair<Value, std::shared_ptr<Context>> Invoke(std::vector<Value> const& arguments) override;
+};
+
 class ThePassageOfTimeFunction : public NativeFunction {
 public:
 	ThePassageOfTimeFunction() = default;

@@ -120,4 +120,5 @@ try {
 } catch {
 	@print("fail: ", exception)
 }
-@print(fn(2), fn22(2), b, d, l, n, o, s, t, float("\t3.3\r\n"))
+@d["six"] = string(6.6)
+@print(fn(2), fn22(2), b, d, l, n, o, s, t, float("\t3.3\r\n"), string(6.6))
