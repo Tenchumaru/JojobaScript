@@ -44,13 +44,15 @@ namespace {
 		throw std::runtime_error("cannot use non-integer in an integral operation");
 	}
 
-	Value PerformNumericUnaryOperation(Value const& value, std::function<std::int64_t(std::int64_t)> integralOperation, std::function<double(double)> realOperation) {
+	Value PerformNumericUnaryOperation(size_t count, Value const& value, std::function<std::int64_t(std::int64_t)> integralOperation, std::function<double(double)> realOperation) {
 		if (std::holds_alternative<std::int64_t>(value)) {
-			return integralOperation(std::get<std::int64_t>(value));
+			auto rv = integralOperation(std::get<std::int64_t>(value));
+			return count & 1 ? rv : integralOperation(rv);
 		} else if (!std::holds_alternative<double>(value)) {
 			throw std::runtime_error("cannot use non-numeric in a numeric operation");
 		} else if (realOperation) {
-			return realOperation(std::get<double>(value));
+			auto rv = realOperation(std::get<double>(value));
+			return count & 1 ? rv : realOperation(rv);
 		}
 		throw std::runtime_error("cannot use non-integer in an integral operation");
 	}
@@ -315,11 +317,11 @@ Value UnaryExpression::GetValue(std::shared_ptr<Context> context) {
 	Value value = expression->GetValue(context);
 	switch (operation) {
 	case '-':
-		return PerformNumericUnaryOperation(value, [](auto v) { return -v; }, [](auto v) { return -v; });
+		return PerformNumericUnaryOperation(count, value, [](auto v) { return -v; }, [](auto v) { return -v; });
 	case '~':
-		return PerformNumericUnaryOperation(value, [](auto v) { return ~v; }, {});
+		return PerformNumericUnaryOperation(count, value, [](auto v) { return ~v; }, {});
 	case '!':
-		return !AsBoolean(value);
+		return count & 1 ? !AsBoolean(value) : AsBoolean(value);
 	default:
 		throw std::logic_error("unexpected unary operation");
 	}

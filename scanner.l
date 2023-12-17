@@ -89,6 +89,8 @@ in       { RETURN_(IN); }
 "/*"     BEGIN(COMMENT);
 \n       ++yylineno;
 "="      RETURN_ASSIGNMENT(Assignment());
+!+       |
+~+       { yylval.n = std::strlen(yytext); RETURN_(yytext[0]); }
 .        RETURN_(yytext[0]);
 
 <COMMENT>{

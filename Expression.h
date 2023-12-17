@@ -235,7 +235,7 @@ private:
 
 class UnaryExpression : public Expression {
 public:
-	UnaryExpression(Expression* expression, int operation) : expression(expression), operation(operation) {}
+	UnaryExpression(Expression* expression, int operation, size_t count) : expression(expression), operation(operation), count(count) {}
 	UnaryExpression(UnaryExpression&&) = default;
 	~UnaryExpression() = default;
 	Value GetValue(std::shared_ptr<Context> context) override;
@@ -243,4 +243,5 @@ public:
 private:
 	std::unique_ptr<Expression> expression;
 	int operation;
+	size_t count;
 };
