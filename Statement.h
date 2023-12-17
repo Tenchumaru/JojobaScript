@@ -12,7 +12,7 @@ class Statement {
 public:
 	enum class RunResult { Next, Break, Continue, Fallthrough, Return, Throw, Yield };
 
-	using RunResultValue = std::variant<int, Value>;
+	using RunResultValue = std::variant<size_t, Value>;
 
 	class Clause {
 	public:
@@ -100,24 +100,24 @@ protected:
 
 class BreakStatement : public Statement {
 public:
-	BreakStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
+	BreakStatement(size_t nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
 	BreakStatement(BreakStatement&&) = default;
 	~BreakStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 
 private:
-	int nPrecedingBreaks;
+	size_t nPrecedingBreaks;
 };
 
 class ContinueStatement : public Statement {
 public:
-	ContinueStatement(int nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
+	ContinueStatement(size_t nPrecedingBreaks) : nPrecedingBreaks(nPrecedingBreaks) {}
 	ContinueStatement(ContinueStatement&&) = default;
 	~ContinueStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 
 private:
-	int nPrecedingBreaks;
+	size_t nPrecedingBreaks;
 };
 
 class DoStatement : public BlockStatement {

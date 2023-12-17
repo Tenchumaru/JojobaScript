@@ -142,15 +142,15 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 	case RunResult::Next:
 		return false;
 	case RunResult::Break:
-		if (std::get<int>(runResult.second)) {
-			--std::get<int>(runResult.second);
+		if (std::get<size_t>(runResult.second)) {
+			--std::get<size_t>(runResult.second);
 		} else {
 			runResult = { RunResult::Next, 0 };
 		}
 		return true;
 	case RunResult::Continue:
-		if (std::get<int>(runResult.second)) {
-			--std::get<int>(runResult.second);
+		if (std::get<size_t>(runResult.second)) {
+			--std::get<size_t>(runResult.second);
 			return true;
 		}
 		return false;

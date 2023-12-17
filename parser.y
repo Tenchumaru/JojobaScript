@@ -41,15 +41,16 @@ namespace {
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
 	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
 	Value* number;
-	int obreaks;
+	size_t n;
 	Statement* statement;
 }
 
 %token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
-%token <number> NUMBER
 %token <id> ID STRING
+%token <n> '!' '~'
+%token <number> NUMBER
 %nonassoc '?' ':'
 %left AND OR
 %left EQ NE LE GE '<' '>'
@@ -78,7 +79,7 @@ namespace {
 %type<initializer> initializer
 %type<initializers> initializers
 %type<kv_list> kv_list okv_list
-%type<obreaks> obreaks
+%type<n> obreaks
 %type<statement> case statement
 
 %%
