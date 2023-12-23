@@ -21,7 +21,7 @@
     <ClCompile Include="Function.cc" />
     <ClCompile Include="Iterator.cc" />
     <ClCompile Include="ValueReference.cc" />
-    <ClCompile Include="FiberRunner.cc" />
+    <ClCompile Include="JojobaFiberRunner.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Statement.h" />
@@ -32,7 +32,7 @@
     <ClInclude Include="Function.h" />
     <ClInclude Include="Iterator.h" />
     <ClInclude Include="ValueReference.h" />
-    <ClInclude Include="FiberRunner.h" />
+    <ClInclude Include="JojobaFiberRunner.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="yy.h">
       <Filter>Generated Files</Filter>

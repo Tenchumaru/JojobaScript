@@ -94,7 +94,7 @@
   <ItemGroup>
     <ClCompile Include="Context.cc" />
     <ClCompile Include="Expression.cc" />
-    <ClCompile Include="FiberRunner.cc" />
+    <ClCompile Include="JojobaFiberRunner.cc" />
     <ClCompile Include="Function.cc" />
     <ClCompile Include="Generator.cc" />
     <ClCompile Include="Iterator.cc" />
@@ -111,7 +111,7 @@
   <ItemGroup>
     <ClInclude Include="Context.h" />
     <ClInclude Include="Expression.h" />
-    <ClInclude Include="FiberRunner.h" />
+    <ClInclude Include="JojobaFiberRunner.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="Generator.h" />
     <ClInclude Include="Iterator.h" />
