@@ -1,4 +1,6 @@
 #include "pch.h"
+#define NOMINMAX
+#include <Windows.h>
 #include "Context.h"
 #include "Expression.h"
 #include "JojobaFiberRunner.h"
@@ -7,15 +9,21 @@
 
 Generator::~Generator() {}
 
+FunctionGenerator::~FunctionGenerator() {
+	CloseHandle(waitHandle);
+}
+
 Value FunctionGenerator::operator++() {
 	if (it != statements.end()) {
-		if (fiber) {
+		if (waitHandle) {
 			// Continue the generator fiber.
-			FiberRunner::SwitchToFiber(fiber);
+			JojobaFiberRunner::Get()->Await(waitHandle);
 		} else {
-			// Create hidden values to track progress.
+			// Create the wait handle.  It is reset manually and starts signaled so it is always ready.
+			waitHandle = CreateEvent(nullptr, TRUE, TRUE, nullptr);
+
+			// Create the hidden values to track progress.
 			context->AddValue("$error", nullptr, false);
-			context->AddValue("$generator", reinterpret_cast<std::int64_t>(FiberRunner::GetCurrentFiber()), false);
 			context->AddValue("$yield", nullptr, false);
 
 			// Create a fiber in which to run this generator.
@@ -30,8 +38,9 @@ Value FunctionGenerator::operator++() {
 					} while (++it != statements.end());
 				} catch (std::exception const& ex) {
 					context->SetValue("$error", ex.what());
-				} };
-			fiber = FiberRunner::get_Instance().Launch(std::move(fn));
+				}
+				context->SetValue("$yield", nullptr); };
+			JojobaFiberRunner::Get()->Launch(fn);
 		}
 		Value error = context->GetValue("$error");
 		return std::holds_alternative<nullptr_t>(error) ? context->GetValue("$yield") : throw std::runtime_error(std::get<std::string>(error));

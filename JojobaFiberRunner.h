@@ -1,27 +1,20 @@
 #pragma once
 
-class FiberRunner {
+#include <FiberRunner.h>
+
+class JojobaFiberRunner : public Adrezdi::FiberRunner {
 public:
-	~FiberRunner();
+	static std::shared_ptr<JojobaFiberRunner> Get();
+	JojobaFiberRunner(JojobaFiberRunner const&) = delete;
+	JojobaFiberRunner(JojobaFiberRunner&&) noexcept = default;
+	JojobaFiberRunner& operator=(JojobaFiberRunner const&) = delete;
+	JojobaFiberRunner& operator=(JojobaFiberRunner&&) noexcept = default;
+	~JojobaFiberRunner() = default;
 	void Await(void* handle);
-	static void* GetCurrentFiber();
-	void* Launch(std::function<void()>&& fn);
-	int Run();
-	static void SwitchToFiber(void* fiber);
-	static FiberRunner& get_Instance();
 
 private:
-	struct {
-		std::vector<void*> fibers;
-		std::vector<void*> handles;
-	} currentAwaits, nextAwaits;
-	std::vector<void*> availableFibers;
-	std::function<void()> fn;
-	void* mainFiber;
-	void* launchingFiber;
-	static FiberRunner instance;
+	std::vector<void*> handles;
 
-	FiberRunner();
-
-	static void __stdcall RunFiber(void* parameter);
+	JojobaFiberRunner() = default;
+	void InternalWait(std::vector<void*>& candidateFibers, std::vector<void*>& runnableFibers) override;
 };

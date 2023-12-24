@@ -252,6 +252,6 @@ size_t ValueReference::get_Size() const {
 }
 
 Value Awaitable::Await() {
-	FiberRunner::get_Instance().Await(handle);
+	JojobaFiberRunner::Get()->Await(handle);
 	return fn(handle);
 }

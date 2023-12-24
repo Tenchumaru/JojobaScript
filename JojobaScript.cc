@@ -73,11 +73,11 @@ int main(int argc, char* argv[]) {
 
 	// Run the program in a fiber.
 	auto fn = [] { FunctionStatement::programs[""]->RunProgram(); };
-	auto& fiberRunner = FiberRunner::get_Instance();
-	if (!fiberRunner.Launch(std::move(fn))) {
+	auto fiberRunner = JojobaFiberRunner::Get();
+	if (fiberRunner->Launch(std::move(fn))) {
 		return 1;
 	}
-	fiberRunner.Run();
+	fiberRunner->Run();
 
 	return 0;
 }

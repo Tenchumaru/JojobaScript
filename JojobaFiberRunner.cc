@@ -2,95 +2,35 @@
 #include <Windows.h>
 #include "JojobaFiberRunner.h"
 
-namespace {
-	constexpr size_t stackSize = 0x1'0000;
-}
-
-FiberRunner FiberRunner::instance;
-
-FiberRunner::~FiberRunner() {
-	ConvertFiberToThread();
-}
-
-void FiberRunner::Await(void* handle) {
-	nextAwaits.fibers.push_back(GetCurrentFiber());
-	nextAwaits.handles.push_back(handle);
-	SwitchToFiber(launchingFiber);
-}
-
-void* FiberRunner::GetCurrentFiber() {
-	return ::GetCurrentFiber();
-}
-
-void* FiberRunner::Launch(std::function<void()>&& newFn) {
-	void* fiber;
-	if (availableFibers.empty()) {
-		fiber = CreateFiber(stackSize, &FiberRunner::RunFiber, this);
-		if (!fiber) {
-			std::cerr << "CreateFiber failed: " << errno << std::endl;
-			return nullptr;
-		}
-	} else {
-		fiber = availableFibers.back();
-		availableFibers.pop_back();
-	}
-	fn = std::move(newFn);
-	auto const previousFiber = launchingFiber;
-	launchingFiber = GetCurrentFiber();
-	SwitchToFiber(fiber);
-	launchingFiber = previousFiber;
-	return fiber;
-}
-
-int FiberRunner::Run() {
-	for (;;) {
-		if (nextAwaits.fibers.empty()) {
-			return 0;
-		}
-		currentAwaits.fibers.clear();
-		currentAwaits.handles.clear();
-		std::swap(currentAwaits, nextAwaits);
-		DWORD const waitResult = WaitForMultipleObjects(static_cast<DWORD>(currentAwaits.handles.size()), currentAwaits.handles.data(), FALSE, INFINITE);
-		if (waitResult < currentAwaits.handles.size() + WAIT_OBJECT_0) {
-			DWORD const i = waitResult - WAIT_OBJECT_0;
-			void* const currentFiber = currentAwaits.fibers[i];
-			SwitchToFiber(currentFiber);
-		} else {
-			DWORD errorCode = GetLastError();
-			std::cerr << "[FiberRunner::Run.WaitForMultipleObjects] error " << errorCode << std::endl;
-			return errorCode;
-		}
-	}
-}
-
-void FiberRunner::SwitchToFiber(void* fiber) {
-	::SwitchToFiber(fiber);
-}
-
-FiberRunner& FiberRunner::get_Instance() {
+std::shared_ptr<JojobaFiberRunner> JojobaFiberRunner::Get() {
+	static std::shared_ptr<JojobaFiberRunner> instance = std::shared_ptr<JojobaFiberRunner>(new JojobaFiberRunner);
 	return instance;
 }
 
-FiberRunner::FiberRunner() {
-	mainFiber = ConvertThreadToFiber(nullptr);
-	if (!mainFiber) {
-		throw std::runtime_error("FiberRunner::FiberRunner.ConvertThreadToFiber");
-	}
-	launchingFiber = mainFiber;
+void JojobaFiberRunner::Await(void* handle) {
+	handles.push_back(handle);
+	Adrezdi::FiberRunner::Await();
 }
 
-void __stdcall FiberRunner::RunFiber(void* parameter) {
-	auto* const p = reinterpret_cast<FiberRunner*>(parameter);
-	for (;;) {
-		void* launchingFiber = p->launchingFiber;
-		try {
-#pragma prefast(suppress: 26800, "FiberRunner::Launch will set the function member when this loops")
-			std::function<void()> const fn = std::move(p->fn);
-			fn();
-		} catch (std::exception const& ex) {
-			std::cerr << "FiberRunner::RunFiber.InternalHandle:  " << ex.what() << std::endl;
+void JojobaFiberRunner::InternalWait(std::vector<void*>& candidateFibers, std::vector<void*>& runnableFibers) {
+	DWORD const waitResult = WaitForMultipleObjects(static_cast<DWORD>(handles.size()), handles.data(), FALSE, INFINITE);
+	if (waitResult < handles.size() + WAIT_OBJECT_0) {
+		DWORD const j = waitResult - WAIT_OBJECT_0;
+		std::vector<HANDLE> nextHandles;
+		std::vector<void*> nonrunnableFibers;
+		for (size_t i = 0; i < handles.size(); ++i) {
+			if (i == j) {
+				runnableFibers.push_back(candidateFibers[i]);
+			} else {
+				nextHandles.push_back(handles[i]);
+				nonrunnableFibers.push_back(candidateFibers[i]);
+			}
 		}
-		p->availableFibers.push_back(GetCurrentFiber());
-		SwitchToFiber(launchingFiber);
+		std::swap(nextHandles, handles);
+		std::swap(nonrunnableFibers, candidateFibers);
+	} else {
+		DWORD errorCode = GetLastError();
+		std::cerr << "[JojobaFiberRunner::Run.WaitForMultipleObjects] error " << errorCode << std::endl;
+		throw std::runtime_error("[JojobaFiberRunner::Run.WaitForMultipleObjects] error");
 	}
 }

@@ -1,4 +1,6 @@
 #include "pch.h"
+#define NOMINMAX
+#include <Windows.h>
 #include "Statement.h"
 #include "JojobaFiberRunner.h"
 #include "Function.h"
@@ -535,9 +537,15 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 	return { RunResult::Next, 0 };
 }
 
+YieldStatement::YieldStatement(Expression* expression) : expression(expression), waitHandle(CreateEvent(nullptr, TRUE, TRUE, nullptr)) {}
+
+YieldStatement::~YieldStatement() {
+	CloseHandle(waitHandle);
+}
+
 RunResult YieldStatement::Run(std::shared_ptr<Context> context) const {
 	Value value = expression->GetValue(context);
 	context->SetValue("$yield", value);
-	FiberRunner::SwitchToFiber(reinterpret_cast<void*>(std::get<std::int64_t>(context->GetValue("$generator"))));
+	JojobaFiberRunner::Get()->Await(waitHandle);
 	return { RunResult::Next, 0 };
 }

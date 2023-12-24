@@ -333,11 +333,12 @@ private:
 
 class YieldStatement : public Statement {
 public:
-	YieldStatement(Expression* expression) : expression(expression) {}
+	YieldStatement(Expression* expression);
 	YieldStatement(YieldStatement&&) = default;
-	~YieldStatement() = default;
+	~YieldStatement();
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const override;
 
 private:
 	std::unique_ptr<Expression> expression;
+	void* waitHandle;
 };

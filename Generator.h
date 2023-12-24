@@ -15,14 +15,14 @@ public:
 class FunctionGenerator : public Generator {
 public:
 	FunctionGenerator(std::shared_ptr<Context> context, std::vector<std::unique_ptr<Statement>> const& statements) : context(context), statements(statements), it(this->statements.begin()) {}
-	~FunctionGenerator() = default;
+	~FunctionGenerator();
 	Value operator++() override;
 
 private:
 	std::shared_ptr<Context> context;
 	std::vector<std::unique_ptr<Statement>> const& statements;
 	std::vector<std::unique_ptr<Statement>>::const_iterator it;
-	void* fiber = nullptr;
+	void* waitHandle = nullptr;
 };
 
 class IteratorGenerator : public Generator {
