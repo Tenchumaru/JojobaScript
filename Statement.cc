@@ -399,8 +399,11 @@ RunResult RangeForStatement::Run(std::shared_ptr<Context> outerContext) const {
 }
 
 RunResult ReturnStatement::Run(std::shared_ptr<Context> context) const {
-	Value value = expression->GetValue(context);
-	return { RunResult::Return, value };
+	if (expression) {
+		Value value = expression->GetValue(context);
+		return { RunResult::Return, value };
+	}
+	return { RunResult::Return, nullptr };
 }
 
 RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {

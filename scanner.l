@@ -54,6 +54,7 @@ while    { RETURN_(WHILE); }
 yield    { RETURN_(YIELD); }
 case     { RETURN_(CASE); }
 else     { RETURN_(ELSE); }
+exit     { RETURN_(EXIT); }
 from     { RETURN_(FROM); }
 true     { yylval.boolean = true; RETURN_(BOOLEAN); }
 for      { RETURN_(FOR); }

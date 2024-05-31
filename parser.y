@@ -45,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
+%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
@@ -66,7 +66,7 @@ namespace {
 %type<block> block cases oelse
 %type<block_pair> catch_finally
 %type<boolean> di uw
-%type<expr> bexpr cexpr expr iexpr lexpr oexpr
+%type<expr> bexpr cexpr expr iexpr lexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
@@ -122,7 +122,14 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	$6->emplace($6->begin(), std::move(p));
 	$$ = new IfStatement(std::move(*$6), std::move(*$7)); delete $6; delete $7;
 }
-| RETURN oexpr {
+| EXIT {
+	if (Yielding()) {
+		throw std::runtime_error("cannot exit and yield in the same function");
+	}
+	returnTypeStack.back() = ReturnType::Return;
+	$$ = new ReturnStatement(nullptr);
+}
+| RETURN expr {
 	if (Yielding()) {
 		throw std::runtime_error("cannot return and yield in the same function");
 	}
@@ -255,11 +262,6 @@ bexpr {
 	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
 }
 | for_initializers ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
-;
-
-oexpr:
-%empty { $$ = nullptr; }
-| expr
 ;
 
 oelseif_statements:
