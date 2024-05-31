@@ -60,12 +60,12 @@ namespace {
 %right<n> '!' '~'
 %right SS
 %nonassoc AWAIT
-%left '.' '['
+%left '(' '.' '['
 %right ARROW
 %type<block> block cases oelse
 %type<block_pair> catch_finally
 %type<boolean> di uw
-%type<expr> bexpr cexpr expr iexpr lexpr
+%type<expr> expr lexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
 %type<for_clause> for_clause for_initializer
 %type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
@@ -234,11 +234,11 @@ for_clause:
 
 oforexpr_list:
 %empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
-| bexpr {
+| expr {
 	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
 	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
 }
-| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+| for_clauses ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 switch_list:
@@ -256,11 +256,11 @@ CATCH '{' block '}' { $$ = new std::pair(std::move(*$3), std::vector<std::unique
 ;
 
 condition_list:
-bexpr {
+expr {
 	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
 	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
 }
-| for_initializers ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+| for_initializers ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 oelseif_statements:
@@ -308,12 +308,7 @@ expr:
 	delete $3; delete $5; delete $8;
 }
 | '#' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
-| bexpr
-| cexpr
-;
-
-cexpr:
-'[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
+| '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
 | '[' expr FOR id_list IN expr ']' {
 	CheckUniqueness($4);
 	$$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4;
@@ -333,10 +328,7 @@ cexpr:
 | '{' expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
 | '{' okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 | '#' '{' oidv_list '}' { $$ = new ObjectExpression(std::move(*$3)); delete $3; }
-;
-
-bexpr:
-BOOLEAN { $$ = new LiteralExpression($1); }
+| BOOLEAN { $$ = new LiteralExpression($1); }
 | NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
@@ -364,22 +356,17 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 | expr SL expr { $$ = new BinaryExpression($1, SL, $3); }
 | expr SS expr { $$ = new BinaryExpression($1, SS, $3); }
 | expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
-| iexpr
-;
-
-iexpr:
-iexpr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
+| expr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
 | '(' expr ')' { $$ = $2; }
 | lexpr
 ;
 
 lexpr:
-iexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
-| cexpr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
-| iexpr '[' expr ']' { $$ = new IndexExpression($1, $3); }
-| iexpr '[' ':' expr ']' { $$ = new IndexExpression($1, new LiteralExpression(0), $4); }
-| iexpr '[' expr ':' ']' { $$ = new IndexExpression($1, $3, nullptr); }
-| iexpr '[' expr ':' expr ']' { $$ = new IndexExpression($1, $3, $5); }
+expr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
+| expr '[' expr ']' { $$ = new IndexExpression($1, $3); }
+| expr '[' ':' expr ']' { $$ = new IndexExpression($1, new LiteralExpression(0), $4); }
+| expr '[' expr ':' ']' { $$ = new IndexExpression($1, $3, nullptr); }
+| expr '[' expr ':' expr ']' { $$ = new IndexExpression($1, $3, $5); }
 | ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
 ;
 
