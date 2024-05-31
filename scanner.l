@@ -80,9 +80,11 @@ in       { RETURN_(IN); }
 "**"     RETURN_(SS);
 "++"     RETURN_(INC);
 "--"     RETURN_(DEC);
+"->"     RETURN_(ARROW);
 "<<"     RETURN_(SL);
 "<="     RETURN_(LE);
 "=="     RETURN_(EQ);
+"=>"     RETURN_(ARROW);
 ">="     RETURN_(GE);
 ">>"     RETURN_(ASR);
 "||"     RETURN_(OR);
