@@ -123,7 +123,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.inl" />
-    <None Include="parser.output" />
     <None Include="scanner.inl" />
     <None Include="Value.cc.inl" />
     <None Include="Value.h.inl" />

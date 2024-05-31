@@ -39,9 +39,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="parser.output">
-      <Filter>Generated Files</Filter>
-    </None>
     <None Include="parser.inl">
       <Filter>Generated Files</Filter>
     </None>
