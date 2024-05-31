@@ -49,7 +49,6 @@ namespace {
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
-%token <n> '!' '~'
 %token <number> NUMBER
 %nonassoc '?' ':'
 %left AND OR
@@ -58,7 +57,7 @@ namespace {
 %left '&' '|' '^'
 %left ASR LSR SL
 %left '*' '/' '%'
-%precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
+%right<n> '!' '~'
 %right SS
 %nonassoc AWAIT
 %left '.' '['
@@ -341,9 +340,9 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 | NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
-| '-' expr %prec NEG { $$ = new UnaryExpression($2, '-', 1); }
-| '~' expr %prec NEG { $$ = new UnaryExpression($2, '~', $1); }
-| '!' expr %prec NEG { $$ = new UnaryExpression($2, '!', $1); }
+| '-' expr %prec '!' { $$ = new UnaryExpression($2, '-', 1); }
+| '~' expr { $$ = new UnaryExpression($2, '~', $1); }
+| '!' expr { $$ = new UnaryExpression($2, '!', $1); }
 | expr AND expr { $$ = new BinaryExpression($1, AND, $3); }
 | expr OR expr { $$ = new BinaryExpression($1, OR, $3); }
 | expr EQ expr { $$ = new BinaryExpression($1, EQ, $3); }
