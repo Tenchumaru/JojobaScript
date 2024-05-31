@@ -30,7 +30,11 @@ const s2 = {v + 1 for v in s}
 @l[1] = s, t
 
 try {
-	throw "out"
+	try {
+		throw "out"
+	} catch {
+		rethrow
+	}
 } catch {
 	@print(exception)
 } finally {

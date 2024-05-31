@@ -45,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETURN SWITCH THROW TRY UNTIL WHILE YIELD
+%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
@@ -130,7 +130,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	$$ = new ReturnStatement($2);
 }
 | SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
-| THROW { $$ = new ThrowStatement(nullptr); }
+| RETHROW { $$ = new ThrowStatement(nullptr); }
 | THROW expr { $$ = new ThrowStatement($2); }
 | TRY '{' block '}' catch_finally { $$ = new TryStatement(std::move(*$3), std::move($5->first), std::move($5->second)); delete $3; delete $5; }
 | uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }

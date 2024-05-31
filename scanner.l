@@ -39,6 +39,7 @@ continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }
 default  { RETURN_(DEFAULT); }
 finally  { RETURN_(FINALLY); }
+rethrow  { RETURN_(RETHROW); }
 import   { RETURN_(IMPORT); }
 return   { RETURN_(RETURN); }
 switch   { RETURN_(SWITCH); }

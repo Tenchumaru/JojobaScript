@@ -460,8 +460,11 @@ bool SwitchStatement::Case::IsMatch(Value value, std::shared_ptr<Context> outerC
 }
 
 RunResult ThrowStatement::Run(std::shared_ptr<Context> context) const {
-	Value value = expression->GetValue(context);
-	return { RunResult::Throw, value };
+	if (expression) {
+		Value value = expression->GetValue(context);
+		return { RunResult::Throw, value };
+	}
+	return { RunResult::Throw, context->GetValue("exception") };
 }
 
 RunResult TryStatement::Run(std::shared_ptr<Context> outerContext) const {
