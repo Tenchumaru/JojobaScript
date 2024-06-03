@@ -82,7 +82,7 @@ in       { RETURN_(IN); }
 "^="     RETURN_ASSIGNMENT(Assignment::XA);
 "|="     RETURN_ASSIGNMENT(Assignment::OA);
 ">>>"    RETURN_(LSR);
-"@@{"    RETURN_(OBJECT);
+"@{"     RETURN_(OBJECT);
 "!="     RETURN_(NE);
 "<="     RETURN_(LE);
 "=="     RETURN_(EQ);
@@ -98,7 +98,6 @@ in       { RETURN_(IN); }
 ">>"     RETURN_(ASR);
 "@("     RETURN_(ATOP);
 "@["     RETURN_(LIST);
-"@{"     RETURN_(DORS);
 "/*"     BEGIN(COMMENT);
 "="      RETURN_ASSIGNMENT(Assignment());
 !+       |

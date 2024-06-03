@@ -45,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS ATOP BREAK CASE CATCH CONTINUE DEC DEFAULT DO DORS ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC LIST OBJECT RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
+%token AS ATOP BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC LIST OBJECT RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
@@ -216,8 +216,7 @@ for_clause { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->empla
 ;
 
 for_clause:
-lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($1, $2, $3); }
-| '(' lexpr_list ASSIGNMENT expr_list ')' {
+'(' lexpr_list ASSIGNMENT expr_list ')' {
 	$$ = new Statement::AssignmentClause(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
 }
 | di lexpr { $$ = new Statement::DiClause($2, $1); }
@@ -298,16 +297,16 @@ ATOP id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
 	CheckUniqueness($4);
 	$$ = new GeneratorExpression($2, std::move(*$4), $6); delete $4;
 }
-| DORS expr ':' expr FOR id_list IN expr '}' {
+| '{' expr ':' expr FOR id_list IN expr '}' {
 	CheckUniqueness($6);
 	$$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6;
 }
-| DORS expr FOR id_list IN expr '}' {
+| '{' expr FOR id_list IN expr '}' {
 	CheckUniqueness($4);
 	$$ = new SetComprehensionExpression($2, std::move(*$4), $6); delete $4;
 }
-| DORS expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
-| DORS okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
+| '{' expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
+| '{' okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
 | OBJECT oidv_list '}' { $$ = new ObjectExpression(std::move(*$2)); delete $2; }
 | bexpr
 ;
