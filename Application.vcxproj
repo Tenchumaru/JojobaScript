@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Awaitable.cc" />
     <ClCompile Include="Context.cc" />
     <ClCompile Include="Expression.cc" />
     <ClCompile Include="JojobaFiberRunner.cc" />
@@ -109,6 +110,7 @@
     <ClCompile Include="ValueReference.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Awaitable.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="Expression.h" />
     <ClInclude Include="JojobaFiberRunner.h" />

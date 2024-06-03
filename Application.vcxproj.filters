@@ -22,6 +22,7 @@
     <ClCompile Include="Iterator.cc" />
     <ClCompile Include="ValueReference.cc" />
     <ClCompile Include="JojobaFiberRunner.cc" />
+    <ClCompile Include="Awaitable.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Statement.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="yy.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="Awaitable.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser.inl">

@@ -51,15 +51,3 @@ namespace std {
 	template<typename T>
 	T& get(ValueReference& reference) { return reference.get<T>(); }
 }
-
-class Awaitable {
-public:
-	Awaitable(void* handle, std::function<Value(void*)> fn) : handle(handle), fn(fn) {}
-	Awaitable(Awaitable&&) = default;
-	~Awaitable() = default;
-	Value Await();
-
-private:
-	void* handle;
-	std::function<Value(void*)> fn;
-};

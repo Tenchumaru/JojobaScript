@@ -39,17 +39,6 @@ private:
 	std::unique_ptr<Expression> rightExpression;
 };
 
-class DictionaryExpression : public Expression {
-public:
-	DictionaryExpression(std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>&& keyValuePairs) : keyValuePairs(std::move(keyValuePairs)) {}
-	DictionaryExpression(DictionaryExpression&&) = default;
-	~DictionaryExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
-	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>> keyValuePairs;
-};
-
 class DictionaryComprehensionExpression : public Expression {
 public:
 	DictionaryComprehensionExpression(Expression* keyExpression, Expression* valueExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : keyExpression(keyExpression), valueExpression(valueExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
@@ -62,6 +51,17 @@ private:
 	std::unique_ptr<Expression> valueExpression;
 	std::vector<std::pair<std::string, std::string>> ids;
 	std::unique_ptr<Expression> sourceExpression;
+};
+
+class DictionaryExpression : public Expression {
+public:
+	DictionaryExpression(std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>&& keyValuePairs) : keyValuePairs(std::move(keyValuePairs)) {}
+	DictionaryExpression(DictionaryExpression&&) = default;
+	~DictionaryExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
+
+private:
+	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>> keyValuePairs;
 };
 
 class DotExpression : public Expression {
@@ -151,17 +151,6 @@ private:
 	static std::vector<std::unique_ptr<Statement>> Convert(Expression* expression);
 };
 
-class ListExpression : public Expression {
-public:
-	ListExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
-	ListExpression(ListExpression&&) = default;
-	~ListExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
-	std::vector<std::unique_ptr<Expression>> expressions;
-};
-
 class ListComprehensionExpression : public Expression {
 public:
 	ListComprehensionExpression(Expression* targetExpression, std::vector<std::pair<std::string, std::string>>&& ids, Expression* sourceExpression) : targetExpression(targetExpression), ids(std::move(ids)), sourceExpression(sourceExpression) {}
@@ -175,6 +164,17 @@ private:
 	std::unique_ptr<Expression> sourceExpression;
 };
 
+class ListExpression : public Expression {
+public:
+	ListExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
+	ListExpression(ListExpression&&) = default;
+	~ListExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
+
+private:
+	std::vector<std::unique_ptr<Expression>> expressions;
+};
+
 class LiteralExpression : public Expression {
 public:
 	LiteralExpression(Value&& value) : value(std::move(value)) {}
@@ -184,17 +184,6 @@ public:
 
 private:
 	Value value;
-};
-
-class SetExpression : public Expression {
-public:
-	SetExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
-	SetExpression(SetExpression&&) = default;
-	~SetExpression() = default;
-	Value GetValue(std::shared_ptr<Context> context) override;
-
-private:
-	std::vector<std::unique_ptr<Expression>> expressions;
 };
 
 class ObjectExpression : public Expression {
@@ -219,6 +208,17 @@ private:
 	std::unique_ptr<Expression> targetExpression;
 	std::vector<std::pair<std::string, std::string>> ids;
 	std::unique_ptr<Expression> sourceExpression;
+};
+
+class SetExpression : public Expression {
+public:
+	SetExpression(std::vector<std::unique_ptr<Expression>>&& expressions) : expressions(std::move(expressions)) {}
+	SetExpression(SetExpression&&) = default;
+	~SetExpression() = default;
+	Value GetValue(std::shared_ptr<Context> context) override;
+
+private:
+	std::vector<std::unique_ptr<Expression>> expressions;
 };
 
 class TernaryExpression : public Expression {

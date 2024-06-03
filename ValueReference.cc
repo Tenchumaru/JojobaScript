@@ -250,8 +250,3 @@ size_t ValueReference::get_Size() const {
 	}
 	throw std::logic_error("unexpected ValueReference::Size invocation");
 }
-
-Value Awaitable::Await() {
-	JojobaFiberRunner::Get()->Await(handle);
-	return fn(handle);
-}
