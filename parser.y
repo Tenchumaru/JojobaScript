@@ -31,14 +31,14 @@ namespace {
 	std::vector<std::unique_ptr<Expression>>* expr_list;
 	Statement* for_clause;
 	std::vector<std::unique_ptr<Statement>>* for_clauses;
-	std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>* sse_pair;
+	std::pair<std::vector<std::unique_ptr<Statement>>, Expression*>* sse_pair;
 	std::string* id;
 	std::vector<std::pair<std::string, std::string>>* id_list;
 	std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>* idv_list;
 	IfStatement::Fragment* if_fragment;
 	std::vector<std::unique_ptr<IfStatement::Fragment>>* if_fragments;
 	std::pair<std::string, std::string>* import;
-	std::tuple<std::string, std::string, std::unique_ptr<Expression>>* initializer;
+	std::tuple<std::string, std::string, Expression*>* initializer;
 	std::vector<std::tuple<std::string, std::string, std::unique_ptr<Expression>>>* initializers;
 	std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>* kv_list;
 	Value* number;
@@ -111,7 +111,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | FALLTHROUGH { $$ = new FallthroughStatement(); }
 | DO '{' block '}' uw bexpr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
 | FOR oinitializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
-	$$ = new ForStatement(std::unique_ptr<Statement>($2), std::move($4->first), std::move($4->second), std::move(*$6), std::move(*$8));
+	$$ = new ForStatement($2, std::move($4->first), $4->second, std::move(*$6), std::move(*$8));
 	delete $4; delete $6; delete $8;
 }
 | FOR id_list IN expr '{' block '}' {
@@ -136,17 +136,13 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	returnTypeStack.back() = ReturnType::Return;
 	$$ = new ReturnStatement($2);
 }
-| SWITCH oinitializers expr '{' cases '}' {
-	$$ = new SwitchStatement(std::unique_ptr<Statement>($2), std::unique_ptr<Expression>($3), std::move(*$5)); delete $5;
-}
+| SWITCH oinitializers expr '{' cases '}' { $$ = new SwitchStatement($2, $3, std::move(*$5)); delete $5; }
 | RETHROW { $$ = new ThrowStatement(nullptr); }
 | THROW expr { $$ = new ThrowStatement($2); }
 | TRY '{' block '}' catch_finally {
 	$$ = new TryStatement(std::move(*$3), std::move($5->first), std::move($5->second)); delete $3; delete $5;
 }
-| uw oinitializers bexpr '{' block '}' {
-	$$ = new WhileStatement(std::unique_ptr<Statement>($2), std::unique_ptr<Expression>($3), std::move(*$5), $1); delete $5;
-}
+| uw oinitializers bexpr '{' block '}' { $$ = new WhileStatement($2, $3, std::move(*$5), $1); delete $5; }
 | YIELD expr {
 	if (returnTypeStack.back() == ReturnType::Return) {
 		throw std::runtime_error("cannot return and yield in the same function");
@@ -169,7 +165,7 @@ otype:
 
 type:
 ID
-| type '[' otype_list ']' { $$ = new std::string(std::move(std::format("{}[{}]", *$1, *$3))); delete $1; delete $3; }
+| type '[' otype_list ']' { $$ = new std::string(std::format("{}[{}]", *$1, *$3)); delete $1; delete $3; }
 ;
 
 otype_list:
@@ -179,7 +175,7 @@ otype_list:
 
 type_list:
 type
-| type_list ',' type { $$ = new std::string(std::move(std::format("{},{}", *$1, *$3))); delete $1; delete $3; }
+| type_list ',' type { $$ = new std::string(std::format("{},{}", *$1, *$3)); delete $1; delete $3; }
 ;
 
 initializers:
@@ -193,7 +189,7 @@ initializer {
 initializer:
 ID otype ASSIGNMENT expr {
 	if ($3 != Assignment()) throw std::runtime_error("invalid initializing assignment");
-	$$ = new std::tuple(std::move(*$1), std::move(*$2), std::unique_ptr<Expression>($4)); delete $1; delete $2;
+	$$ = new std::tuple(std::move(*$1), std::move(*$2), $4); delete $1; delete $2;
 }
 ;
 
@@ -218,23 +214,21 @@ for_clause { $$ = new std::vector<std::unique_ptr<Statement>>; $$->emplace_back(
 ;
 
 for_clause:
-'(' lexpr_list ASSIGNMENT expr_list ')' {
-	$$ = new AssignmentStatement(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
-}
+'(' lexpr_list ASSIGNMENT expr_list ')' { $$ = new AssignmentStatement(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4; }
 | di lexpr { $$ = new IncrementStatement($2, $1); }
 | sexpr { $$ = new ExpressionStatement($1); }
 ;
 
 oforexpr_list:
-%empty { $$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>; }
+%empty { $$ = new std::pair<std::vector<std::unique_ptr<Statement>>, Expression*>; }
 | bexpr {
-	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>;
-	$$->second.reset($1);
+	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, Expression*>;
+	$$->second = $1;
 }
 | for_clauses ',' bexpr {
-	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>;
+	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, Expression*>;
 	$$->first = std::move(*$1); delete $1;
-	$$->second.reset($3);
+	$$->second = $3;
 }
 ;
 
@@ -387,7 +381,7 @@ okv_list:
 kv_list:
 expr ':' expr {
 	$$ = new std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<Expression>>>;
-	$$->emplace_back(std::make_pair(std::unique_ptr<Expression>($1), std::unique_ptr<Expression>($3)));
+	$$->emplace_back(std::make_pair($1, $3));
 }
 | kv_list ',' expr ':' expr { $1->emplace_back(std::make_pair($3, $5)); }
 ;
