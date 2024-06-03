@@ -185,13 +185,14 @@ class IfStatement : public BlockStatement {
 public:
 	class Fragment : public BlockStatement {
 	public:
-		Fragment(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)) {}
+		Fragment(Statement* initializers, Expression* expression, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializers(initializers), expression(expression) {}
 		Fragment(Fragment&&) = default;
 		~Fragment() = default;
 		std::shared_ptr<Context> IsMatch(std::shared_ptr<Context> outerContext) const;
 
 	private:
-		std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+		std::unique_ptr<Statement> initializers;
+		std::unique_ptr<Expression> expression;
 	};
 
 	IfStatement(std::vector<std::unique_ptr<Fragment>>&& fragments, std::vector<std::unique_ptr<Statement>>&& elseStatements) : BlockStatement(std::move(elseStatements)), fragments(std::move(fragments)) {}

@@ -319,11 +319,13 @@ std::shared_ptr<Context> IfStatement::Fragment::IsMatch(std::shared_ptr<Context>
 	// Create a new context.
 	auto context = std::make_shared<Context>(outerContext);
 
-	// Run initializer clauses, checking the value of the last one.
-	Value finalValue = -1;
-	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
-		finalValue = initializerClause->Run(context);
+	// Run initializer clauses if any.
+	if(initializers) {
+		initializers->Run(context);
 	}
+
+	// Check the value of the expression.
+	Value finalValue = expression->GetValue(context);
 
 	// Return the context if this fragment wants to run.
 	return AsBoolean(finalValue) ? context : std::shared_ptr<Context>{};
