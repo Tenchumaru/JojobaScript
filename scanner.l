@@ -4,6 +4,7 @@
 #pragma warning(disable: 4005) // '*': macro redefinition
 #include <cstdlib> // std::strtod and std::strtoll
 #include <cstring> // std::strlen
+#include <limits> // std::numeric_limits
 #include "Debug.h"
 #include "Expression.h"
 #include "Statement.h"
@@ -29,13 +30,14 @@ real    ({num}?\.{num}|{num}\.{num}?)([Ee][-+]?{num})?
 
 {ws}     |
 {rem}    ;
-"infinity" | 
-"NaN"    |
 {real}   { yylval.number = new Value(std::strtod(yytext, nullptr)); RETURN_(NUMBER); }
 {hex}    { yylval.number = new Value(std::strtoll(yytext + 1, nullptr, 16)); RETURN_(NUMBER); }
 {num}    { yylval.number = new Value(std::strtoll(yytext, nullptr, 10)); RETURN_(NUMBER); }
 {str}    { yylval.id = MakeString(yytext); RETURN_(STRING); }
 fallthrough { RETURN_(FALLTHROUGH); }
+[Ii]nfinity |
+INF         |
+[Ii]nf      { yylval.number = new Value(std::numeric_limits<double>::infinity()); RETURN_(NUMBER); }
 continue { RETURN_(CONTINUE); }
 function { RETURN_(FUNCTION); }
 default  { RETURN_(DEFAULT); }
@@ -58,6 +60,8 @@ else     { RETURN_(ELSE); }
 exit     { RETURN_(EXIT); }
 from     { RETURN_(FROM); }
 true     { yylval.boolean = true; RETURN_(BOOLEAN); }
+N[Aa]N   |
+nan      { yylval.number = new Value(std::numeric_limits<double>::quiet_NaN()); RETURN_(NUMBER); }
 for      { RETURN_(FOR); }
 try      { RETURN_(TRY); }
 var      { yylval.boolean = false; RETURN_(VAR); }
