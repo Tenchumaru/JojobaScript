@@ -65,7 +65,7 @@ namespace {
 %type<block> block cases oelse
 %type<block_pair> catch_finally
 %type<boolean> di uw
-%type<expr> bexpr expr lexpr
+%type<expr> bexpr expr lexpr sexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
 %type<for_clause> for_clause
 %type<for_clauses> for_clauses ofor_clauses oforexpr_list
@@ -156,7 +156,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | lexpr_list ASSIGNMENT expr_list { $$ = new AssignmentStatement(std::move(*$1), $2, std::move(*$3)); delete $1; delete $3; }
-| expr { $$ = new ExpressionStatement($1); }
+| sexpr { $$ = new ExpressionStatement($1); }
 | di lexpr { $$ = new IncrementStatement($2, $1); }
 ;
 
@@ -221,7 +221,7 @@ lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($1, $2, $3); }
 	$$ = new Statement::AssignmentClause(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
 }
 | di lexpr { $$ = new Statement::DiClause($2, $1); }
-| expr { $$ = new Statement::ExpressionClause($1); }
+| sexpr { $$ = new Statement::ExpressionClause($1); }
 ;
 
 oforexpr_list:
@@ -316,7 +316,6 @@ bexpr:
 BOOLEAN { $$ = new LiteralExpression($1); }
 | NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
-| AWAIT expr { $$ = new AwaitExpression($2); }
 | NEG expr { $$ = new UnaryExpression($2, '-', 1); }
 | '~' expr { $$ = new UnaryExpression($2, '~', $1); }
 | '!' expr { $$ = new UnaryExpression($2, '!', $1); }
@@ -341,9 +340,9 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 | expr SL expr { $$ = new BinaryExpression($1, SL, $3); }
 | expr SS expr { $$ = new BinaryExpression($1, SS, $3); }
 | expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
-| '@' expr '(' oexpr_list ')' { $$ = new InvocationExpression($2, std::move(*$4)); delete $4; }
 | '(' expr ')' { $$ = $2; }
 | lexpr
+| sexpr
 ;
 
 lexpr:
@@ -353,6 +352,11 @@ expr '.' ID { $$ = new DotExpression($1, std::move(*$3)); delete $3; }
 | expr '[' expr ':' ']' { $$ = new IndexExpression($1, $3, nullptr); }
 | expr '[' expr ':' expr ']' { $$ = new IndexExpression($1, $3, $5); }
 | ID { $$ = new IdentifierExpression(std::move(*$1)); delete $1; }
+;
+
+sexpr:
+AWAIT expr { $$ = new AwaitExpression($2); }
+| '@' expr '(' oexpr_list ')' { $$ = new InvocationExpression($2, std::move(*$4)); delete $4; }
 ;
 
 lexpr_list:
