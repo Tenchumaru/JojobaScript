@@ -294,7 +294,7 @@ ATOP id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
 	CheckUniqueness($4);
 	$$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4;
 }
-| ATOP expr FOR id_list IN expr ')' {
+| '(' expr FOR id_list IN expr ')' {
 	CheckUniqueness($4);
 	$$ = new GeneratorExpression($2, std::move(*$4), $6); delete $4;
 }
