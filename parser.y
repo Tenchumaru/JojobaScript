@@ -49,7 +49,7 @@ namespace {
 %token AS ATOP BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC LIST OBJECT RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
-%token <id> ID STRING
+%token <id> ID
 %token <number> NUMBER
 %right ARROW
 %nonassoc '?' ':'
@@ -63,6 +63,7 @@ namespace {
 %right SS
 %nonassoc AWAIT
 %left '(' '.' '['
+%left<id> STRING
 %type<block> block cases oelse
 %type<block_pair> catch_finally
 %type<boolean> di uw
@@ -71,7 +72,7 @@ namespace {
 %type<for_clause> for_clause
 %type<for_clauses> for_clauses ofor_clauses
 %type<sse_pair> oforexpr_list
-%type<id> otype otype_list type type_list
+%type<id> otype otype_list string type type_list
 %type<id_list> id_list imports oid_list
 %type<idv_list> idv_list oidv_list
 %type<if_fragment> onlyif
@@ -314,7 +315,7 @@ ATOP id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
 bexpr:
 BOOLEAN { $$ = new LiteralExpression($1); }
 | NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
-| STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
+| string { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | NEG expr { $$ = new UnaryExpression($2, '-', 1); }
 | '~' expr { $$ = new UnaryExpression($2, '~', $1); }
 | '!' expr { $$ = new UnaryExpression($2, '!', $1); }
@@ -342,6 +343,11 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 | '(' expr ')' { $$ = $2; }
 | lexpr
 | sexpr
+;
+
+string:
+STRING
+| string '$' STRING { $1->append(*$3); delete $3; $$ = $1; }
 ;
 
 lexpr:
