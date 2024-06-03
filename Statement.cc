@@ -170,32 +170,6 @@ bool BlockStatement::Run(std::shared_ptr<Context> context, std::pair<RunResult, 
 	}
 }
 
-ForStatement::Clause::~Clause() {}
-
-Statement::AssignmentClause::AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression) : assignment(assignment) {
-	targetExpressions.emplace_back(std::unique_ptr<Expression>(targetExpression));
-	sourceExpressions.emplace_back(std::unique_ptr<Expression>(sourceExpression));
-}
-
-Value Statement::AssignmentClause::Run(std::shared_ptr<Context> context) const {
-	return Assign(targetExpressions, assignment, sourceExpressions, context);
-}
-
-Value Statement::DiClause::Run(std::shared_ptr<Context> context) const {
-	return Di(expression, isIncrement, context);
-}
-
-Value Statement::ExpressionClause::Run(std::shared_ptr<Context> context) const {
-	return expression->GetValue(context);
-}
-
-Value Statement::VarClause::Run(std::shared_ptr<Context> context) const {
-	auto&& [name, _, expression] = initializer;
-	Value value = expression->GetValue(context);
-	context->AddValue(name, value, isConstant);
-	return value;
-}
-
 RunResult AssignmentStatement::Run(std::shared_ptr<Context> context) const {
 	Assign(targetExpressions, assignment, sourceExpressions, context);
 	return { RunResult::Next, 0 };
@@ -243,13 +217,17 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 
 	// Run the loop until reaching an exit condition.
 	for (;;) {
-		// Run expression clauses, checking the value of the last one.
-		Value finalValue = -1;
-		for (std::unique_ptr<Statement::Clause> const& expressionClause : expressionClauses) {
-			finalValue = expressionClause->Run(context);
+		// Run expression clauses.
+		for (std::unique_ptr<Statement> const& expressionClause : expressionClauses) {
+			expressionClause->Run(context);
 		}
-		if (!AsBoolean(finalValue)) {
-			break;
+
+		// Check the value of the expression if any.
+		if (expression) {
+			Value value = expression->GetValue(context);
+			if (!AsBoolean(value)) {
+				break;
+			}
 		}
 
 		// Run the statements in the body of the "for" loop.
@@ -259,7 +237,7 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 		}
 
 		// Run updater clauses.
-		for (std::unique_ptr<Statement::Clause> const& updaterClause : updaterClauses) {
+		for (std::unique_ptr<Statement> const& updaterClause : updaterClauses) {
 			updaterClause->Run(context);
 		}
 	}
@@ -327,10 +305,10 @@ std::shared_ptr<Context> IfStatement::Fragment::IsMatch(std::shared_ptr<Context>
 	}
 
 	// Check the value of the expression.
-	Value finalValue = expression->GetValue(context);
+	Value value = expression->GetValue(context);
 
 	// Return the context if this fragment wants to run.
-	return AsBoolean(finalValue) ? context : std::shared_ptr<Context>{};
+	return AsBoolean(value) ? context : std::shared_ptr<Context>{};
 }
 
 RunResult ImportStatement::Run(std::shared_ptr<Context> context) const {

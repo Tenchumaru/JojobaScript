@@ -29,8 +29,9 @@ namespace {
 	bool boolean;
 	Expression* expr;
 	std::vector<std::unique_ptr<Expression>>* expr_list;
-	Statement::Clause* for_clause;
-	std::vector<std::unique_ptr<Statement::Clause>>* for_clauses;
+	Statement* for_clause;
+	std::vector<std::unique_ptr<Statement>>* for_clauses;
+	std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>* sse_pair;
 	std::string* id;
 	std::vector<std::pair<std::string, std::string>>* id_list;
 	std::unordered_map<std::string, std::pair<std::unique_ptr<Expression>, std::string>>* idv_list;
@@ -68,7 +69,8 @@ namespace {
 %type<expr> bexpr expr lexpr sexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
 %type<for_clause> for_clause
-%type<for_clauses> for_clauses ofor_clauses oforexpr_list
+%type<for_clauses> for_clauses ofor_clauses
+%type<sse_pair> oforexpr_list
 %type<id> otype otype_list type type_list
 %type<id_list> id_list imports oid_list
 %type<idv_list> idv_list oidv_list
@@ -109,7 +111,7 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | FALLTHROUGH { $$ = new FallthroughStatement(); }
 | DO '{' block '}' uw bexpr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
 | FOR oinitializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
-	$$ = new ForStatement(std::unique_ptr<Statement>($2), std::move(*$4), std::move(*$6), std::move(*$8));
+	$$ = new ForStatement(std::unique_ptr<Statement>($2), std::move($4->first), std::move($4->second), std::move(*$6), std::move(*$8));
 	delete $4; delete $6; delete $8;
 }
 | FOR id_list IN expr '{' block '}' {
@@ -206,30 +208,34 @@ UNTIL { $$ = false; }
 ;
 
 ofor_clauses:
-%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
+%empty { $$ = new std::vector<std::unique_ptr<Statement>>; }
 | for_clauses
 ;
 
 for_clauses:
-for_clause { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back($1); }
+for_clause { $$ = new std::vector<std::unique_ptr<Statement>>; $$->emplace_back($1); }
 | for_clauses ',' for_clause { $1->emplace_back($3); $$ = $1; }
 ;
 
 for_clause:
 '(' lexpr_list ASSIGNMENT expr_list ')' {
-	$$ = new Statement::AssignmentClause(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
+	$$ = new AssignmentStatement(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
 }
-| di lexpr { $$ = new Statement::DiClause($2, $1); }
-| sexpr { $$ = new Statement::ExpressionClause($1); }
+| di lexpr { $$ = new IncrementStatement($2, $1); }
+| sexpr { $$ = new ExpressionStatement($1); }
 ;
 
 oforexpr_list:
-%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
+%empty { $$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>; }
 | bexpr {
-	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
-	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
+	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>;
+	$$->second.reset($1);
 }
-| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+| for_clauses ',' bexpr {
+	$$ = new std::pair<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Expression>>;
+	$$->first = std::move(*$1); delete $1;
+	$$->second.reset($3);
+}
 ;
 
 catch_finally:

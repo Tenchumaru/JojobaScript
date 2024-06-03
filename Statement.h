@@ -14,61 +14,6 @@ public:
 
 	using RunResultValue = std::variant<size_t, Value>;
 
-	class Clause {
-	public:
-		virtual ~Clause() = 0;
-		virtual Value Run(std::shared_ptr<Context> context) const = 0;
-	};
-
-	class AssignmentClause : public Clause {
-	public:
-		AssignmentClause(Expression* targetExpression, Assignment assignment, Expression* sourceExpression);
-		AssignmentClause(std::vector<std::unique_ptr<Expression>>&& targetExpressions, Assignment assignment, std::vector<std::unique_ptr<Expression>>&& sourceExpressions) : targetExpressions(std::move(targetExpressions)), sourceExpressions(std::move(sourceExpressions)), assignment(assignment) {}
-		AssignmentClause(AssignmentClause&&) = default;
-		~AssignmentClause() = default;
-		Value Run(std::shared_ptr<Context> context) const override;
-
-	private:
-		std::vector<std::unique_ptr<Expression>> targetExpressions;
-		std::vector<std::unique_ptr<Expression>> sourceExpressions;
-		Assignment assignment;
-	};
-
-	class DiClause : public Clause {
-	public:
-		DiClause(Expression* expression, bool isIncrement) : expression(expression), isIncrement(isIncrement) {}
-		DiClause(DiClause&&) = default;
-		~DiClause() = default;
-		Value Run(std::shared_ptr<Context> context) const override;
-
-	private:
-		std::unique_ptr<Expression> expression;
-		bool isIncrement;
-	};
-
-	class ExpressionClause : public Clause {
-	public:
-		ExpressionClause(Expression* expression) : expression(expression) {}
-		ExpressionClause(ExpressionClause&&) = default;
-		~ExpressionClause() = default;
-		Value Run(std::shared_ptr<Context> context) const override;
-
-	private:
-		std::unique_ptr<Expression> expression;
-	};
-
-	class VarClause : public Clause {
-	public:
-		VarClause(std::tuple<std::string, std::string, std::unique_ptr<Expression>>&& initializer, bool isConstant) : initializer(std::move(initializer)), isConstant(isConstant) {}
-		VarClause(VarClause&&) = default;
-		~VarClause() = default;
-		Value Run(std::shared_ptr<Context> context) const override;
-
-	private:
-		std::tuple<std::string, std::string, std::unique_ptr<Expression>> initializer;
-		bool isConstant;
-	};
-
 	Statement() = default;
 	virtual ~Statement() = 0;
 	virtual std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> context) const = 0;
@@ -153,15 +98,16 @@ public:
 
 class ForStatement : public BlockStatement {
 public:
-	ForStatement(std::unique_ptr<Statement>&& initializers, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializers(std::move(initializers)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)) {}
+	ForStatement(std::unique_ptr<Statement>&& initializers, std::vector<std::unique_ptr<Statement>>&& expressionClauses, std::unique_ptr<Expression>&& expression, std::vector<std::unique_ptr<Statement>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializers(std::move(initializers)), expressionClauses(std::move(expressionClauses)), expression(std::move(expression)), updaterClauses(std::move(updaterClauses)) {}
 	ForStatement(ForStatement&&) = default;
 	~ForStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> outerContext) const override;
 
 private:
 	std::unique_ptr<Statement> initializers;
-	std::vector<std::unique_ptr<Statement::Clause>> expressionClauses;
-	std::vector<std::unique_ptr<Statement::Clause>> updaterClauses;
+	std::vector<std::unique_ptr<Statement>> expressionClauses;
+	std::unique_ptr<Expression> expression;
+	std::vector<std::unique_ptr<Statement>> updaterClauses;
 };
 
 class FunctionStatement : public BlockStatement {
