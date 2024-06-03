@@ -236,10 +236,12 @@ RunResult ForStatement::Run(std::shared_ptr<Context> outerContext) const {
 	// Create a new context.
 	auto context = std::make_shared<Context>(outerContext);
 
-	// Run initializer clauses.
-	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
-		initializerClause->Run(context);
+	// Run initializers if any.
+	if (initializers) {
+		initializers->Run(context);
 	}
+
+	// Run the loop until reaching an exit condition.
 	for (;;) {
 		// Run expression clauses, checking the value of the last one.
 		Value finalValue = -1;
@@ -319,8 +321,8 @@ std::shared_ptr<Context> IfStatement::Fragment::IsMatch(std::shared_ptr<Context>
 	// Create a new context.
 	auto context = std::make_shared<Context>(outerContext);
 
-	// Run initializer clauses if any.
-	if(initializers) {
+	// Run initializers if any.
+	if (initializers) {
 		initializers->Run(context);
 	}
 
@@ -412,11 +414,13 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 	// All "switch" statements and their enclosed "case" clauses introduce a new context.
 	auto context = std::make_shared<Context>(outerContext);
 
-	// Run initializer clauses, keeping the value of the last one.
-	Value finalValue = -1;
-	for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
-		finalValue = initializerClause->Run(context);
+	// Run initializers if any.
+	if (initializers) {
+		initializers->Run(context);
 	}
+
+	// Get the value of the expression.
+	Value value = expression->GetValue(context);
 
 	// Run the matching "case" clause.  Allow falling through all the way through the default clause.
 	auto defaultCase = statements.end();
@@ -424,7 +428,7 @@ RunResult SwitchStatement::Run(std::shared_ptr<Context> outerContext) const {
 	for (auto it = statements.begin(); it != statements.end(); ++it) {
 		auto const* p = dynamic_cast<SwitchStatement::Case const*>(it->get());
 		if (p) {
-			if (fallingThrough || p->IsMatch(finalValue, context)) {
+			if (fallingThrough || p->IsMatch(value, context)) {
 				fallingThrough = false;
 				std::pair<RunResult, RunResultValue> runResult;
 				if (p->BlockStatement::Run(context, runResult, true)) {
@@ -525,14 +529,16 @@ RunResult WhileStatement::Run(std::shared_ptr<Context> outerContext) const {
 		// Create a new context.
 		auto context = std::make_shared<Context>(outerContext);
 
-		// Run initializer clauses, keeping the value of the last one.
-		Value finalValue = -1;
-		for (std::unique_ptr<Statement::Clause> const& initializerClause : initializerClauses) {
-			finalValue = initializerClause->Run(context);
+		// Run initializers if any.
+		if (initializers) {
+			initializers->Run(context);
 		}
 
+		// Get the value of the expression.
+		Value value = expression->GetValue(context);
+
 		// Break out of the loop if the last initializer is falsy.
-		if (!AsBoolean(finalValue)) {
+		if (!AsBoolean(value)) {
 			break;
 		}
 

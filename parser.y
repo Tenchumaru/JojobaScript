@@ -50,6 +50,7 @@ namespace {
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
 %token <number> NUMBER
+%right ARROW
 %nonassoc '?' ':'
 %left AND OR
 %left EQ NE LE GE '<' '>'
@@ -61,14 +62,13 @@ namespace {
 %right SS
 %nonassoc AWAIT
 %left '(' '.' '['
-%right ARROW
 %type<block> block cases oelse
 %type<block_pair> catch_finally
 %type<boolean> di uw
 %type<expr> bexpr expr lexpr
 %type<expr_list> expr_list lexpr_list oexpr_list
-%type<for_clause> for_clause for_initializer
-%type<for_clauses> condition_list for_clauses for_initializers ofor_clauses ofor_initializers oforexpr_list switch_list
+%type<for_clause> for_clause
+%type<for_clauses> for_clauses ofor_clauses oforexpr_list
 %type<id> otype otype_list type type_list
 %type<id_list> id_list imports oid_list
 %type<idv_list> idv_list oidv_list
@@ -107,10 +107,10 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | obreaks BREAK { $$ = new BreakStatement($1); }
 | obreaks CONTINUE { $$ = new ContinueStatement($1); }
 | FALLTHROUGH { $$ = new FallthroughStatement(); }
-| DO '{' block '}' uw expr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
-| FOR ofor_initializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
-	$$ = new ForStatement(std::move(*$2), std::move(*$4), std::move(*$6), std::move(*$8));
-	delete $2; delete $4; delete $6; delete $8;
+| DO '{' block '}' uw bexpr { $$ = new DoStatement(std::move(*$3), $6, $5); delete $3; }
+| FOR oinitializers ';' oforexpr_list ';' ofor_clauses '{' block '}' {
+	$$ = new ForStatement(std::unique_ptr<Statement>($2), std::move(*$4), std::move(*$6), std::move(*$8));
+	delete $4; delete $6; delete $8;
 }
 | FOR id_list IN expr '{' block '}' {
 	CheckUniqueness($2);
@@ -134,13 +134,17 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 	returnTypeStack.back() = ReturnType::Return;
 	$$ = new ReturnStatement($2);
 }
-| SWITCH switch_list '{' cases '}' { $$ = new SwitchStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
+| SWITCH oinitializers expr '{' cases '}' {
+	$$ = new SwitchStatement(std::unique_ptr<Statement>($2), std::unique_ptr<Expression>($3), std::move(*$5)); delete $5;
+}
 | RETHROW { $$ = new ThrowStatement(nullptr); }
 | THROW expr { $$ = new ThrowStatement($2); }
 | TRY '{' block '}' catch_finally {
 	$$ = new TryStatement(std::move(*$3), std::move($5->first), std::move($5->second)); delete $3; delete $5;
 }
-| uw condition_list '{' block '}' { $$ = new WhileStatement(std::move(*$2), std::move(*$4), $1); delete $2; delete $4; }
+| uw oinitializers bexpr '{' block '}' {
+	$$ = new WhileStatement(std::unique_ptr<Statement>($2), std::unique_ptr<Expression>($3), std::move(*$5), $1); delete $5;
+}
 | YIELD expr {
 	if (returnTypeStack.back() == ReturnType::Return) {
 		throw std::runtime_error("cannot return and yield in the same function");
@@ -201,21 +205,6 @@ UNTIL { $$ = false; }
 | WHILE { $$ = true; }
 ;
 
-ofor_initializers:
-%empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
-| for_initializers
-;
-
-for_initializers:
-for_initializer { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->emplace_back($1); }
-| for_initializers ',' for_initializer { $1->emplace_back($3); $$ = $1; }
-;
-
-for_initializer:
-for_clause
-| VAR initializer { $$ = new Statement::VarClause(std::move(*$2), $1); delete $2; }
-;
-
 ofor_clauses:
 %empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
 | for_clauses
@@ -237,33 +226,17 @@ for_clause:
 
 oforexpr_list:
 %empty { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; }
-| expr {
+| bexpr {
 	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
 	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
 }
-| for_clauses ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
-;
-
-switch_list:
-expr {
-	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
-	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
-}
-| for_initializers ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
+| for_clauses ',' bexpr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 catch_finally:
 CATCH '{' block '}' { $$ = new std::pair(std::move(*$3), std::vector<std::unique_ptr<Statement>>{}); delete $3; }
 | CATCH '{' block '}' FINALLY '{' block '}' { $$ = new std::pair(std::move(*$3), std::move(*$7)); delete $3; delete $7; }
 | FINALLY '{' block '}' { $$ = new std::pair(std::vector<std::unique_ptr<Statement>>{}, std::move(*$3)); delete $3; }
-;
-
-condition_list:
-expr {
-	$$ = new std::vector<std::unique_ptr<Statement::Clause>>;
-	$$->emplace_back(std::make_unique<Statement::ExpressionClause>($1));
-}
-| for_initializers ',' expr { $1->emplace_back(std::make_unique<Statement::ExpressionClause>($3)); $$ = $1; }
 ;
 
 onlyif:
@@ -282,7 +255,7 @@ oelse:
 
 oinitializers:
 %empty { $$ = nullptr; }
-| VAR '(' initializers ')' ',' { $$ = new VarStatement(std::move(*$3), $1); delete $3; }
+| VAR '(' initializers ')' { $$ = new VarStatement(std::move(*$3), $1); delete $3; }
 ;
 
 cases:

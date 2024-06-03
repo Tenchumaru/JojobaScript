@@ -63,10 +63,10 @@ function yielder(b: int): int {
 }
 @l = [v - 1 for v in yielder(1)]
 do {
-	if var (b = 1), a > 1 {
+	if var (b = 1) a > 1 {
 		@b = fn(b)
 		break
-	} else if var (b = 1), a == 1 {
+	} else if var (b = 1) a == 1 {
 		continue
 	} else if a < 1 {
 		@a += 1
@@ -74,11 +74,11 @@ do {
 		const b: dict = {}
 	}
 } while a < 1
-for var a = 1, var b = 1, --a, @fn(a); @fn(a), a < 1; ++a, @fn(a) {
+for var (a = 1, b = 1); @fn(a), a < 1; ++a, @fn(a) {
 	@b -= fn(b)
 }
 for ;; {
-	switch const b = 1, a - 1 {
+	switch const (b = 1) a - 1 {
 		// Although "case" statements have no braces, they create contexts.
 		case 1:
 			@a = 1
@@ -103,7 +103,7 @@ for ;; {
 			}
 	}
 }
-for var a = 0;; ++a {
+for var (a = 0);; ++a {
 	for ; a < 2; {
 		if a == 0 {
 			break, continue
@@ -112,7 +112,7 @@ for var a = 0;; ++a {
 		}
 	}
 }
-while const b = 1, a < 3 {
+while const (b = 1) a < 3 {
 	@a += b
 }
 @o.one /= o.two

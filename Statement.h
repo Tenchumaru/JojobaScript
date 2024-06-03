@@ -153,13 +153,13 @@ public:
 
 class ForStatement : public BlockStatement {
 public:
-	ForStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)) {}
+	ForStatement(std::unique_ptr<Statement>&& initializers, std::vector<std::unique_ptr<Statement::Clause>>&& expressionClauses, std::vector<std::unique_ptr<Statement::Clause>>&& updaterClauses, std::vector<std::unique_ptr<Statement>>&& statements) : BlockStatement(std::move(statements)), initializers(std::move(initializers)), expressionClauses(std::move(expressionClauses)), updaterClauses(std::move(updaterClauses)) {}
 	ForStatement(ForStatement&&) = default;
 	~ForStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> outerContext) const override;
 
 private:
-	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+	std::unique_ptr<Statement> initializers;
 	std::vector<std::unique_ptr<Statement::Clause>> expressionClauses;
 	std::vector<std::unique_ptr<Statement::Clause>> updaterClauses;
 };
@@ -276,13 +276,14 @@ public:
 		std::unique_ptr<Expression> expression;
 	};
 
-	SwitchStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& cases) : BlockStatement(std::move(cases)), initializerClauses(std::move(initializerClauses)) {}
+	SwitchStatement(std::unique_ptr<Statement>&& initializers, std::unique_ptr<Expression>&& expression, std::vector<std::unique_ptr<Statement>>&& cases) : BlockStatement(std::move(cases)), initializers(std::move(initializers)), expression(std::move(expression)) {}
 	SwitchStatement(SwitchStatement&&) = default;
 	~SwitchStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> outerContext) const override;
 
 private:
-	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+	std::unique_ptr<Statement> initializers;
+	std::unique_ptr<Expression> expression;
 };
 
 class ThrowStatement : public Statement {
@@ -322,13 +323,14 @@ private:
 
 class WhileStatement : public BlockStatement {
 public:
-	WhileStatement(std::vector<std::unique_ptr<Statement::Clause>>&& initializerClauses, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : BlockStatement(std::move(statements)), initializerClauses(std::move(initializerClauses)), isWhile(isWhile) {}
+	WhileStatement(std::unique_ptr<Statement>&& initializers, std::unique_ptr<Expression>&& expression, std::vector<std::unique_ptr<Statement>>&& statements, bool isWhile) : BlockStatement(std::move(statements)), initializers(std::move(initializers)), expression(std::move(expression)), isWhile(isWhile) {}
 	WhileStatement(WhileStatement&&) = default;
 	~WhileStatement() = default;
 	std::pair<RunResult, RunResultValue> Run(std::shared_ptr<Context> outerContext) const override;
 
 private:
-	std::vector<std::unique_ptr<Statement::Clause>> initializerClauses;
+	std::unique_ptr<Statement> initializers;
+	std::unique_ptr<Expression> expression;
 	bool isWhile;
 };
 
