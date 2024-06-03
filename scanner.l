@@ -3,6 +3,7 @@
 #pragma warning(disable: 4996) // 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
 #pragma warning(disable: 4005) // '*': macro redefinition
 #include <cstdlib> // std::strtod and std::strtoll
+#include <cstring> // std::strlen
 #include "Debug.h"
 #include "Expression.h"
 #include "Statement.h"
@@ -78,22 +79,24 @@ in       { RETURN_(IN); }
 "|="     RETURN_ASSIGNMENT(Assignment::OA);
 ">>>"    RETURN_(LSR);
 "!="     RETURN_(NE);
+"<="     RETURN_(LE);
+"=="     RETURN_(EQ);
+">="     RETURN_(GE);
 "&&"     RETURN_(AND);
+"||"     RETURN_(OR);
 "**"     RETURN_(SS);
 "++"     RETURN_(INC);
 "--"     RETURN_(DEC);
 "->"     RETURN_(ARROW);
-"<<"     RETURN_(SL);
-"<="     RETURN_(LE);
-"=="     RETURN_(EQ);
 "=>"     RETURN_(ARROW);
-">="     RETURN_(GE);
+"<<"     RETURN_(SL);
 ">>"     RETURN_(ASR);
-"||"     RETURN_(OR);
 "/*"     BEGIN(COMMENT);
 "="      RETURN_ASSIGNMENT(Assignment());
 !+       |
 ~+       { yylval.n = std::strlen(yytext); RETURN_(yytext[0]); }
+-/{ws}   RETURN_(yytext[0]);
+-        RETURN_(NEG);
 \n       ++yylineno;
 .        RETURN_(yytext[0]);
 

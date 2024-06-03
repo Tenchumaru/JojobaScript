@@ -57,7 +57,7 @@ namespace {
 %left '&' '|' '^'
 %left ASR LSR SL
 %left '*' '/' '%'
-%right<n> '!' '~'
+%right<n> '!' '~' NEG
 %right SS
 %nonassoc AWAIT
 %left '(' '.' '['
@@ -332,7 +332,7 @@ expr:
 | NUMBER { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | STRING { $$ = new LiteralExpression(std::move(*$1)); delete $1; }
 | AWAIT expr { $$ = new AwaitExpression($2); }
-| '-' expr %prec '!' { $$ = new UnaryExpression($2, '-', 1); }
+| NEG expr { $$ = new UnaryExpression($2, '-', 1); }
 | '~' expr { $$ = new UnaryExpression($2, '~', $1); }
 | '!' expr { $$ = new UnaryExpression($2, '!', $1); }
 | expr AND expr { $$ = new BinaryExpression($1, AND, $3); }
