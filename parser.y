@@ -45,7 +45,7 @@ namespace {
 	Statement* statement;
 }
 
-%token AS BREAK CASE CATCH CONTINUE DEC DEFAULT DO ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
+%token AS ATOP BREAK CASE CATCH CONTINUE DEC DEFAULT DO DORS ELSE EXIT FALLTHROUGH FINALLY FOR FROM FUNCTION IF IMPORT IN INC LIST OBJECT RETHROW RETURN SWITCH THROW TRY UNTIL WHILE YIELD
 %token <assignment> ASSIGNMENT
 %token <boolean> BOOLEAN VAR
 %token <id> ID STRING
@@ -155,8 +155,8 @@ FUNCTION ID '(' { returnTypeStack.push_back({}); } oid_list ')' otype '{' block 
 | FROM STRING IMPORT imports { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
 | IMPORT STRING { $$ = new ImportStatement(std::move(*$2)); delete $2; }
 | IMPORT STRING AS ID { $$ = new ImportStatement(std::move(*$2), std::move(*$4)); delete $2; delete $4; }
-| '@' lexpr_list ASSIGNMENT expr_list { $$ = new AssignmentStatement(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4; }
-| '@' expr { $$ = new ExpressionStatement($2); }
+| lexpr_list ASSIGNMENT expr_list { $$ = new AssignmentStatement(std::move(*$1), $2, std::move(*$3)); delete $1; delete $3; }
+| expr { $$ = new ExpressionStatement($1); }
 | di lexpr { $$ = new IncrementStatement($2, $1); }
 ;
 
@@ -216,12 +216,12 @@ for_clause { $$ = new std::vector<std::unique_ptr<Statement::Clause>>; $$->empla
 ;
 
 for_clause:
-'@' lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($2, $3, $4); }
+lexpr ASSIGNMENT expr { $$ = new Statement::AssignmentClause($1, $2, $3); }
 | '(' lexpr_list ASSIGNMENT expr_list ')' {
 	$$ = new Statement::AssignmentClause(std::move(*$2), $3, std::move(*$4)); delete $2; delete $4;
 }
 | di lexpr { $$ = new Statement::DiClause($2, $1); }
-| '@' expr { $$ = new Statement::ExpressionClause($2); }
+| expr { $$ = new Statement::ExpressionClause($1); }
 ;
 
 oforexpr_list:
@@ -284,31 +284,31 @@ DEC { $$ = false; }
 ;
 
 expr:
-'#' '(' id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
-	$$ = new LambdaExpression(std::move(*$5), std::move(*$3), std::move(*$8), Yielding());
-	delete $3; delete $5; delete $8;
+ATOP id_list ')' otype { returnTypeStack.push_back({}); } '{' block '}' {
+	$$ = new LambdaExpression(std::move(*$4), std::move(*$2), std::move(*$7), Yielding());
+	delete $2; delete $4; delete $7;
 }
-| '#' '(' id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$5), std::move(*$3), $7); delete $3; delete $5; }
-| '[' oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
-| '[' expr FOR id_list IN expr ']' {
+| ATOP id_list ')' otype ARROW expr { $$ = new LambdaExpression(std::move(*$4), std::move(*$2), $6); delete $2; delete $4; }
+| LIST oexpr_list ']' { $$ = new ListExpression(std::move(*$2)); delete $2; }
+| LIST expr FOR id_list IN expr ']' {
 	CheckUniqueness($4);
 	$$ = new ListComprehensionExpression($2, std::move(*$4), $6); delete $4;
 }
-| '(' expr FOR id_list IN expr ')' {
+| ATOP expr FOR id_list IN expr ')' {
 	CheckUniqueness($4);
 	$$ = new GeneratorExpression($2, std::move(*$4), $6); delete $4;
 }
-| '{' expr ':' expr FOR id_list IN expr '}' {
+| DORS expr ':' expr FOR id_list IN expr '}' {
 	CheckUniqueness($6);
 	$$ = new DictionaryComprehensionExpression($2, $4, std::move(*$6), $8); delete $6;
 }
-| '{' expr FOR id_list IN expr '}' {
+| DORS expr FOR id_list IN expr '}' {
 	CheckUniqueness($4);
 	$$ = new SetComprehensionExpression($2, std::move(*$4), $6); delete $4;
 }
-| '{' expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
-| '{' okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
-| '#' '{' oidv_list '}' { $$ = new ObjectExpression(std::move(*$3)); delete $3; }
+| DORS expr_list '}' { $$ = new SetExpression(std::move(*$2)); delete $2; }
+| DORS okv_list '}' { $$ = new DictionaryExpression(std::move(*$2)); delete $2; }
+| OBJECT oidv_list '}' { $$ = new ObjectExpression(std::move(*$2)); delete $2; }
 | bexpr
 ;
 
@@ -341,7 +341,7 @@ BOOLEAN { $$ = new LiteralExpression($1); }
 | expr SL expr { $$ = new BinaryExpression($1, SL, $3); }
 | expr SS expr { $$ = new BinaryExpression($1, SS, $3); }
 | expr '?' expr ':' expr { $$ = new TernaryExpression($1, $3, $5); }
-| expr '(' oexpr_list ')' { $$ = new InvocationExpression($1, std::move(*$3)); delete $3; }
+| '@' expr '(' oexpr_list ')' { $$ = new InvocationExpression($2, std::move(*$4)); delete $4; }
 | '(' expr ')' { $$ = $2; }
 | lexpr
 ;
